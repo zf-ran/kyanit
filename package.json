@@ -1,0 +1,30 @@
+{
+  "name": "enotes7",
+  "version": "0.0.1-b250402",
+  "description": "Website for creating a text note",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file .env index.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "fs": "^0.0.2",
+    "http": "^0.0.0",
+    "isomorphic-dompurify": "1.4",
+    "marked": "^12.0.0",
+    "node-fetch": "^3.2.6",
+    "path": "^0.12.7",
+    "socket.io": "^4.7.5",
+    "mathjax-node-page": "^3.2.0"
+  },
+  "repository": {
+    "url": "https://glitch.com/edit/#!/glitch-mvp-node"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch"
+  ]
+}

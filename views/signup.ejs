@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Sign Up | eNotes</title>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link
+		rel="stylesheet"
+		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
+		integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
+		crossorigin="anonymous"
+		referrerpolicy="no-referrer"
+	/>
+  <link rel="shortcut icon" type="image/png" href="/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+	<link rel="stylesheet" href="/main.css">
+	<link rel="stylesheet" href="/css/signup.css">
+	<script src="/main.js"></script>
+	<script src="/js/modules/jsh.js"></script>
+</head>
+<body>
+	<%- include('partials/header.ejs') %>
+	<main>
+		<div id="signup">
+			<div id="signup--title">Sign Up <a href="/login">Login</a></div>
+			<div id="signup--message"></div>
+			<div id="signup--username">
+				<label for="signup--username--input">Username</label>
+				<input type="text" id="signup--username--input" placeholder="Username"/>
+			</div>
+			<div id="signup--password">
+				<label for="signup--password--input">Password</label>
+				<input type="password" id="signup--password--input" placeholder="Password"/>
+			</div>
+			<div id="signup--button" class="ripple">Sign Up</div>
+      <div id="signup--bottom-text">Already have an account? <a href="/login">Login</a> instead</div>
+		</div>
+	</main>
+</body>
+<script>
+	
+  const messageBox = $('#signup--message');
+	const usernameInput = $('#signup--username--input');
+	const passwordInput = $('#signup--password--input');
+	const signupButton = $('#signup--button');
+
+	signupButton.onclick = handleOnSubmit;
+
+	function handleOnSubmit(event) {
+		if(!usernameInput.value) {
+			messageBox.innerText = 'Username is required!';
+			return;
+		} else if(!passwordInput.value) {
+			messageBox.innerText = 'Password is required!';
+			return;
+		} else if(usernameInput.value.length < 4) {
+			messageBox.innerText = 'Username can’t be shorter than 4 letters';
+			return;
+		} else if(usernameInput.value.length > 16) {
+			messageBox.innerText = 'Username can’t be longer than 16 letters';
+			return;
+		} else if(passwordInput.value.length < 4) {
+			messageBox.innerText = 'Password can’t be shorter than 4 letters';
+			return;
+		}
+
+    //  Disable Inputs
+		usernameInput.disabled = true;
+		passwordInput.disabled = true;
+		messageBox.innerText = '';
+    signupButton.onclick = null;
+    
+		socket.emit('get--usernames', usernames => {
+      if(usernames.includes(usernameInput.value)) {
+        usernameInput.disabled = false;
+        passwordInput.disabled = false;
+        signupButton.onclick = handleOnSubmit;
+        messageBox.innerText = 'Username is taken';
+        return;
+      }
+
+      socket.emit('set--user', usernameInput.value, passwordInput.value);
+      
+      $('#signup--title').innerHTML = 'Signed in! <a href="/login">Login</a>';
+      $('#signup').classList.add('success');
+
+      document.cookie = `username=${usernameInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
+      document.cookie = `password=${passwordInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
+
+      setTimeout(() => { location.assign('/'); }, 200);
+    });
+	}
+</script>
+</html>

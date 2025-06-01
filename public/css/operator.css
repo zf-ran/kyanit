@@ -1,0 +1,12 @@
+main {
+  display: flex;
+  flex: 1 1 auto;
+}
+
+#database {
+  font-family: monospace;
+  padding: 20px;
+  font-size: 1rem;
+  overflow: auto;
+  white-space: pre;
+}

@@ -1,0 +1,274 @@
+@import url("https://enotes7.glitch.me/css/fonts/lpmq-isep-misbah/font.css");
+@import url("https://enotes7.glitch.me/css/fonts/cascadia-mono/font.css");
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wdth,wght@0,75,300;0,75,500;0,75,700;1,75,300;1,75,500;1,75,700&display=swap');
+
+.markdown-document {
+  color: var(--content-text-color) !important;
+  font-size: 1rem;
+}
+
+.markdown-document * {
+  line-height: 180%;
+  overflow-wrap: break-word;
+}
+.markdown-document *:not([class*="h"], [class*="h"] *) {
+  font-size: inherit;
+  color: inherit;
+}
+
+.markdown-document .heading {
+	font-weight: 500;
+  position: relative;
+  z-index: 10;
+  color: var(--content-text-color);
+}
+.markdown-document .heading,
+.markdown-document .heading * {
+  font-stretch: condensed;
+}
+.markdown-document .heading:not(:first-child) {
+	margin-top: 1rem;
+}
+.markdown-document .heading + .heading {
+  margin-top: 0;
+}
+.markdown-document .heading:not(:last-child) {
+	margin-bottom: 0.25rem;
+}
+
+.markdown-document .heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  background-color: var(--text-color);
+  width: 0%; height: 1px;
+  transition: all 500ms cubic-bezier(0.15, 0.01, 0.40, 1);
+  z-index: 9;
+}
+.markdown-document .heading:has(.header-redirect:hover)::after {
+  width: 100%;
+}
+
+.markdown-document .heading-content {
+  font: inherit;
+}
+
+.markdown-document .header-redirect {
+	font-size: inherit;
+  position: absolute;
+  top: 0; left: 0;
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(0%);
+  transition: all 200ms ease;
+}
+.markdown-document .heading:hover .header-redirect {
+	transform: translateX(-100%);
+  opacity: 40%;
+}
+.markdown-document .header-redirect:hover {
+  opacity: 100% !important;
+}
+
+.markdown-document h1 {
+	font-size: 2rem;
+}
+
+.markdown-document h2 {
+	font-size: 1.5rem;
+}
+
+.markdown-document h3 {
+	font-size: 1.17rem;
+}
+
+.markdown-document h4 {
+	font-size: 1rem;
+  opacity: 75%;
+}
+
+.markdown-document h5 {
+	font-size: .83rem;
+  opacity: 75%;
+}
+
+.markdown-document h6 {
+	font-size: .67rem;
+  opacity: 75%;
+}
+
+.markdown-document p {
+	line-height: 180%;
+	font-size: 1rem;
+}
+.markdown-document p:last-child {
+	margin-bottom: 0;
+}
+.markdown-document *:not(.heading) + p {
+  margin-top: 1rem;
+}
+
+.markdown-document .arabic {
+	font-size: 1.4em;
+  line-height: 220%;
+  direction: rtl;
+  text-align: start;
+}
+
+.markdown-document img {
+	max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+.markdown-document img.simple-image {
+  display: block;
+  border-radius: 7px;
+  background-color: white;
+  margin-block: 1em;
+}
+
+.markdown-document table {
+  border-collapse: collapse;
+  margin-inline: auto;
+  display: block;
+  overflow-x: auto;
+}
+.markdown-document th,
+.markdown-document td {
+  border: 1px solid var(--table-border);
+  padding: 3px 15px;
+  vertical-align: top;
+}
+.markdown-document th {
+  background: var(--table-heading-background);
+}
+
+.markdown-document blockquote {
+  background: var(--blockquote-background);
+  border-left: 3px solid var(--blockquote-border-color);
+  padding: 5px 10px 5px 13px;
+  margin-block: 5px;
+  color: inherit;
+  border-radius: 0 10px 10px 0;
+}
+
+.markdown-document a:not(.header-redirect) {
+  position: relative;
+  color: var(--link-color);
+  font-size: inherit;
+  border-bottom: 1px solid var(--link-color);
+}
+.markdown-document a:not(.header-redirect):hover {
+  background: var(--link-color);
+  color: var(--background);
+}
+
+.markdown-document code {
+  font-family: 'Cascadia Mono', monospace !important;
+}
+
+.markdown-document code:not(pre > code) {
+  background: var(--inline-code-background);
+  border: 1px solid var(--inline-code-border-color);
+  border-radius: 4px;
+}
+
+.markdown-document pre.code-block {
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: var(--block-code-background);
+  overflow: auto;
+  border: 1px solid var(--block-code-border-color);
+  tab-size: 4;
+}
+.markdown-document pre > code {
+  white-space: pre;
+}
+
+.markdown-document ol,
+.markdown-document ul {
+  margin-left: 0.25in;
+}
+
+.markdown-document ol {
+  list-style-type: decimal;
+}
+.markdown-document ol > li > ol,
+.markdown-document ul > li > ol {
+  list-style-type: lower-latin;
+}
+.markdown-document :is(ol, ul) > li > :is(ol, ul) > li > ol {
+  list-style-type: lower-roman;
+}
+
+.markdown-document li:has(ol, ul) {
+  margin-bottom: 10px;
+}
+
+.markdown-document hr {
+  margin-block: 1em;
+  border: none;
+  border-bottom: 1px solid var(--content-text-color);
+}
+
+.markdown-document sup {
+  font-size: smaller !important;
+  vertical-align: super !important;
+}
+.markdown-document sub {
+  font-size: smaller !important;
+  vertical-align: sub !important;
+}
+
+.markdown-document b,
+.markdown-document strong,
+.markdown-document th {
+  font-weight: bold;
+}
+
+.markdown-document details > summary {
+  cursor: pointer;
+}
+
+.markdown-document span.footnote[data-title],
+.markdown-document fn[note] {
+  border-bottom: 1px dashed var(--content-text-color);
+  cursor: none;
+}
+
+.markdown-document span.footnote[data-title]:hover,
+.markdown-document fn[note]:hover {
+  background-color: rgba(255, 255, 0, 10%);
+  border-bottom: 1px solid var(--content-text-color);
+}
+
+.markdown-document span.footnote[data-title]::before,
+.markdown-document fn[note]::before {
+  font-size: small;
+  line-height: 120%;
+  position: fixed;
+  bottom: -1px; left: 50%;
+  padding: 5px 30px;
+  box-sizing: border-box;
+  background-color: var(--background);
+  border-top: 1px solid var(--content-text-color);
+  width: 100%;
+  text-align: center;
+  opacity: 1;
+  transform: translateX(-50%) translateY(100%);
+  transition: all 100ms ease-in-out;
+  padding: 5px 10px;
+  pointer-events: none;
+  touch-action: none;
+  z-index: 12;
+}
+.markdown-document span.footnote[data-title]::before {
+  content: attr(data-title);
+}
+.markdown-document fn[note]::before {
+  content: attr(note);
+}
+.markdown-document span.footnote[data-title]:hover::before,
+.markdown-document fn[note]:hover::before {
+  transform: translateX(-50%) translateY(0%);
+}

@@ -1,0 +1,160 @@
+body {
+	display: flex;
+	flex-flow: column;
+}
+
+header {
+  position: sticky;
+  top: 0;
+	display: flex;
+	flex: 0 0 60px;
+  z-index: 11;
+  border-bottom: 1px solid transparent;
+  transition: transform 200ms, border 200ms;
+}
+header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  backdrop-filter: blur(3px);
+  background: linear-gradient(var(--background), transparent);
+  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
+  mask-image: linear-gradient(rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
+}
+/* body[data-scroll="bottom"] header {
+  transition: transform 200ms, border 500ms;
+  border-bottom: 1px solid var(--search-hover-outline-color);
+} */
+body[data-scrolling-to="top"] header {
+  transform: translateY(0);
+}
+body[data-scrolling-to="bottom"] header:not(:has(:focus)) {
+  transform: translateY(-100%);
+}
+header[data-display="false"] {
+	display: none;
+}
+
+#logo-redirect {
+	display: flex;
+	margin-left: 15px;
+	justify-content: center;
+	align-items: center;
+	place-items: center;
+	flex: 0 0 69.38px;
+  z-index: 11;
+}
+
+#logo-redirect:focus {
+  outline: none !important;
+  scale: 0.9;
+}
+
+#logo {
+	height: 30px;
+}
+
+#search {
+	display: flex;
+	height: 40px;
+	margin: 10px;
+  margin-right: 15px;
+	background: var(--search-background);
+	border-radius: 20px;
+	flex: 1 1 auto;
+  border-top: 1px solid rgba(255, 255, 255, 7%);
+	border-bottom: 1px solid rgba(0, 0, 0, 10%);
+}
+
+#search--input {
+	background: transparent;
+	font-size: 1rem;
+	padding-left: 20px;
+	border: none;
+	outline: none !important;
+	flex: 1 1 auto;
+}
+
+#search--button {
+	display: grid;
+	place-items: center;
+	margin: 5px 0;
+	margin-right: 5px;
+	border-radius: 14px;
+	flex: 0 0 40px;
+  cursor: pointer;
+}
+
+#account {
+	display: grid;
+	place-items: center;
+	flex: 0 0 60px;
+	transition: all 300ms ease;
+  padding: 7px;
+  box-sizing: border-box;
+  border-radius: 50%;
+}
+#account:empty {
+	display: none;
+}
+
+#account * {
+	font-size: 1.3rem;
+  display: grid;
+  place-items: center;
+  width: 100%; height: 100%;
+}
+#account > * {
+  border-radius: 50%;
+}
+#account > *:hover {
+	background: var(--account-hover-background);
+	transition: all 100ms ease;
+}
+
+
+/* HOVER EFFECTS */
+@media (hover: hover) {
+	#search:hover {
+		outline: 1px solid var(--search-hover-outline-color);
+	}
+
+	#search--button:hover {
+		background: var(--search-botton-hover-background);
+	}
+}
+
+#search:focus {
+  outline: 1px solid var(--search-hover-outline-color);
+}
+
+#search--button:active {
+  background: var(--search-botton-hover-background);
+}
+
+/* SMALL SCREENS */
+@media only screen and (max-width: 480px) {
+	#logo-redirect {
+		margin: 0 15px;
+		justify-content: flex-start;
+/* 		flex: 1 0 74.38px; */
+	}
+	header:has(#search #search--input:focus) > *:not(#search) {
+		display: none;
+	}
+
+	#search {
+		flex: 1 0 125px;
+    margin-block: 10px;
+    margin-right: 15px;
+		transition: flex 300ms ease;
+	}
+	#search:has(#search--input:focus) {
+		margin: 10px 15px;
+		flex: 1 1 auto;
+	}
+
+	::placeholder {
+		font-size: 0.9rem;
+	}
+}

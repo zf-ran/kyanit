@@ -1,0 +1,135 @@
+:root {
+	--background: #eee;
+	--text-color: #111;
+	--placeholder-color: rgba(0, 0, 0, 40%);
+
+  --link-color: blue;
+  --error-text-color: red;
+  
+  --ripple-color: rgba(0, 0, 0, 10%);
+  
+  /* partials/header.css */
+	--search-background: rgba(255, 255, 255, 60%);
+  
+  --search-hover-outline-color: rgba(0, 0, 0, 20%);
+  --search-botton-hover-background: rgba(0, 0, 0, 10%);
+  
+  --account-hover-background: rgba(0, 0, 0, 10%);
+  
+  /* main.css > BETTER UI */
+  /* |---- ALERT */
+  --alert-background: rgba(0, 0, 0, 10%);
+  --alert-hover-background: rgba(220, 20, 60, 20%);
+  
+  --alert-border-color: rgba(0, 0, 0, 20%);
+  --alert-hover-border-color: crimson;
+  
+  --alert-progress-color: limegreen;
+  
+  /* |---- PROMPT AND CONFIRMATION */
+  --prompt-backdrop: rgba(0, 0, 0, 10%);
+  --prompt-border-color: rgba(0, 0, 0, 20%);
+  
+  --prompt-input-hover-background: rgba(0, 0, 0, 3%);
+  --prompt-input-border-color: rgba(0, 0, 0, 30%);
+  
+  --prompt-confirm-background: royalblue;
+  --prompt-confirm-hover-background: rgba(65, 105, 225, 88%);
+  
+  --prompt-cancel-hover-background: rgba(65, 105, 225, 12%);
+  
+  /* index.css */
+  --note-border-color: rgba(0, 0, 0, 30%);
+  --note-hover-border-color: royalblue;
+  
+  --note-active-background: rgba(65, 105, 225, 5%);
+  
+  --keyword-background: rgba(200, 200, 200, 70%);
+  --keyword-text-color: rgba(0, 0, 0, 80%);
+  
+  /* note.css */
+  --title-block-background-color: white;
+  --information-separator-color: rgba(0, 0, 0, 50%);
+  
+  --aside-background: #e7e7e7;
+  --aside-border-color: rgba(0, 0, 0, 20%);
+  
+  --content-text-color: #444444;
+  
+  --footnote-background: #ccc;
+  
+  --blockquote-background: rgba(0, 0, 0, 7%);
+  --blockquote-border-color: rgba(0, 0, 0, 20%);
+  
+  --inline-code-background: rgba(0, 0, 0, 3%);
+  --inline-code-border-color: rgba(0, 0, 0, 10%);
+  
+  --block-code-background: rgba(0, 0, 0, 5%);
+  --block-code-border-color: rgba(0, 0, 0, 15%);
+  
+  --table-border: #999;
+  --table-heading-background: rgba(0, 0, 0, 10%);
+  
+  --comment-input-border-color: rgba(0, 0, 0, 50%);
+  --comment-input-hover-background: rgba(0, 0, 0, 3%);
+  
+  --comment-hover-background: rgba(0, 0, 0, 5%);
+  
+  --comment-action-hover-background: rgba(0, 0, 0, 10%);
+  --comment-action-hover-border-color: rgba(0, 0, 0, 20%);
+  
+  --replies-line-color: #888;
+  
+  --action-color: var(--text-color);
+  --action-background: var(--background);
+  --action-shadow-color: rgba(0, 0, 0, 20%);
+  
+  /* dashboard.css */  
+  --tab-border-color: rgba(0, 0, 0, 20%);
+  --tab-active-border-color: rgba(65, 105, 255, 40%);
+  --tab-selected-border-color: royalblue;
+  
+  --tab-content-background: #e6e6e6;
+  
+  --info-editor-border-color: rgba(0, 0, 0, 20%);
+  
+  /* signup.css */
+  --signup-background: white;
+  --signup-success-background: rgba(50, 205, 50, 10%);
+  --signup-border-color: rgba(0, 0, 0, 20%);
+  --signup-success-border-color: limegreen;
+  
+  /* create.css */
+  --tools-border-color: rgba(0, 0, 0, 20%);
+  
+  --tools-hover-background: rgba(0, 0, 0, 10%);
+  --editor-background: rgba(0, 0, 0, 5%);
+}
+
+/* *:not(strong, b, th) {
+  font-weight: 500;
+} */
+
+body {
+  font-weight: 400;
+}
+
+:root {
+  --background: #eeeeee;
+  --background-2: #e2e2e2;
+  --background-3: white;
+  
+  --transparent-3: rgba(0, 0, 0, 3%);
+  --transparent-5: rgba(0, 0, 0, 5%);
+  --transparent-10: rgba(0, 0, 0, 10%);
+  --transparent-20: rgba(0, 0, 0, 20%);
+  
+  --outline: #bfbfbf;
+  --outline-2: #c0c0c0;
+  --outline-3: #cfcfcf;
+  
+  --text: #111111;
+  --text-2: #444444;
+  
+  --accent: royalblue;
+}

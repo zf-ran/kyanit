@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title><%= note.title %></title>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    main * {
+      tab-size: 4;
+    }
+    
+    table {
+      border-collapse: collapse;
+    }
+    
+    table, td, th {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+	<main>
+    <center><h1><%= note.title %></h1> <strong><%= authorDisplayName %></strong> <em>@<%= note.authorName %></em></center>
+    <hr>
+    <%- content %>
+	</main>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title><%= note.title %></title>
+  <meta name="description" content="Author: <%- user.displayName %> @<%- note.authorName %>">
+  <meta name="author" content="<%- user.displayName %>">
+  <meta name="keywords" content="<%- note.keywords?.join(', ') %>">
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <noscript><meta http-equiv="refresh" content="0; URL='/min/note/<%- note.id %>'" /></noscript>
+	
+	<link
+		rel="stylesheet"
+		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
+		integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
+		crossorigin="anonymous"
+		referrerpolicy="no-referrer"
+	/>
+  <link rel="shortcut icon" type="image/png" href="/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+	<link rel="stylesheet" href="/main.css">
+	<link rel="stylesheet" href="/css/note.css">
+    
+  <!-- MATHJAX -->
+	<script>
+		MathJax = {
+			loader: { load: [ 'output/svg' ] },
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+			options: {
+				ignoreHtmlClass: 'code-text',
+        renderActions: {
+          addMenu: []
+        }
+			},
+      chtml: { mtextInheritFont: true },
+      svg: { mtextInheritFont: true },
+      showMathMenu: false
+		}
+	</script>
+	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
+    
+  <!-- DOM PURIFY -->
+  <script type="text/javascript" src="/js/modules/purify.min.js"></script>
+    
+	<script src="/js/modules/jsh.js"></script>
+	<script src="/main.js"></script>
+</head>
+<body>
+	<%- include('partials/header.ejs') %>
+  <% const absoluteDate = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric' }); %>
+    
+  <% if(note.thumbnailURL) { %><div id="thumbnail-block" style="background-image: url('<%- note.thumbnailURL %>')"></div><% } %>
+  
+  <div id="title-bar">
+    <span class="tb--author"><%= user.displayName %><% if(user.verified) { %><span id="verified"><i class="fa-solid fa-check"></i></span><% } %></span>
+    <span class="tb--title"><%= note.title %></span>
+    <span class="tb--views"><% if(note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views.toLocaleString() %></span>
+    <% if(note.comments.length > 0) { %>
+      <span class="tb--comments"><i class="fa-regular fa-comment"></i> <%= note.comments.length %></span>
+    <% } %>
+    <% if(note.lastEdited) { %>
+      <span class="tb--edited"><i class="fa-solid fa-pen-nib"></i> <%= new Date(note.lastEdited).toLocaleDateString() %></span>
+    <% } else { %>
+      <span class="tb--published"><i class="fa-solid fa-upload"></i> <%= new Date(note.published).toLocaleDateString() %></span>
+    <% } %>
+    <a class="tb--redirect" href="#title-block"></a>
+  </div>
+    
+	<main>
+    <div id="title-block">      
+      <div id="title"><%= note.title %></div>
+      <div id="description"><%= note.description %></div>
+      <div id="information">
+        <span class="info--author"><a href="/user/<%- note.authorName %>"><span class="info--author--display-name"><%= user.displayName %><% if(user.verified) { %><span id="verified"><i class="fa-solid fa-check"></i></span><% } %></span><span class="info--author--username">@<%= note.authorName %></span></a></span>
+        <% if(note.lastEdited) { %>
+          <span class="info--edited"><%= absoluteDate.format(new Date(note.lastEdited)) %></span>
+        <% } else { %>
+          <span class="info--published"><%= absoluteDate.format(new Date(note.published)) %></span>
+        <% } %>
+        <span class="info--views"><% if(note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views %></span>
+        <span class="info--comments"><i class="fa-regular fa-comment"></i> <%= note.comments.length %></span>
+      </div>
+    </div>
+          
+		<div id="content" class="markdown-document"><%- content %></div>      
+	</main>
+  <!-- COMMENTS -->
+  <aside id="content-list" data-opened="false"><div class="content-list--title"><i class="fa-solid fa-bars-staggered"></i> List</div></aside>
+          
+  <aside id="comments-aside" data-opened="false">
+    <div id="comments-title"><i class="fa-regular fa-comments"></i> Comments</div>
+    <% if($isLoggedIn) { %>
+      <div id="add-comment-wrapper">
+        <div id="add-comment">
+          <input id="add-comment-input" type="text" placeholder="Share your thoughts..." />
+          <div id="add-comment-button" class="ripple"><i class="fa-solid fa-paper-plane"></i></div>
+        </div>
+      </div>
+    <% } else { %>
+      <div id="add-comment-login">
+        Want to comment? <a href="/login">Login!</a>
+      </div>
+    <% } %>
+    <div id="comments">
+      
+    </div>
+  </aside>
+  <div id="button-actions">
+    <div id="comment-button" title="Comment">
+      <i class="fa-regular fa-comment-dots"></i>
+    </div>
+    <div id="content-list-button" title="Contents">
+      <i class="fa-solid fa-list-ol"></i>
+    </div>
+    <% if($isLoggedIn && $cookies.username === user.name) { %>
+      <a id="edit-button" title="Edit" href="/create/<%- note.id %>">
+        <i class="fa-regular fa-pen-to-square"></i>
+      </a>
+      <div id="delete-button" title="Delete">
+        <i class="fa-solid fa-trash-can"></i>
+      </div>
+    <% } %>
+  </div>
+</body>
+<script>
+(() => {
+  const noteId = '<%- note.id %>';
+  const authorName = '<%- note.authorName %>';
+  
+  Array.prototype.sum = function() {
+    let sum = 0;
+    
+    for(let i = 0; i < this.length; i++) {
+      if(isNaN(this[i])) throw TypeError(`Element at index ${i} (${this[i]}) is not a number (NaN)`);
+      
+      sum += this[i];
+    }
+    
+    return sum;
+  };
+  
+  (() => {
+    $('#content-list-button').onclick = event => {
+      $('#content-list').dataset.opened = !JSON.parse($('#content-list').dataset.opened);
+    };
+    
+    const headings = $$('.heading[id]');
+    
+    for(let i = 0; i < headings.length; i++) {
+      const heading = headings[i];
+      const text = heading.childNodes[0].innerHTML;
+      const level = heading.tagName.replace(/h/i, '');
+      
+      new JSH('a', heading.childNodes[0].innerHTML, { href: `#${heading.id}`, class: `content-list content-list-h${level}` }).appendTo($('#content-list'));
+    }
+  })();
+  
+  (() => {
+    const urls = $$('#content a');
+    
+    for(let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      if(url.href.split('#')[0] === window.location.href.split('#')[0]) continue;
+      
+      url.onclick = async (event) => {
+        event.preventDefault();
+        
+        const confirm = await ui.confirm({
+          title: 'This will redirect to another site',
+          content: `Redirect <code style="font-family:monospace;">${url.href}</code> to a new tab`
+        });
+        
+        if(confirm) window.open(url.href, '_blank');
+      };
+    }
+  })();
+  
+  // TITLE BAR
+  const titleBarObserver = new IntersectionObserver((entries) => {
+    for(let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      
+      if(entry.intersectionRatio > 0) $('#title-bar').classList.remove('show');
+      else $('#title-bar').classList.add('show');
+    }
+  });
+  
+  titleBarObserver.observe($('#title-block'));
+  // ---------
+  
+  // COMMENT MANAGER
+  socket.emit('connect-to-note', noteId);
+  const commentsElement = $('#comments');
+  const absoluteTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', hour12: false, year: 'numeric', month: 'numeric', day: 'numeric' });
+  const relativeTime = date => {
+    const now = new Date().getTime();
+    let option = { style: 'long', numeric: 'always' };
+    let args = [];
+    let timeDifference = date - now;
+
+    if(Math.abs(timeDifference) > 3.154e+10) 
+      args = [Math.floor(timeDifference / 3.154e+9)/10, 'year'];
+    else if(Math.abs(timeDifference) > 2.628e+9) 
+      args = [Math.floor(timeDifference / 2.628e+9), 'month'];
+    else if(Math.abs(timeDifference) > 8.64e+7) 
+      args = [Math.floor(timeDifference / 8.64e+7), 'day'];
+    else if(Math.abs(timeDifference) > 3.6e+6) 
+      args = [Math.floor(timeDifference / 3.6e+6), 'hour'];
+    else if(Math.abs(timeDifference) > 6e+4) 
+      args = [Math.floor(timeDifference / 6e+4), 'minute'];
+    else args = [Math.floor(timeDifference / 100)/10, 'second'];
+
+    return new Intl.RelativeTimeFormat('en-us', option).format(...args);
+  };
+  
+  const comments = <%- JSON.stringify(note.comments) %>;
+  const commentVotes = <%- JSON.stringify(commentVotes) %>;
+  
+  for(let i = 0; i < comments.length; i++) {
+    comments[i].votes = 0;
+  }
+  
+  console.log(comments);
+  
+  for(let i = 0; i < commentVotes.length; i++) {
+    const commentVote = commentVotes[i];
+    const comment = comments.find(comment => comment.id === commentVote.commentId);
+    
+    if(!comment) continue;
+    
+    comment.votes += commentVote.vote;
+  }
+  
+  comments.sort((a, b) => b.votes - a.votes);
+  
+  insertAllComments(comments);
+  
+  function insertAllComments(comments) {    
+    while(comments.length > 0) {
+      if(insertComment(comments[0]) === 0) comments.push(comments.shift());
+      else comments.shift();
+    }
+    
+    $$('#comments > .comment > .comment--replies > .comment > .comment--replies').forEach(reply => {
+      reply.dataset.collapsed = true;
+    });
+  }
+  
+  socket.on('send--comment-voted', (commentId, voteCount) => {
+    // update comment vote count
+    $(`#comment-${commentId} > .comment--action > .comment--action--vote-count`).dataset.count = voteCount;
+  });
+  
+  function insertComment(comment) {
+    if(comment.parentId && $(`#comment-${comment.parentId} .comment--replies`) == null) return 0;
+    
+    const parentElement = (comment.parentId) ? $(`#comment-${comment.parentId} .comment--replies`) : commentsElement;
+    const commentElement = new JSH('div', null, { class: 'comment', id: `comment-${comment.id}` }).appendTo(parentElement);
+
+    const commentInfoElement = new JSH('div', null, { class: 'comment--info' }).appendTo(commentElement);
+    const displayNameElement = new JSH('a', null, { class: 'comment--info--display-name', href: `/user/${encodeURI(comment.username)}` }).appendTo(commentInfoElement);
+      displayNameElement.innerText = comment.displayName;
+    if(comment.username === authorName) displayNameElement.classList.add('author');
+    new JSH('div', '@'+comment.username, { class: 'comment--info--username' }).appendTo(commentInfoElement);
+    
+    new JSH('div', relativeTime(comment.time), { class: 'comment--info--relative-time' }).appendTo(commentInfoElement);
+    new JSH('div', absoluteTime.format(comment.time), { class: 'comment--info--absolute-time' }).appendTo(commentInfoElement);
+
+    const commentContentElement = new JSH('div', comment.content, { class: 'comment--content' }).appendTo(commentElement);
+    
+    const commentActionsElement = new JSH('div', null, { class: 'comment--action' }).appendTo(commentElement);
+    
+    const commentRepliesElement = new JSH('div', null, { class: 'comment--replies', 'data-collapsed': false }).appendTo(commentElement);
+
+    const commentCollapseElement = new JSH('div', '<i class="fa-solid fa-minus fa-xs collapse"></i><i class="fa-solid fa-plus fa-xs expand"></i>', { class: 'comment--collapse' }).appendTo(commentElement);
+    
+    commentCollapseElement.onclick = () => { commentRepliesElement.dataset.collapsed = !JSON.parse(commentRepliesElement.dataset.collapsed); };
+    
+    const commentUpvote = new JSH('div', '<i class="fa-solid fa-up-long">', { class: 'comment--action--upvote', 'data-vote': 1 }).appendTo(commentActionsElement);
+    const commentVoteCount = new JSH('div', null, { class: 'comment--action--vote-count', 'data-count': commentVotes.filter(commentVote => commentVote.commentId === comment.id).map(commentVote => commentVote.vote).sum() }).appendTo(commentActionsElement);
+    const commentDownvote = new JSH('div', '<i class="fa-solid fa-down-long">', { class: 'comment--action--downvote', 'data-vote': -1 }).appendTo(commentActionsElement);
+    
+    if(LOGGED_IN) {
+      const commentVote = commentVotes
+        .find(commentVote => 
+                 commentVote.commentId === comment.id
+              && commentVote.voterUsername === cookie.username);
+      
+      commentUpvote.dataset.voted = (commentVote?.vote === 1) ? true : false;
+      commentDownvote.dataset.voted = (commentVote?.vote === -1) ? true : false;
+                                            
+      const commentReply = new JSH('div', '<i class="fa-solid fa-reply"></i>', { class: 'comment--action--reply' }).appendTo(commentActionsElement);
+      commentReply.onclick = async event => {
+        const { content } = await ui.prompt({
+          title: `Replying to @${comment.username}<div style="font-size:0.9rem;font-style:normal;font-weight:400;margin-top:1em;line-height:1.5;">${comment.content}</div>`,
+          inputs: [{
+            type: 'text',
+            label: 'Reply',
+            id: 'content',
+            required: true
+          }]
+        });
+
+        if(content === null || !content.trim()) return;
+        socket.emit('set--comment', noteId, authorName, cookie?.username, content, comment.id, handleSuccessCommentUpload);
+      };
+      
+      commentUpvote.onclick = vote;
+      commentDownvote.onclick = vote;
+      
+      function vote(event) {
+        const vote = JSON.parse(this.dataset.vote);
+        
+        commentVoteCount.classList.add('wait');
+        
+        socket.emit('set--comment-vote', noteId, comment.id, cookie?.username, vote, currentCount => {
+          commentVoteCount.classList.remove('wait');
+        });
+        
+        if(vote >= 1) {
+          // Upvote
+          commentUpvote.dataset.voted = !JSON.parse(commentUpvote.dataset.voted);
+          commentDownvote.dataset.voted = false;
+        } else if(vote <= -1) {
+          // Downvote
+          commentDownvote.dataset.voted = !JSON.parse(commentDownvote.dataset.voted);
+          commentUpvote.dataset.voted = false;
+        }
+      }
+      
+      if(comment.username === cookie.username) {
+        const deleteComment = new JSH('div', '<i class="fa-solid fa-trash"></i>', { class: 'comment--action--delete' }).appendTo(commentActionsElement);
+        deleteComment.onclick = async event => {
+          const confirm = await ui.confirm({
+            title: 'Are you sure?',
+            content: 'Are you sure to delete your comment?'
+          });
+          
+          if(confirm) socket.emit('delete--comment', noteId, comment.id, id => {
+            commentElement.remove();
+          });
+        }
+      }
+    }
+  }
+  
+  if(LOGGED_IN) {
+    $('#add-comment-button:not(.wait)').onclick = event => {
+      if(!$('#add-comment-input').value.trim()) return;
+      socket.emit('set--comment', noteId, authorName, cookie?.username, DOMPurify.sanitize($('#add-comment-input').value), null, handleSuccessCommentUpload);
+      $('#add-comment-button').classList.add('wait');
+    };
+  }
+  
+  socket.on('send--comment-deleted', commentId => {
+    $(`#comment-${commentId}`)?.remove();
+  })
+  
+  socket.on('send--comment-added', comment => {
+    insertComment(comment);
+  });
+  
+  $('#comment-button').onclick = event => {
+    $('aside#comments-aside').dataset.opened = !JSON.parse($('aside#comments-aside').dataset.opened);
+  };
+  
+  function handleSuccessCommentUpload() {
+    $('#add-comment-button').classList.remove('wait');
+    $('#add-comment-input').value = '';
+  }
+  // ---------------
+  
+  if((LOGGED_IN && cookie.username !== authorName) || (!LOGGED_IN)) {
+    socket.emit('add--view-timeout', authorName, noteId);
+  }
+})();
+</script>
+
+<% if($isLoggedIn && $cookies.username === user.name) { %>
+  <script>
+    $('#delete-button').onclick = async () => {
+      const confirmation = await ui.confirm({ title: 'Delete?', content: `Delete “<%- note.title %>”?` });
+      if(confirmation) socket.emit('delete--note', cookie.username, cookie.password, '<%- note.id %>', () => {
+        ui.alert({ content: 'Note deleted' });
+        history.back();
+      });
+    };
+  </script>
+<% } %>
+</html>

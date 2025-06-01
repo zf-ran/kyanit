@@ -1,0 +1,24 @@
+@font-face {
+	font-family: "Noto Sans Condensed";
+	font-style: normal;
+	font-weight: 500;
+	src: url("/css/fonts/noto-sans-condensed/500.woff") format("woff");
+}
+@font-face {
+	font-family: "Noto Sans Condensed";
+	font-style: normal;
+	font-weight: 700;
+	src: url("/css/fonts/noto-sans-condensed/700.woff") format("woff");
+}
+@font-face {
+	font-family: "Noto Sans Condensed";
+	font-style: italic;
+	font-weight: 500;
+	src: url("/css/fonts/noto-sans-condensed/italic-500.woff") format("woff");
+}
+@font-face {
+	font-family: "Noto Sans Condensed";
+	font-style: italic;
+	font-weight: 700;
+	src: url("/css/fonts/noto-sans-condensed/italic-700.woff") format("woff");
+}

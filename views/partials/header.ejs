@@ -1,0 +1,56 @@
+<head>
+	<link rel="preload" as="image" href="https://cdn.glitch.global/4b2d36af-e24e-496b-86ca-bfc83fa0fe86/header-book-overline.svg"/>
+	<link rel="stylesheet" href="/css/partials/header.css"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="shortcut icon" type="image/png" href="/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <meta name="theme-color" content="#eeeeee"/>
+	<script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+	<header data-display="true">
+		<a href="/" id="logo-redirect">
+			<img src="https://cdn.glitch.global/4b2d36af-e24e-496b-86ca-bfc83fa0fe86/header-book-overline.svg" id="logo" alt="eNotes">
+		</a>
+		<div id="search" class="ripple">
+			<input type="text" id="search--input" placeholder="Search by keyword, separate with space" size="1" value="<%= (typeof searchQuery === 'undefined') ? '' : searchQuery %>"/>
+			<div id="search--button"><i class="fa-solid fa-magnifying-glass"></i></div>
+		</div>
+		<div id="account" class="ripple">
+      <% if($isLoggedIn) { %>
+        <a href="/user/<%- $cookies.username %>" title="Dashboard: @<%- $cookies.username %>"><%= $cookies.username[0].toUpperCase() %></a>
+      <% } else { %>
+			  <a href="/login" title="Login"><i class="fa-solid fa-user-plus" style="font-size: 16px;"></i></a>
+      <% } %>
+		</div>
+	</header>
+</body>
+<script>
+	const socket = io('/');
+	const LOGGED_IN = JSON.parse('<%- $isLoggedIn %>');
+	const searchBox = $('#search');
+	const searchInput = $('#search--input');
+	const searchButton = $('#search--button');
+	const cookie = parseCookie(document.cookie);
+
+	searchButton.onclick = search;
+	searchBox.onkeydown = event => {
+		if(event.key === 'Enter') {
+			search(event);
+		}
+	}
+	
+	function search(event) {
+		location.replace(
+			(searchInput.value)
+			? `/?search=${searchInput.value.replace(/ +/g, '+')}`
+			: '/'
+		);
+	}
+
+	document.onkeydown = event => {
+		if(event.code === 'KeyQ' && event.ctrlKey) {
+			$('header').dataset.display = !JSON.parse($('header').dataset.display);
+		}
+	};
+</script>
