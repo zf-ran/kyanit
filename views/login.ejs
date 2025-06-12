@@ -13,9 +13,9 @@
 		crossorigin="anonymous"
 		referrerpolicy="no-referrer"
 	/>
-  <link rel="shortcut icon" type="image/png" href="/favicon.ico">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  
+	<link rel="shortcut icon" type="image/png" href="/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/signup.css">
 	<script src="/main.js"></script>
@@ -36,7 +36,7 @@
 				<input type="password" id="signup--password--input" placeholder="Password"/>
 			</div>
 			<div id="signup--button" class="ripple">Login</div>
-      <div id="signup--bottom-text">Don’t have an account? <a href="/signup">Sign up</a></div>
+			<div id="signup--bottom-text">Don’t have an account? <a href="/signup">Sign up</a></div>
 		</div>
 	</main>
 </body>
@@ -56,42 +56,42 @@
 			messageBox.innerText = 'Password is required!';
 			return;
 		}
-    
-    // Disable Inputs
-    usernameInput.disabled = true;
-    passwordInput.disabled = true;
-    messageBox.innerText = '';
-    signupButton.onclick = null;
-    
-    // Check Usernames
+		
+		// Disable Inputs
+		usernameInput.disabled = true;
+		passwordInput.disabled = true;
+		messageBox.innerText = '';
+		signupButton.onclick = null;
+		
+		// Check Usernames
 		socket.emit('get--usernames', usernames => {
-      if(!usernames.includes(usernameInput.value)) {
-        usernameInput.disabled = false;
-		    passwordInput.disabled = false;
-        signupButton.onclick = handleOnSubmit;
-        messageBox.innerText = 'Username or password is wrong';
-        return;
-      }
-      
-      // Check Password
-      socket.emit('get--is-password-correct', usernameInput.value, passwordInput.value, login);
-    });
+			if(!usernames.includes(usernameInput.value)) {
+				usernameInput.disabled = false;
+				passwordInput.disabled = false;
+				signupButton.onclick = handleOnSubmit;
+				messageBox.innerText = 'Username or password is wrong';
+				return;
+			}
+			
+			// Check Password
+			socket.emit('get--is-password-correct', usernameInput.value, passwordInput.value, login);
+		});
 	}
 
 	function login(isPasswordCorrect) {
 		if(!isPasswordCorrect) {
-      usernameInput.disabled = false;
-		  passwordInput.disabled = false;
+			usernameInput.disabled = false;
+			passwordInput.disabled = false;
 			signupButton.onclick = handleOnSubmit;
 			messageBox.innerText = 'Username or password is wrong';
 			return;
 		}
 
-    // Insert Cookie
+		// Insert Cookie
 		document.cookie = `username=${usernameInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
 		document.cookie = `password=${passwordInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
 		$('#signup--title').innerHTML = 'Logged in! <a href="/login">Signup</a>';
-    $('#signup').classList.add('success');
+		$('#signup').classList.add('success');
 
 		setTimeout(() => { location.assign('/'); }, 200);
 	}

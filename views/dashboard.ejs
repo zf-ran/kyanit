@@ -50,9 +50,6 @@
 	<main>
 		<div class="information">
       <% if($isLoggedIn && user.name === $cookies.username) { %>
-<!--         <div id="displayName" contenteditable="true" oninput="javascript:addSavePopup()"><%= user.displayName %></div> -->
-<!--         <div id="password" contenteditable="true" oninput="javascript:addSavePopup()"><%= $cookies.password %></div> -->
-        
         <div class="prompt--input">
           <label class="prompt--input--label" for="displayName">Display Name</label>
           <input id="displayName" type="text" placeholder="Display Name" autocomplete="false" oninput="javascript:addSavePopup()" value="<%- user.displayName %>" />

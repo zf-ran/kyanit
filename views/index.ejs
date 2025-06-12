@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+	
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/index.css">
 	<script src="/main.js"></script>
@@ -14,26 +14,26 @@
 <body>
 	<%- include('partials/header.ejs') %>
 	<main>  
-    <% for(let i = 0; i < notes.length; i++) { %>
-      <div class="note ripple"<% if(notes[i].thumbnailURL) { %> style="--thumbnail: url(<%- notes[i].thumbnailURL %>);"<% } %>>
-        <a href="/note/<%- notes[i].id %>"></a>
-        <div class="note--title"><%= notes[i].title %></div>
-        <div class="note--information">
-          <span class="note--information--author"><%= notes[i].authorDisplayName %> <% if(notes[i].isAuthorVerified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></span>
-          <span class="note--information--views"><i class="fa-regular fa-eye"></i> <%= notes[i].views.toLocaleString() %></span>
-          <% if(!notes[i].lastEdited) { %>
-            <span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(notes[i].published) %></span>
-          <% } else { %>
-            <span class="note--information--created"><i class="fa-regular fa-pen-to-square"></i> <%= $relativeTime(notes[i].lastEdited) %></span>
-          <% } %>
-        </div>
-        <div class="note--keywords">
-          <% for(let j = 0; j < notes[i].keywords.length; j++) { %>
-            <a href="/?search=<%- notes[i].keywords[j] %>"><%= notes[i].keywords[j] %></a>
-          <% } %>
-        </div>
-      </div>
-    <% } %>
+		<% for(let i = 0; i < notes.length; i++) { %>
+			<div class="note ripple"<% if(notes[i].thumbnailURL) { %> style="--thumbnail: url(<%- notes[i].thumbnailURL %>);"<% } %>>
+				<a href="/note/<%- notes[i].id %>"></a>
+				<div class="note--title"><%= notes[i].title %></div>
+				<div class="note--information">
+					<span class="note--information--author"><%= notes[i].authorDisplayName %> <% if(notes[i].isAuthorVerified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></span>
+					<span class="note--information--views"><i class="fa-regular fa-eye"></i> <%= notes[i].views.toLocaleString() %></span>
+					<% if(!notes[i].lastEdited) { %>
+						<span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(notes[i].published) %></span>
+					<% } else { %>
+						<span class="note--information--created"><i class="fa-regular fa-pen-to-square"></i> <%= $relativeTime(notes[i].lastEdited) %></span>
+					<% } %>
+				</div>
+				<div class="note--keywords">
+					<% for(let j = 0; j < notes[i].keywords.length; j++) { %>
+						<a href="/?search=<%- notes[i].keywords[j] %>"><%= notes[i].keywords[j] %></a>
+					<% } %>
+				</div>
+			</div>
+		<% } %>
 	</main>
 </body>
 </html>

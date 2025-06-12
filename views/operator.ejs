@@ -13,9 +13,9 @@
 		crossorigin="anonymous"
 		referrerpolicy="no-referrer"
 	/>
-  <link rel="shortcut icon" type="image/png" href="/favicon.ico">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  
+	<link rel="shortcut icon" type="image/png" href="/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/operator.css">
 	<script src="/main.js"></script>
@@ -24,25 +24,25 @@
 <body>
 	<%- include('partials/header.ejs') %>
 	<main>
-    <div id="database">
-      
-    </div>
+		<div id="database">
+			
+		</div>
 	</main>
 </body>
 <script>
 (() => {
-  const operatorKey = prompt('Enter operator key!');
-  socket.emit('req--check-operator-key', operatorKey, correct => {
-    if(!correct) {
-      location.replace('/');
-      return;
-    }
-    
-    socket.emit('req--database', db => {
-      console.log(db);
-      $('#database').innerText = JSON.stringify(db, 0, '  ');
-    });
-  });
+	const operatorKey = prompt('Enter operator key!');
+	socket.emit('req--check-operator-key', operatorKey, correct => {
+		if(!correct) {
+			location.replace('/');
+			return;
+		}
+		
+		socket.emit('req--database', db => {
+			console.log(db);
+			$('#database').innerText = JSON.stringify(db, 0, '  ');
+		});
+	});
 })();
 </script>
 </html>

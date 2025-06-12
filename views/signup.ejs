@@ -13,9 +13,9 @@
 		crossorigin="anonymous"
 		referrerpolicy="no-referrer"
 	/>
-  <link rel="shortcut icon" type="image/png" href="/favicon.ico">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  
+	<link rel="shortcut icon" type="image/png" href="/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/signup.css">
 	<script src="/main.js"></script>
@@ -36,13 +36,13 @@
 				<input type="password" id="signup--password--input" placeholder="Password"/>
 			</div>
 			<div id="signup--button" class="ripple">Sign Up</div>
-      <div id="signup--bottom-text">Already have an account? <a href="/login">Login</a> instead</div>
+			<div id="signup--bottom-text">Already have an account? <a href="/login">Login</a> instead</div>
 		</div>
 	</main>
 </body>
 <script>
 	
-  const messageBox = $('#signup--message');
+	const messageBox = $('#signup--message');
 	const usernameInput = $('#signup--username--input');
 	const passwordInput = $('#signup--password--input');
 	const signupButton = $('#signup--button');
@@ -67,31 +67,31 @@
 			return;
 		}
 
-    //  Disable Inputs
+		//  Disable Inputs
 		usernameInput.disabled = true;
 		passwordInput.disabled = true;
 		messageBox.innerText = '';
-    signupButton.onclick = null;
-    
+		signupButton.onclick = null;
+		
 		socket.emit('get--usernames', usernames => {
-      if(usernames.includes(usernameInput.value)) {
-        usernameInput.disabled = false;
-        passwordInput.disabled = false;
-        signupButton.onclick = handleOnSubmit;
-        messageBox.innerText = 'Username is taken';
-        return;
-      }
+			if(usernames.includes(usernameInput.value)) {
+				usernameInput.disabled = false;
+				passwordInput.disabled = false;
+				signupButton.onclick = handleOnSubmit;
+				messageBox.innerText = 'Username is taken';
+				return;
+			}
 
-      socket.emit('set--user', usernameInput.value, passwordInput.value);
-      
-      $('#signup--title').innerHTML = 'Signed in! <a href="/login">Login</a>';
-      $('#signup').classList.add('success');
+			socket.emit('set--user', usernameInput.value, passwordInput.value);
+			
+			$('#signup--title').innerHTML = 'Signed in! <a href="/login">Login</a>';
+			$('#signup').classList.add('success');
 
-      document.cookie = `username=${usernameInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
-      document.cookie = `password=${passwordInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
+			document.cookie = `username=${usernameInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
+			document.cookie = `password=${passwordInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
 
-      setTimeout(() => { location.assign('/'); }, 200);
-    });
+			setTimeout(() => { location.assign('/'); }, 200);
+		});
 	}
 </script>
 </html>
