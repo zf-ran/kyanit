@@ -3,11 +3,6 @@ const app = express();
 
 const http = require('http');
 const server = http.createServer(app);
-const agent = new http.Agent({
-	keepAlive: true,
-	keepAliveMsecs: 1000,
-	maxSockets: 1,
-});
 
 const { Server } = require('socket.io');
 const io = new Server(server);
@@ -46,13 +41,35 @@ const DOMPurify = require('isomorphic-dompurify');
 const purifyOptions = { ADD_TAGS: ['fn'], ADD_ATTR: ['note'] };
 
 const { mjpage } = require('mathjax-node-page');
+const mathjaxOptions = {
+	format: [ 'TeX' ],
+	singleDollars: true,
+	MathJax: {
+		loader: { load: [ 'input/tex', 'output/svg', '[tex]/ams' ] },
+		tex: {
+			inlineMath: [['$', '$'], ['\\(', '\\)']],
+			packages: { '[+]': ['ams'] }
+		},
+		options: {
+			ignoreHtmlClass: 'code-text',
+			renderActions: {
+				addMenu: []
+			}
+		},
+		svg: { mtextInheritFont: true },
+		showMathMenu: false
+	}
+}
 
 const crypto = require('crypto');
-const EN = require('./modules/EN.js');
+
+const Kyanit = require('./modules/Kyanit.js');
+const { kStringMaxLength } = require('buffer');
 
 // DATABASE -----------------
 const db = {
 	path: path.join(__dirname, '.data', 'database.json'),
+	indentation: parseInt(process.env.DATABASE_INDENTATION),
 	encoding: 'utf8',
 	async getAll() {
 		let values = JSON.parse(await fs.readFileSync(this.path, { encoding: this.encoding }));
@@ -63,7 +80,7 @@ const db = {
 		let database = await this.getAll();
 		database[key] = value;
 
-		await fs.writeFileSync(this.path, JSON.stringify(database, null, 2), { encoding: this.encoding });
+		await fs.writeFileSync(this.path, JSON.stringify(database, null, this.indentation), { encoding: this.encoding });
 	},
 	async get(key) {
 		const database = await this.getAll();
@@ -74,7 +91,7 @@ const db = {
 		const database = await this.getAll();
 		delete database[key];
 
-		await fs.writeFileSync(this.path, JSON.stringify(database, null, 2), { encoding: this.encoding });
+		await fs.writeFileSync(this.path, JSON.stringify(database, null, this.indentation), { encoding: this.encoding });
 	},
 	async reset() {
 		await fs.writeFileSync(this.path, '{}', { encoding: this.encoding });
@@ -101,6 +118,9 @@ Array.prototype.intersectsWith = function(array) {
 	return false;
 };
 
+// Sums all the elements in an array.
+// If the array is empty, returns 0.
+// If one of the element is NaN, throw a TypeError.
 Array.prototype.sum = function() {
 	let sum = 0;
 
@@ -116,10 +136,13 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(cookieParser());
 
-const MAINTENANCE = false;
+/** Is the server in maintenance mode? @type {boolean} */
+const MAINTENANCE = JSON.parse(process.env.MAINTENANCE);
+
 const maintenanceUsers = process.env.MAINTENANCE_USERS.split('\n');
 app.use(async (req, res, next) => {
 	if(MAINTENANCE) {
+		// Check if the user has access to maintenance.
 		const hasMaintenanceAccess = maintenanceUsers.includes(req.cookies['username']);
 		if(!hasMaintenanceAccess) {
 			res.send('<center><h1>Maintenance!</h1></center><hr>');
@@ -165,25 +188,31 @@ app.get('/operator', (req, res) => {
 });
 
 app.get('/', async (req, res) => {
+	/** @type {Kyanit.User[]} */
 	const users = await db.get('users');
-	let notes = JSON.parse(JSON.stringify(users.map(user => user.notes).flat(1).filter(note => !note.unlisted))).map(note => { delete note.content; return note });
+
+	/** @type {Kyanit.Note[]} */
+	let notes = (await db.get('notes')).filter(note => !note.unlisted).map(note => { delete note.content; delete note.comments; delete note.thumbnailURL; return note; });
 
 	if(req.query.search) {
 		const searchQuery = req.query.search.toLowerCase().split(/ +/g);
-
 		notes = notes.filter(note => note.keywords.intersectsWith(searchQuery));
 	}
 
+	// Add `authorDisplayName` and `isAuthorVerified` to every `notes`.
 	for(let i = 0; i < notes.length; i++) {
-		const user = users.find(user => user.name === notes[i].authorName);
-		notes[i].authorDisplayName = user.displayName;
-		notes[i].isAuthorVerified = user.verified;
+		const note = notes[i];
+
+		const user = users.find(user => user.name === note.authorName);
+		note.authorDisplayName = user.displayName;
+		note.isAuthorVerified = user.verified;
 	}
 
+	// Sort by views.
 	notes.sort((a, b) => b.views - a.views);
 
+	// Pin the tutorial note.
 	const tutorial = notes.find(note => note.id === 'tutorial');
-
 	if(tutorial) {
 		notes = notes.filter(note => note.id !== tutorial.id);
 		notes.unshift(tutorial);
@@ -196,137 +225,107 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/note/:noteid', async (req, res) => {
-	const users = await db.get('users');
-	const note = users?.map(user => user.notes).flat(1).find(note => note.id === req.params.noteid);
-	const user = users.find(user => user.name === note?.authorName);
-	const authorDisplayName = user?.displayName;
+	const noteId = req.params.noteid;
+
+	/** @type {Kyanit.Note[]} */
+	const notes = await db.get('notes');
+	const note = notes.find(note => note.id === req.params.noteid);
 
 	if(!note) {
-		res.render('note', {
-			note: {
-				title: 'Note unavailable!',
-				thumbnailURL: 'https://static.wixstatic.com/media/422339_2c4f6dd077334ad3b4a20dcf6a31f1ea~mv2.png/v1/fill/w_560,h_142,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/disability%20webpage%20currently%20unavailable%20banner.png',
-				description: 'The note you’re opening is not available',
-				content: '<center>The note that you want to see is unavailable, check for typos, if the note is still unavailable, might be because this note is deleted by the publisher.<br><img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWY1Y3I4amNncWY4anR4b3N5MGZncDMwZ2Q1Z2gxNjRseHE2MzMxZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YyKPbc5OOTSQE/giphy.gif" /></center>',
-				id: '0',
-				keywords: [],
-				authorName: 'system',
-				published: new Date().getTime(),
-				unlisted: true,
-				views: Math.floor(Math.random() * 1_000_000),
-				comments: []
-			},
-			content: '<center>The note that you want to see is unavailable, check for typos, if the note is still unavailable, might be because this note is deleted by the publisher.<br><img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWY1Y3I4amNncWY4anR4b3N5MGZncDMwZ2Q1Z2gxNjRseHE2MzMxZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YyKPbc5OOTSQE/giphy.gif" /></center>',
-			user: {
-				name: 'system',
-				displayName: 'System',
-				notes: [],
-				about: '',
-				registered: 0,
-				verified: true,
-			},
-			commentVotes: []
-		});
+		res.status(404).send(`Note with id ${noteId} not found.`)
 		return;
 	}
 
-	for(let i = 0; i < note.comments.length; i++) {
-		const comment = note.comments[i];
-
-		comment.displayName = users.find(user => user.name === comment.username).displayName;
-	}
-
-	const commentVotes = (await db.get('commentVotes')).filter(commentVote => commentVote.noteId === req.params.noteid);
+	const user = (await db.get('users')).find(user => user.name === note.authorName);
+	const commentCount = (await db.get('comments')).filter(comment => comment.noteId === noteId).length;
 
 	const backslash = /\\(?![*_$~`])/g;
 
 	res.render('note', {
-		note,
-		content: DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions),
-		user,
-		commentVotes
+		note, user, commentCount,
+		content: DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions)
 	});
 });
 
 app.get('/create', async (req, res) => {
 	if(!res.locals.$isLoggedIn) res.redirect('back');
 
-	res.render('create', {
-		note: '{}',
-		mode: 'create'
-	})
+	const startingNote = new Kyanit.Note(
+		'',
+		'Untitled',
+		'# Welcome to eNotes editor!\n\neNotes uses markdown with GitHub Flavoured Markdown, parsed using `marked.js`, and syntax highlighted by `prism.js`.',
+		[],
+		req.cookies.username,
+		'',
+		false
+	);
+
+	res.render('create', { note: startingNote, mode: 'create' });
 });
 
 app.get('/create/:noteid', async (req, res) => {
 	if(!res.locals.$isLoggedIn) res.redirect('back');
 
-	const users = await db.get('users');
-	const note = users.map(user => user.notes).flat(1).find(note => note.id === req.params.noteid);
+	/** @type {Kyanit.Note|null} */
+	const note = (await db.get('notes')).find(note => note.id === req.params.noteid);
 
 	if(!note) res.redirect('back');
+	if(req.cookies.username !== note.authorName) res.redirect('back');
 
-	res.render('create', {
-		note: JSON.stringify(note),
-		mode: 'edit'
-	});
+	res.render('create', { note, mode: 'edit' });
 });
 
 app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
+	/** @type {Kyanit.User[]} */
 	const users = await db.get('users');
-	const user = EN.Account.prototype.getShareable.call(
-		users.find(user => req.params.username === user.name)
-		|| new EN.Account({
-				displayName: `User ${req.params.username} is not available`,
-				name: 'sys',
-				password: '',
-				about: `<center>No user named @${req.params.username}!<br><img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWY1Y3I4amNncWY4anR4b3N5MGZncDMwZ2Q1Z2gxNjRseHE2MzMxZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YyKPbc5OOTSQE/giphy.gif" /></center>`
-			})
-	);
 
+	const user = users.find(user => user.name === req.params.username);
+
+	if(!user) {
+		res.status(404).send(`User with username ${req.params.username} not found.`)
+		return;
+	}
+
+	/** The user’s notes @type {Kyanit.Note[]} */
+	let notes = (await db.get('notes')).filter(note => note.authorName === user.name).map(note => { delete note.content; delete note.comments; delete note.thumbnailURL; return note; });
+
+	// Hide unlisted notes if the user is not the author.
+	if(!res.locals.$isLoggedIn || req.cookies.username !== user.name) {
+		notes = notes.filter(note => !note.unlisted);
+	}
+
+	const userPublicInfo = Kyanit.User.prototype.getPublicInfo.call(user);
+	const page = req.params.page || 'about';
 	const backslash = /\\(?![*_$~`])/g;
 
-	const page = req.params.page || 'about';
-
 	res.render('dashboard', {
-		user, about: DOMPurify.sanitize(marked.parse(user.about.replace(backslash, "\\\\")), purifyOptions), page
+		user: userPublicInfo, notes, about: DOMPurify.sanitize(marked.parse(user.about.replace(backslash, "\\\\")), purifyOptions), page
 	});
 });
 
+// Send simplified or minimized note. No CSS.
 app.get('/:reduce/note/:noteid', async (req, res) => {
-	const users = await db.get('users');
-	const user = users.find(user => user.notes.find(note => note.id === req.params.noteid));
-	const note = user.notes.find(note => note.id === req.params.noteid);
+	const noteId = req.params.noteid;
+	const note = (await db.get('notes')).find(note => note.id === req.params.noteid);
+
+	if(!note) res.status(404).send(`Note with id <code>${noteId}</code> not found.`);
+
+	const user = (await db.get('users')).find(user => user.name === note.authorName);
 
 	const backslash = /\\(?![*_$~`])/g;
 
 	let contentInput = DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions);
 
 	if(req.params.reduce === 'min') {
+		// `min` is the bare bones, no LaTeX.
 		res.render('min/note', {
 			content: contentInput,
 			note,
 			authorDisplayName: user.displayName
 		});
 	} else if(req.params.reduce === 'simple') {
-		mjpage(contentInput, {
-			format: [ 'TeX' ],
-			singleDollars: true,
-			MathJax: {
-				loader: { load: [ 'input/tex', 'output/svg', '[tex]/ams' ] },
-				tex: {
-					inlineMath: [['$', '$'], ['\\(', '\\)']],
-					packages: { '[+]': ['ams'] }
-				},
-				options: {
-					ignoreHtmlClass: 'code-text',
-					renderActions: {
-						addMenu: []
-					}
-				},
-				svg: { mtextInheritFont: true },
-				showMathMenu: false
-			}
-		}, { svg: true }, output => {
+		// `simple` still contains LaTeX in svg.
+		mjpage(contentInput, mathjaxOptions, { svg: true }, output => {
 			res.render('min/note', {
 				content: output,
 				note,
@@ -344,7 +343,35 @@ app.get('/login', async (req, res) => {
 	res.render('login');
 });
 
+// APIs
+app.get('/api/comments', async (req, res) => {
+	const noteId = req.query.note_id;
 
+	/** Comments on the specified note @type {Kyanit.Comment[]} */
+	const noteComments = (await db.get('comments')).filter(comment => comment.noteId === noteId);
+
+	/** Comments’ votes on the specified note @type {Kyanit.CommentVote[]} */
+	const noteCommentVotes = (await db.get('commentVotes')).filter(vote => vote.noteId === noteId);
+
+	/** @type {Kyanit.User[]} */
+	const users = await db.get('users');
+
+	for (let i = 0; i < noteComments.length; i++) {
+		const comment = noteComments[i];
+
+		/** The votes on the specified comment */
+		const commentVotes = noteCommentVotes.filter(vote => vote.commentId === comment.id);
+
+		// Add property `voteCount` and `votes`.
+		comment.voteCount = commentVotes.map(vote => vote.value).sum();
+		comment.votes = commentVotes;
+
+		// Add property `displayName` for commenter’s display name.
+		comment.displayName = users.find(user => user.name === comment.username).displayName;
+	}
+
+	res.json(noteComments);
+});
 
 io.on('connection', socket => {
 	let addViewTimeout;
@@ -358,7 +385,10 @@ io.on('connection', socket => {
 
 	socket.on('set--user', async (name, password) => {
 		const users = await db.get('users');
-		users.push(new EN.Account({ name, password }));
+
+		const user = new Kyanit.User(name, password);
+		users.push(user);
+
 		await db.set('users', users);
 	});
 
@@ -366,194 +396,221 @@ io.on('connection', socket => {
 		const users = await db.get('users');
 		const user = users.find(user => user.name === name);
 		const isCorrect = (user?.password === password);
+
 		callback(isCorrect);
 	});
 
 	socket.on('get--user-password', async (name, cookiePassword, callback) => {
 		const users = await db.get('users');
+
+		/** @type {Kyanit.User} */
 		const user = users.find(user => user.name === name);
-		if(user?.password === cookiePassword) callback(user?.password);
+		if(!user) return;
+
+		if(user.password === cookiePassword) callback(user.password);
 	});
 
 	socket.on('set--user-information', async (name, { displayName, about, password }) => {
 		const users = await db.get('users');
+
+		/** @type {Kyanit.User} */
 		const user = users.find(user => user.name === name);
+
+		// Empty string means the user inputs nothing, (inputs a literal '').
+		// Undefined means the user didn’t input anything, (didn’t change anything).
 
 		if(displayName === '') user.displayName = name;
 		else if(displayName !== undefined) user.displayName = displayName;
+
 		if(about !== undefined) user.about = about;
+
 		if(password) user.password = password;
 
 		await db.set('users', users);
 	});
 
-	socket.on('set--note', async (name, title, content, unlisted, thumbnailURL, keywords, callback) => {
-		const users = await db.get('users');
-		const user = users.find(user => user.name === name);
-		const noteIDs = users.map(user => user.notes).flat(1).map(note => note.id);
+	socket.on('set--note', async (title, content, keywords, authorName, thumbnailURL, unlisted, callback) => {
+		const notes = await db.get('notes');
+
+		const noteIDs = notes.map(note => note.id);
 
 		let id = crypto.randomUUID();
+
+		// If the ID is taken, loop until a unique ID is found.
 		while(noteIDs.includes(id)) {
 			id = crypto.randomUUID();
 		}
 
-		const note = new EN.Note({
-			title, content, id, keywords, authorName: name, unlisted, thumbnailURL
-		});
+		const note = new Kyanit.Note(id, title, content, keywords, authorName, thumbnailURL, unlisted);
+		notes.push(note);
 
-		user.notes.push(note);
-
-		await db.set('users', users);
+		await db.set('notes', notes);
 
 		callback(id);
 	});
 
-	socket.on('edit--note', async (name, title, content, unlisted, thumbnailURL, keywords, id, callback) => {
-		const users = await db.get('users');
-		const user = users.find(user => user.name === name);
-		const note = user.notes.find(note => note.id === id);
+	socket.on('edit--note', async (id, title, content, keywords, authorName, thumbnailURL, unlisted, callback) => {
+		const notes = await db.get('notes');
 
-		note.title = parseString(title);
+		/** @type {Kyanit.Note} */
+		const note = notes.find(note => note.id === id);
+
+		note.title = title;
 		note.content = content;
 		note.unlisted = unlisted;
 		note.thumbnailURL = thumbnailURL
 		note.keywords = keywords;
 		note.lastEdited = new Date().getTime();
 
-		await db.set('users', users);
+		await db.set('notes', notes);
 
 		callback(id);
 	});
 
 	socket.on('delete--note', async (name, password, noteId, callback) => {
-		const users = await db.get('users');
-		const user = users.find(user => user.name === name);
-		if(!user) return;
-		if(user.name !== name || user.password !== password) return;
-
-		const note = user.notes.find(note => note.id === noteId);
+		const notes = await db.get('notes');
+		/** @type {Kyanit.Note} */
+		const note = notes.find(note => note.id === noteId);
 		if(!note) return;
 
-		const noteIndex = user.notes.indexOf(note);
-		user.notes.splice(noteIndex, 1);
+		// Check if the user is authorized.
+		const users = await db.get('users');
+		/** @type {Kyanit.User} */
+		const user = users.find(user => user.name === name);
+		if(!user) return;
+		if(user.password !== password) return;
 
-		await db.set('users', users);
+		// Delete the note’s comments.
+		/** @type {Kyanit.Comment[]} */
+		let comments = await db.get('comments');
+		comments = comments.filter(comment => comment.noteId !== noteId); // Filters different note ID, the same note ID will be “deleted”.
+
+		// Delete the comments’ votes.
+		/** @type {Kyanit.CommentVote[]} */
+		let commentVotes = await db.get('commentVotes');
+		commentVotes = commentVotes.filter(commentVote => commentVote.noteId !== noteId);
+
+		// Delete the specified note.
+		const noteIndex = notes.indexOf(note);
+		notes.splice(noteIndex, 1);
+
+		await db.set('notes', notes);
+		await db.set('comments', comments);
+		await db.set('commentVotes', commentVotes);
 
 		callback();
 	});
 
-	// COMMENTS
+	// COMMENTS’ SOCKETS
 	socket.on('connect-to-note', noteId => {
 		socket.join(`note/${noteId}`)
 	});
 
-	socket.on('set--comment', async (noteId, noteAuthorName, commenterUsername, content, parentId, callback) => {
-		const users = await db.get('users');
-		const author = users.find(user => user.name === noteAuthorName);
-		const commenter = users.find(user => user.name === commenterUsername);
-		const note = author.notes.find(note => note.id === noteId);
-		const comment = new EN.Comment({ username: commenterUsername, content, id: crypto.randomUUID(), parentId });
+	socket.on('set--comment', async (noteId, commenterName, content, parentId, callback) => {
+		/** @type {Kyanit.User} */
+		const commenter = (await db.get('users')).find(user => user.name === commenterName);
 
-		note.comments.push(comment);
+		const comments = await db.get('comments');
 
-		await db.set('users', users);
+		const commentIDs = comments.map(comment => comment.id);
+		let id = crypto.randomUUID();
+		while(commentIDs.includes(id)) {
+			id = crypto.randomUUID();
+		}
+
+		const comment = new Kyanit.Comment(id, noteId, commenterName, DOMPurify.sanitize(content), parentId);
+
+		comments.push(comment);
+
+		await db.set('comments', comments);
 
 		comment.displayName = commenter.displayName;
+		comment.votes = []; comment.voteCount = 0;
 		io.to(`note/${noteId}`).emit('send--comment-added', comment);
 		callback();
 	});
 
 	socket.on('delete--comment', async (noteId, commentId, callback) => {
-		const users = await db.get('users');
-		const user = users.find(user => {
-			if(user.notes.find(note => note.id === noteId)) return true;
-		});
-		const note = user.notes.find(note => note.id === noteId);
-		const comment = note.comments.find(comment => comment.id === commentId);
+		const comments = await db.get('comments');
+		const comment = comments.find(comment => comment.id === commentId);
 
-		note.comments.splice(
-			note.comments.indexOf(comment),
-			1
-		);
+		// Deletes the comment.
+		comments.splice(comments.indexOf(comment), 1);
 
-		const commentVotes = await db.get('commentVotes');
-		const filteredCommentVotes = commentVotes.filter(commentVote => commentVote.commentId === commentId);
+		// Delete the comment’s votes.
+		let commentVotes = await db.get('commentVotes');
+		commentVotes = commentVotes.filter(commentVote => commentVote.commentId !== commentId);
 
-		for(let i = 0; i < filteredCommentVotes.length; i++) {
-			const commentVote = filteredCommentVotes[i];
-			const commentVoteIndex = commentVotes.indexOf(commentVote);
+		// Delete the comment’s children (or replies, or threads, or whatever).
+		let parentIDs = [ commentId ];
+		// Reverse and increment from the last element so the indexing won’t be fucked up while looping. (The indexing is still same as normal looping.)
+		comments.reverse(); 
+		for(let i = comments.length - 1; i >= 0; i--) {
+			const comment = comments[i];
 
-			commentVotes.splice(commentVoteIndex, 1)
-		}
-
-		let parents = [ commentId ];
-		note.comments.reverse();
-
-		for(let i = note.comments.length - 1; i >= 0; i--) {
-			const comment = note.comments[i];
-
+			// If the comment is the root, don’t do anything.
 			if(comment.parentId === null) continue;
-			if(parents.includes(comment.parentId)) {
-				note.comments.splice(
-					note.comments.indexOf(comment),
-					1
-				);
 
-				parents.push(comment.id);
+			// If the comment’s parent is in `parentIDs`,
+			if(parentIDs.includes(comment.parentId)) {
+				// push the comment ID to `parentIDs`,
+				parentIDs.push(comment.id);
 
-				const filteredCommentVotes = commentVotes.filter(commentVote => commentVote.commentId === comment.id);
+				// delete the comment,
+				comments.splice(comments.indexOf(comment), 1);
 
-				for(let i = 0; i < filteredCommentVotes.length; i++) {
-					const commentVote = filteredCommentVotes[i];
-					const commentVoteIndex = commentVotes.indexOf(commentVote);
-
-					commentVotes.splice(commentVoteIndex, 1)
-				}
+				// and delete the comment’s votes.
+				commentVotes = commentVotes.filter(commentVote => commentVote.commentId !== comment.id);
 			}
 		}
+		comments.reverse();
 
-		note.comments.reverse();
+		await db.set('comments', comments);
+		await db.set('commentVotes', commentVotes);
 
 		callback(commentId);
 		io.to(`note/${noteId}`).emit('send--comment-deleted', commentId);
-
-		await db.set('users', users);
-		await db.set('commentVotes', commentVotes);
 	});
 
-	socket.on('set--comment-vote', async (noteId, commentId, voterUsername, vote, callback = () => {}) => {
-		/*
-		 * vote: [-1, 1]
-		 * voterUsername: username of the voter
-		 */
-		if(vote <= -1) vote = -1;
-		else if(vote >= 1) vote = 1;
+	socket.on('set--comment-vote', async (noteId, commentId, voterName, value, callback = () => {}) => {
+		if(value <= -1) value = -1;
+		else if(value >= 1) value = 1;
 		else return;
 
+		// If the voter doesn’t exist, return.
+		const user = (await db.get('users')).find(user => user.name === voterName);
+		if(!user) return;
+
+		/** @type {Kyanit.CommentVote[]} */
 		const commentVotes = await db.get('commentVotes');
-		const commentVote = commentVotes.find(
-													commentVote => commentVote.noteId === noteId
-																			&& commentVote.commentId === commentId
-																			&& commentVote.voterUsername === voterUsername)
+		const commentVote = commentVotes.find(commentVote => 
+			commentVote.noteId === noteId
+			&& commentVote.commentId === commentId
+			&& commentVote.voterName === voterName);
 
-		if(commentVote?.vote === vote) {
-			// delete the vote
+		if(!commentVote) {
+			// Creates a vote if there's no vote yet.
+			const commentVote = new Kyanit.CommentVote(noteId, commentId, voterName, value);
+			commentVotes.push(commentVote);
+		} else if(commentVote.value === value) {
+			// If the user clicks vote again, the vote is deleted.
 			const commentVoteIndex = commentVotes.indexOf(commentVote);
-
 			commentVotes.splice(commentVoteIndex, 1);
+		} else {
+			// Modify the vote value if the vote already exists.
+			commentVote.value = value;
 		}
-		else if(commentVote) commentVote.vote = vote;
-		else commentVotes.push({ noteId, commentId, voterUsername, vote });
 
-		const currentCount = commentVotes.filter(commentVote => commentVote.noteId === noteId && commentVote.commentId === commentId).map(commentVote => commentVote.vote).sum();
-
-		callback(currentCount);
+		const currentCount = commentVotes
+			.filter(commentVote => commentVote.commentId === commentId) // Selects the vote that has the comment ID.
+			.map(commentVote => commentVote.value) // Map it to only the vote value. [{}, {}, ...] -> [-1, 1, ...]
+			.sum();
 
 		await db.set('commentVotes', commentVotes);
 
+		callback(currentCount);
 		io.to(`note/${noteId}`).emit('send--comment-voted', commentId, currentCount);
 	});
-	// --------
 
 	socket.on('get--user-to-display-name', async () => {
 		const users = await db.get('users');
@@ -616,10 +673,6 @@ async function verifyUser(name, verified) {
 	user.verified = verified;
 
 	await db.set('users', users);
-}
-
-function parseString(string) {
-	return string?.replace(/"/g, '$doublequote').replace(/\\/g, '$backslash');
 }
 
 async function isLoggedIn(cookies) {

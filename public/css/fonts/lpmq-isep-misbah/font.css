@@ -3,10 +3,3 @@
 	src: url('/css/fonts/lpmq-isep-misbah/regular.woff') format('woff');
   unicode-range: U+0600-060B, U+060D-06FF, U+FDFA-FDFB;
 }
-
-@font-face {
-  font-family: 'Amiri';
-  font-weight: 400;
-  src: url('https://fonts.gstatic.com/s/amiri/v27/J7aRnpd8CGxBHpUrtLMA7w.woff2') format('woff2');
-  unicode-range: U+600-6FF, U+FDFA-FDFB;
-}

@@ -1,61 +1,31 @@
-class Comment {
-  constructor({
-    username,
-    content,
-    parentId,
-    id
-  }) {
-    this.username = username;
-    this.content = content;
-    this.id = id;
-    this.parentId = parentId;
-    this.time = new Date().getTime();
-  }
-}
-
 class Note {
-	constructor({
-		title,
-		content,
-		id,
-		keywords,
-		authorName,
-		thumbnailURL,
-		unlisted
-	}) {
+	/**
+	 * @param {string} id - Unique UUID
+	 * @param {string} title
+	 * @param {string} content
+	 * @param {string[]} keywords
+	 * @param {string} authorName
+	 * @param {string | null} thumbnailURL - Thumbnail’s URL
+	 * @param {boolean} unlisted - Is this note won’t be seen by other users?
+	 */
+	constructor(id, title, content, keywords, authorName, thumbnailURL, unlisted) {
+		this.id = id;
 		this.title = title;
 		this.content = content;
-		this.id = id;
-		this.keywords = keywords || [];
+		this.keywords = keywords;
 		this.authorName = authorName;
 		this.thumbnailURL = thumbnailURL;
-		
-		this.published = new Date().getTime();
-    this.lastEdited = null;
-		this.unlisted = unlisted ?? false;
-		this.views = 0;
-    this.comments = [];
-	}
-
-	setTitle(title) {
-		this.title = title;
-	}
-
-	setContent(content) {
-		this.content = content;
-	}
-
-	setKeywords(keywords) {
-		this.keywords = keywords;
-	}
-
-	setUnlisted(unlisted = false) {
 		this.unlisted = unlisted;
+
+		/** @type {number} - Time of publish in milliseconds */
+		this.published = new Date().getTime();
+
+		/** @type {number|null} - `null` when the note hasn’t been edited, *edit time in milliseconds* otherwise */
+    this.lastEdited = null;
+
+		/** @type {number} */
+		this.views = 0;
 	}
-  
-  setComment(username, content) {
-    this.comments.push(new Comment({ username, content }));
-  }
 }
 
-module.exports = { Note, Comment };
+module.exports = { Note };

@@ -15,41 +15,24 @@
 	/>
   <link rel="shortcut icon" type="image/png" href="/favicon.ico">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    
+
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/index.css">
 	<link rel="stylesheet" href="/css/dashboard.css">
 	<script src="/main.js"></script>
 	<script src="/js/modules/jsh.js"></script>
-    
+
   <!-- MATHJAX -->
-	<script>
-		MathJax = {
-			loader: { load: [ 'output/svg' ] },
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']]
-      },
-			options: {
-				ignoreHtmlClass: 'code-text',
-        renderActions: {
-          addMenu: []
-        }
-			},
-      chtml: { mtextInheritFont: true },
-      svg: { mtextInheritFont: true },
-      showMathMenu: false
-		}
-	</script>
-	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="/js/mathjax-options.js"></script>
 	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
-  <% if(!$isLoggedIn || $cookies.username !== user.name) { user.notes = user.notes.filter(note => !note.unlisted) } %>
   <% const absoluteDate = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric', weekday: 'long', hourCycle: 'h23', hour: 'numeric', minute: 'numeric', second: 'numeric' }); %>
+  <% const isUserOwner = $isLoggedIn && user.name === $cookies.username; %>
 	<main>
 		<div class="information">
-      <% if($isLoggedIn && user.name === $cookies.username) { %>
+      <% if(isUserOwner) { %>
         <div class="prompt--input">
           <label class="prompt--input--label" for="displayName">Display Name</label>
           <input id="displayName" type="text" placeholder="Display Name" autocomplete="false" oninput="javascript:addSavePopup()" value="<%- user.displayName %>" />
@@ -62,7 +45,7 @@
         <input id="displayName" type="text" autocomplete="false" value="<%- user.displayName %>" disabled />
       <% } %>
 			<div id="userName">@<%= user.name %> <% if(user.verified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></div>
-			<div id="noteCount"><%= user.notes.length %> notes</div>
+			<div id="noteCount"><%= notes.length %> notes</div>
 		</div>
 		<div id="tabs" data-opening="<%- page %>">
 			<div id="tab">
@@ -71,13 +54,13 @@
 			</div>
 			<div id="tab-content">
         <div id="tab-content--notes">
-          <% for(let i = 0; i < user.notes.length; i++) { %>
-            <% const note = user.notes[i]; %>
+          <% for(let i = 0; i < notes.length; i++) { %>
+            <% const note = notes[i]; %>
             <div class="note ripple"<% if(note.thumbnailURL) { %> style="--thumbnail: url(<%- note.thumbnailURL %>);"<% } %>>
               <a href="/note/<%- note.id %>"></a>
               <div class="note--title"><%= note.title %></div>
               <div class="note--information">
-                <span class="note--information--author"><%= user.displayName %> <% if(user.verified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></span>
+                <!-- <span class="note--information--author"><%= user.displayName %> <% if(user.verified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></span> -->
                 <span class="note--information--views"><% if (note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views.toLocaleString() %> views</span>
                 <% if(!note.lastEdited) { %>
                   <span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(note.published) %></span>
@@ -92,27 +75,40 @@
               </div>
             </div>
           <% } %>
-          <% if($isLoggedIn && user.name === $cookies.username) { %>
+          <% if(isUserOwner) { %>
             <a href="/create" id="add-note-button"><i class="fa-solid fa-pen-nib"></i> Create</a>
           <% } %>
         </div>
         <div id="tab-content--about">
           <div id="bio" class="markdown-document">
-            <% if($isLoggedIn && user.name === $cookies.username) { %>
+            <% if(isUserOwner) { %>
               <div id="bio--edit"><i class="fa-solid fa-pen"></i> Edit About Page</div>
             <% } %>
             <%- about %>
           </div>
           <div id="information">
             <div id="registered"><%= absoluteDate.format(new Date(user.registered)) %></div>
-            <div id="noteCount"><%= user.notes.length %> notes</div>
+            <div id="noteCount"><%= notes.length %> notes</div>
           </div>
         </div>
       </div>
 		</div>
 	</main>
 </body>
-<% if($isLoggedIn && $cookies.username === user.name) { %>
+<script>
+  let page;
+  
+  $('#tab--notes').onclick = () => {
+    window.history.replaceState(null, '', `/user/<%- user.name %>/notes`);
+    $('#tabs').dataset.opening = 'notes';
+  }
+  
+  $('#tab--about').onclick = () => {
+    window.history.replaceState(null, '', `/user/<%- user.name %>/about`);
+    $('#tabs').dataset.opening = 'about';
+  }
+</script>
+<% if(isUserOwner) { %>
   <script>
     ui.promptAbout = async () => {
       const id = crypto.randomUUID();
@@ -120,44 +116,45 @@
       const prompt = new JSH('div', null, { class: 'prompt prompt-about' }).appendTo(promptWrapper);
       new JSH('div', 'Edit Your About Page', { class: 'prompt--title' }).appendTo(prompt);
 
-      /* { */
       const inputWrapper = new JSH('div', null, { class: 'prompt--input', id: 'prompt-about-input-wrapper' }).appendTo(prompt);
-      
+
       const aboutEditorPre = new JSH('pre', null, { class: 'language-md' }).appendTo(inputWrapper);
-      const aboutEditorView = new JSH('code', null, { class: 'language-md', id: 'about-editor-view' }).appendTo(aboutEditorPre)
-  
+      const aboutEditorView = new JSH('code', null, { class: 'language-md', id: 'about-editor-view' }).appendTo(aboutEditorPre);
+
       const defaultEditorInput = <%- JSON.stringify(user.about) %>;
-      
+
       const aboutEditorInput = new JSH('div', null, {
         id: 'about-editor-input',
         spellcheck: false,
         contenteditable: 'plaintext-only'
       }).appendTo(inputWrapper);
-      
+
       aboutEditorInput.textContent = defaultEditorInput;
-      
+
       updateEditor();
       aboutEditorInput.oninput = updateEditor;
+
       async function updateEditor() {
         console.log(aboutEditorInput.innerHTML);
         aboutEditorView.innerHTML = aboutEditorInput.innerHTML;
         Prism.highlightElement(aboutEditorView);
       }
-      /* } */      
+
 
       const buttonWrapper = new JSH('div', null, { class: 'prompt--button' }).appendTo(prompt);
       const confirmButton = new JSH('div', '<i class="fa-solid fa-check"></i> OK', { class: 'prompt--confirm' }).appendTo(buttonWrapper);
       addRipple(confirmButton);
+
       const cancelButton = new JSH('div', '<i class="fa-solid fa-xmark"></i> Cancel', { class: 'prompt--cancel' }).appendTo(buttonWrapper);
       addRipple(cancelButton);
 
-      
+
       let result = defaultEditorInput;
 
       await new Promise(resolve => {
         confirmButton.onclick = event => {
           result = aboutEditorInput.innerText;
-          
+
           close();
           resolve();
         };
@@ -177,28 +174,28 @@
 
       return result;
     };
-    
+
     $('#bio--edit').onclick = async () => {
       $('script[src="/js/modules/prism.min.js"]') || new JSH('script', null, { 'data-manual': '', src: '/js/modules/prism.min.js' }).appendTo(document.head);
-      
+
       const about = await ui.promptAbout();
-      
+
       socket.emit('set--user-information', '<%- user.name %>', { about });
     }
-    
+
     function addSavePopup() {
       const saveEdit = $('#saveEdit') || new JSH('div', '<i class="fa-regular fa-floppy-disk"></i> Save changes', { id: 'saveEdit' }).appendTo($('body'));
-      
+
       saveEdit.classList = 'opened';
       saveEdit.onclick = save;
     }
 
     function save(event) {
       const saveEdit = $('#saveEdit');
-      
+
       saveEdit.classList = 'closed';
       saveEdit.onclick = null;
-      
+
       const password = $('#password').value;
       const displayName = $('#displayName').value;
 
@@ -206,17 +203,4 @@
     }
   </script>
 <% } %>
-<script>
-  let page;
-  
-  $('#tab--notes').onclick = () => {
-    window.history.replaceState(null, '', `/user/<%- user.name %>/notes`);
-    $('#tabs').dataset.opening = 'notes';
-  }
-  
-  $('#tab--about').onclick = () => {
-    window.history.replaceState(null, '', `/user/<%- user.name %>/about`);
-    $('#tabs').dataset.opening = 'about';
-  }
-</script>
 </html>

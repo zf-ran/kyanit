@@ -67,230 +67,235 @@ function decodeUserInformation(userInformation) {
 	);
 }
 
-function parseString(string) {
-	return string.replaceAll('"', '$doublequote').replaceAll('\\', '$backslash');
-}
-function renderString(string) {
-	return string.replaceAll('$doublequote', '"').replaceAll('$backslash', '\\').replaceAll('`-', '&shy;');
-}
 function escapeHTML(string) {
-  if(!string) return null;
+	if(!string) return null;
 	const element = document.createElement('p');
 	element.innerText = string;
-  element.remove();
+	element.remove();
 	return element.innerHTML;
 }
 
 function relativeTime(date) {
-  const now = new Date().getTime();
-  let option = { style: 'long', numeric: 'always' };
-  let args = [];
-  let timeDifference = date - now;
+	const now = new Date().getTime();
+	let option = { style: 'long', numeric: 'always' };
+	let args = [];
+	let timeDifference = date - now;
 
-  if(Math.abs(timeDifference) > 3.154e+10)
-    args = [Math.floor(timeDifference / 3.154e+10), 'year'];
+	if(Math.abs(timeDifference) > 3.154e+10)
+		args = [Math.floor(timeDifference / 3.154e+10), 'year'];
 
-  else if(Math.abs(timeDifference) > 2.628e+9)
-    args = [Math.floor(timeDifference / 2.628e+9), 'month'];
+	else if(Math.abs(timeDifference) > 2.628e+9)
+		args = [Math.floor(timeDifference / 2.628e+9), 'month'];
 
-  else if(Math.abs(timeDifference) > 8.64e+7)
-    args = [Math.floor(timeDifference / 8.64e+7), 'day'];
+	else if(Math.abs(timeDifference) > 8.64e+7)
+		args = [Math.floor(timeDifference / 8.64e+7), 'day'];
 
-  else if(Math.abs(timeDifference) > 3.6e+6)
-    args = [Math.floor(timeDifference / 3.6e+6), 'hour'];
+	else if(Math.abs(timeDifference) > 3.6e+6)
+		args = [Math.floor(timeDifference / 3.6e+6), 'hour'];
 
-  else if(Math.abs(timeDifference) > 6e+4)
-    args = [Math.floor(timeDifference / 6e+4), 'minute'];
+	else if(Math.abs(timeDifference) > 6e+4)
+		args = [Math.floor(timeDifference / 6e+4), 'minute'];
 
-  else if(Math.abs(timeDifference) > 1000)
-    args = [Math.floor(timeDifference / 1000), 'second'];
+	else if(Math.abs(timeDifference) > 1000)
+		args = [Math.floor(timeDifference / 1000), 'second'];
 
-  else args = [timeDifference, 'millisecond'];
+	else args = [timeDifference, 'millisecond'];
 
-  return new Intl.RelativeTimeFormat('en-us', option).format(...args);
+	return new Intl.RelativeTimeFormat('en-us', option).format(...args);
 }
 
+Array.prototype.sum = function() {
+	let sum = 0;
+	
+	for(let i = 0; i < this.length; i++) {
+		if(isNaN(this[i])) throw TypeError(`Element at index ${i} (${this[i]}) is not a number (NaN)`);
+		sum += this[i];
+	}
+
+	return sum;
+};
+
 const ui = {
-  alert({ title, content, timeMs }) {
-    if(timeMs === null || isNaN(timeMs)) timeMs = 5_000;
-    const id = crypto.randomUUID();
-    const alertWrapper = new JSH('div', null, { id: `alert_${id}`, class: 'alert', 'data-time': `${timeMs}` }).appendTo(document.body);
-    alertWrapper.style.setProperty('--time', `${timeMs}ms`)
-    if(title) { const alertTitle = new JSH('div', title, { class: 'alert--title' }).appendTo(alertWrapper); }
-    const alertContent = new JSH('div', content, { class: 'alert--content' }).appendTo(alertWrapper);
+	alert({ title, content, timeMs }) {
+		if(timeMs === null || isNaN(timeMs)) timeMs = 5_000;
+		const id = crypto.randomUUID();
+		const alertWrapper = new JSH('div', null, { id: `alert_${id}`, class: 'alert', 'data-time': `${timeMs}` }).appendTo(document.body);
+		alertWrapper.style.setProperty('--time', `${timeMs}ms`)
+		if(title) { const alertTitle = new JSH('div', title, { class: 'alert--title' }).appendTo(alertWrapper); }
+		const alertContent = new JSH('div', content, { class: 'alert--content' }).appendTo(alertWrapper);
 
-    let timeoutId;
-    if(timeMs !== 0) timeoutId = setTimeout(close, timeMs);
-    alertWrapper.onclick = close;
+		let timeoutId;
+		if(timeMs !== 0) timeoutId = setTimeout(close, timeMs);
+		alertWrapper.onclick = close;
 
-    function close() {
-      alertWrapper.classList.add('removed');
-      alertWrapper.addEventListener('transitionend', () => {
-        alertWrapper.remove();
-      });
+		function close() {
+			alertWrapper.classList.add('removed');
+			alertWrapper.addEventListener('transitionend', () => {
+				alertWrapper.remove();
+			});
 
-      clearTimeout(timeoutId);
-    }
+			clearTimeout(timeoutId);
+		}
 
-    return { id };
-  },
-  async prompt({ title, inputs }) {
-    const id = crypto.randomUUID();
+		return { id };
+	},
+	async prompt({ title, inputs }) {
+		const id = crypto.randomUUID();
 
-    const promptWrapper = new JSH('div', null, { id: `prompt_${id}`, class: 'prompt-wrapper' }).appendTo(document.body);
+		const promptWrapper = new JSH('div', null, { id: `prompt_${id}`, class: 'prompt-wrapper' }).appendTo(document.body);
 
-    const prompt = new JSH('div', null, { class: 'prompt' }).appendTo(promptWrapper);
-    new JSH('div', title, { class: 'prompt--title' }).appendTo(prompt);
+		const prompt = new JSH('div', null, { class: 'prompt' }).appendTo(promptWrapper);
+		new JSH('div', title, { class: 'prompt--title' }).appendTo(prompt);
 
-    const inputsWrapper = new JSH('div', null, { class: 'prompt--inputs' }).appendTo(prompt);
+		const inputsWrapper = new JSH('div', null, { class: 'prompt--inputs' }).appendTo(prompt);
 
-    for(let i = 0; i < inputs.length; i++) {
-      const input = inputs[i];
+		for(let i = 0; i < inputs.length; i++) {
+			const input = inputs[i];
 
-      const inputWrapper = new JSH('div', null, { class: 'prompt--input' }).appendTo(inputsWrapper);
-      new JSH('label', input.label, { class: 'prompt--input--label', for: `input_${input.id}` }).appendTo(inputWrapper);
-      let inputElement;
+			const inputWrapper = new JSH('div', null, { class: 'prompt--input' }).appendTo(inputsWrapper);
+			new JSH('label', input.label, { class: 'prompt--input--label', for: `input_${input.id}` }).appendTo(inputWrapper);
+			let inputElement;
 
-      if(input.type === 'text') {
-        inputElement = new JSH('input', null, {
-          type: 'text',
-          placeholder: input.label,
-          id: `input_${input.id}`,
-          value: input.default ?? ''
-        }).appendTo(inputWrapper);
-      } else if(input.type === 'number') {
-        inputElement = new JSH('input', null, {
-          type: 'number',
-          placeholder: input.label,
-          id: `input_${input.id}`,
-          value: input.default ?? ''
-        }).appendTo(inputWrapper);
+			if(input.type === 'text') {
+				inputElement = new JSH('input', null, {
+					type: 'text',
+					placeholder: input.label,
+					id: `input_${input.id}`,
+					value: input.default ?? ''
+				}).appendTo(inputWrapper);
+			} else if(input.type === 'number') {
+				inputElement = new JSH('input', null, {
+					type: 'number',
+					placeholder: input.label,
+					id: `input_${input.id}`,
+					value: input.default ?? ''
+				}).appendTo(inputWrapper);
 
-        if(input.max) inputElement.max = input.max;
-        if(input.min) inputElement.min = input.min;
+				if(input.max) inputElement.max = input.max;
+				if(input.min) inputElement.min = input.min;
 
-        inputElement.oninput = () => {
-          if(inputElement.value === '') return;
-          if(inputElement.max && parseFloat(inputElement.value) > inputElement.max) inputElement.value = inputElement.max;
-          if(inputElement.min && parseFloat(inputElement.value) < inputElement.min) inputElement.value = inputElement.min;
-        };
-      }
+				inputElement.oninput = () => {
+					if(inputElement.value === '') return;
+					if(inputElement.max && parseFloat(inputElement.value) > inputElement.max) inputElement.value = inputElement.max;
+					if(inputElement.min && parseFloat(inputElement.value) < inputElement.min) inputElement.value = inputElement.min;
+				};
+			}
 
-      if(input.required) inputElement.required = true;
-    }
+			if(input.required) inputElement.required = true;
+		}
 
-    const buttonWrapper = new JSH('div', null, { class: 'prompt--button' }).appendTo(prompt);
-    const confirmButton = new JSH('div', '<i class="fa-solid fa-check"></i> OK', { class: 'prompt--confirm' }).appendTo(buttonWrapper);
-    addRipple(confirmButton);
-    const cancelButton = new JSH('div', '<i class="fa-solid fa-xmark"></i> Cancel', { class: 'prompt--cancel' }).appendTo(buttonWrapper);
-    addRipple(cancelButton);
+		const buttonWrapper = new JSH('div', null, { class: 'prompt--button' }).appendTo(prompt);
+		const confirmButton = new JSH('div', '<i class="fa-solid fa-check"></i> OK', { class: 'prompt--confirm' }).appendTo(buttonWrapper);
+		addRipple(confirmButton);
+		const cancelButton = new JSH('div', '<i class="fa-solid fa-xmark"></i> Cancel', { class: 'prompt--cancel' }).appendTo(buttonWrapper);
+		addRipple(cancelButton);
 
-    let result;
+		let result;
 
-    await new Promise(resolve => {
-      confirmButton.onclick = event => {
-        result = {};
-        for(let i = 0; i < inputs.length; i++) {
-          const input = inputs[i];
-          if(input.required && !$(`#input_${input.id}`).value) {
-            this.alert({ title: 'Error', content: `${input.label} can’t be empty` });
-            return;
-          }
-          result[input.id] = $(`#input_${input.id}`).value;
-        }
-        close();
-        resolve();
-      };
+		await new Promise(resolve => {
+			confirmButton.onclick = event => {
+				result = {};
+				for(let i = 0; i < inputs.length; i++) {
+					const input = inputs[i];
+					if(input.required && !$(`#input_${input.id}`).value) {
+						this.alert({ title: 'Error', content: `${input.label} can’t be empty` });
+						return;
+					}
+					result[input.id] = $(`#input_${input.id}`).value;
+				}
+				close();
+				resolve();
+			};
 
-      cancelButton.onclick = event => {
-        result = {};
-        for(let i = 0; i < inputs.length; i++) {
-          const input = inputs[i];
-          result[input.id] = null;
-        }
-        close();
-        resolve();
-      }
-    });
+			cancelButton.onclick = event => {
+				result = {};
+				for(let i = 0; i < inputs.length; i++) {
+					const input = inputs[i];
+					result[input.id] = null;
+				}
+				close();
+				resolve();
+			}
+		});
 
-    function close() {
-      promptWrapper.classList.add('removed');
-      promptWrapper.addEventListener('transitionend', () => {
-        promptWrapper.remove();
-      });
-    }
+		function close() {
+			promptWrapper.classList.add('removed');
+			promptWrapper.addEventListener('transitionend', () => {
+				promptWrapper.remove();
+			});
+		}
 
-    return result;
-  },
-  async confirm({ title, content }) {
-    const id = crypto.randomUUID();
-    const confirmWrapper = new JSH('div', null, { id: `confirm_${id}`, class: 'confirm-wrapper' }).appendTo(document.body);
+		return result;
+	},
+	async confirm({ title, content }) {
+		const id = crypto.randomUUID();
+		const confirmWrapper = new JSH('div', null, { id: `confirm_${id}`, class: 'confirm-wrapper' }).appendTo(document.body);
 
-    const confirm = new JSH('div', null, { class: 'confirm' }).appendTo(confirmWrapper);
+		const confirm = new JSH('div', null, { class: 'confirm' }).appendTo(confirmWrapper);
 
-    new JSH('div', title, { class: 'confirm--title' }).appendTo(confirm);
-    new JSH('div', content, { class: 'confirm--content' }).appendTo(confirm);
+		new JSH('div', title, { class: 'confirm--title' }).appendTo(confirm);
+		new JSH('div', content, { class: 'confirm--content' }).appendTo(confirm);
 
-    const buttonWrapper = new JSH('div', null, { class: 'prompt--button' }).appendTo(confirm);
-    const confirmButton = new JSH('div', '<i class="fa-solid fa-check"></i> OK', { class: 'prompt--confirm ripple' }).appendTo(buttonWrapper);
-    addRipple(confirmButton);
-    const cancelButton = new JSH('div', '<i class="fa-solid fa-xmark"></i> Cancel', { class: 'prompt--cancel ripple' }).appendTo(buttonWrapper);
-    addRipple(cancelButton);
+		const buttonWrapper = new JSH('div', null, { class: 'prompt--button' }).appendTo(confirm);
+		const confirmButton = new JSH('div', '<i class="fa-solid fa-check"></i> OK', { class: 'prompt--confirm ripple' }).appendTo(buttonWrapper);
+		addRipple(confirmButton);
+		const cancelButton = new JSH('div', '<i class="fa-solid fa-xmark"></i> Cancel', { class: 'prompt--cancel ripple' }).appendTo(buttonWrapper);
+		addRipple(cancelButton);
 
-    let result;
-    await new Promise(resolve => {
-      confirmButton.onclick = () => {
-        result = true;
-        close();
-        resolve();
-      };
+		let result;
+		await new Promise(resolve => {
+			confirmButton.onclick = () => {
+				result = true;
+				close();
+				resolve();
+			};
 
-      cancelButton.onclick = () => {
-        result = false;
-        close();
-        resolve();
-      };
-    });
+			cancelButton.onclick = () => {
+				result = false;
+				close();
+				resolve();
+			};
+		});
 
-    function close() {
-      confirmWrapper.classList.add('removed');
-      confirmWrapper.addEventListener('transitionend', () => {
-        confirmWrapper.remove();
-      });
-    }
+		function close() {
+			confirmWrapper.classList.add('removed');
+			confirmWrapper.addEventListener('transitionend', () => {
+				confirmWrapper.remove();
+			});
+		}
 
-    return result;
-  }
+		return result;
+	}
 }
 
 function addRipple(element) {
-  const rippleSpeed = 600; // pixels per second
-  element.classList.add('ripple');
+	const rippleSpeed = 600; // pixels per second
+	element.classList.add('ripple');
 
-  element.addEventListener('mousedown', function (event) {
-    const ripple = new JSH('span', null, { class: 'ripple-circle' }).appendTo(this);
-    const rect = element.getBoundingClientRect();
-    const position = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    };
+	element.addEventListener('mousedown', function (event) {
+		const ripple = new JSH('span', null, { class: 'ripple-circle' }).appendTo(this);
+		const rect = element.getBoundingClientRect();
+		const position = {
+			x: event.clientX - rect.left,
+			y: event.clientY - rect.top
+		};
 
-    const size = 2 * Math.max(rect.width, rect.height);
-    ripple.style.setProperty('--time', (size / rippleSpeed) + 's');
-    ripple.style.setProperty('--size', size + 'px');
-    ripple.style.top = position.y + 'px';
-    ripple.style.left = position.x + 'px';
+		const size = 2 * Math.max(rect.width, rect.height);
+		ripple.style.setProperty('--time', (size / rippleSpeed) + 's');
+		ripple.style.setProperty('--size', size + 'px');
+		ripple.style.top = position.y + 'px';
+		ripple.style.left = position.x + 'px';
 
-    ripple.onanimationend = () => {
-      ripple?.remove();
-    }
-  });
+		ripple.onanimationend = () => {
+			ripple?.remove();
+		}
+	});
 }
 
 window.onload = () => {
-  const buttons = $$('.ripple');
+	const buttons = $$('.ripple');
 
-  for(let i = 0; i < buttons.length; i++) {
-    addRipple(buttons[i]);
-  }
+	for(let i = 0; i < buttons.length; i++) {
+		addRipple(buttons[i]);
+	}
 }

@@ -1,7 +1,7 @@
+@import url("/css/fonts/lpmq-isep-misbah/font.css");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
 @import url("/themes/light.css") (prefers-color-scheme: light);
 @import url("/themes/dark.css") (prefers-color-scheme: dark);
-@import url("https://enotes7.glitch.me/css/fonts/lpmq-isep-misbah/font.css");
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
 
 :root {
   --heading-font: "Isep Misbah", "Noto Sans Condensed", sans-serif;

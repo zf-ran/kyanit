@@ -3,3 +3,4 @@ nondist_assets
 .data
 .env
 .vscode
+*.bak

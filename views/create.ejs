@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>✎ <%= JSON.parse(note).title || 'Untitled Note' %> | <%= mode.charAt(0).toUpperCase() + mode.slice(1) %></title>
+	<title>✎ <%= note.title %> | <%= mode.charAt(0).toUpperCase() + mode.slice(1) %></title>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,136 +23,138 @@
 	<script src="/js/modules/jsh.js"></script>
 
 	<!-- PRISM -->
-	<%# <link rel="stylesheet" type="text/css" href="/css/modules/prism.min.css" /> %>
 	<script src="/js/modules/prism.min.js" data-manual></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
 	<main>
-	<div id="title" contenteditable="plaintext-only">Untitled</div>
+	<div id="title" contenteditable="plaintext-only"><%= note.title %></div>
 		<div id="tools">
 			<div id="tools-left">
 
 			</div>
 			<div id="tools-right">
 				<abbr title="Publish! (Ctrl+S)"><div id="publish"><i class="fa-solid fa-arrow-up-from-bracket"></i></div></abbr>
-				<abbr title="Visibility: Public" id="visibility-abbr"><div id="visibility" data-visible="true"><i class="fa-regular fa-eye"></i> <i class="fa-regular  fa-eye-slash"></i></div></abbr>
+				<abbr title="Visibility: <%= !note.unlisted ? 'Public' : 'Unlisted' %>" id="visibility-abbr"><div id="visibility" data-visible="<%= !note.unlisted %>"><i class="fa-regular fa-eye"></i><i class="fa-regular fa-eye-slash"></i></div></abbr>
+				<% if(mode === 'edit') { %>
+					<abbr title="View note in new tab"><a href="/note/<%- note.id %>" id="view-note" target="_blank"><i class="fa-regular fa-file-lines"></i></a></abbr>
+				<% } %>
 			</div>
 		</div>
 		<div id="editor-wrapper">
-			<pre class="language-md"><code class="language-md" id="editor-view"></code></pre>
-			<div id="editor-input" spellcheck="false" contenteditable="plaintext-only"></div>
+			<pre class="language-md"><code class="language-md" id="editor-view"><%= note.content %></code></pre>
+			<div id="editor-input" spellcheck="false" contenteditable="plaintext-only"><%= note.content %></div>
 		</div>
 	</main>
 </body>
 <script>
 	const mode = '<%- mode %>';
 	const editor = $('#editor-input');
-	const editorView = $('#editor-view');
-	let username = cookie?.username;
-	let isNoteSaved = true;
-	let lastFocusedElement;
+	const editorHighlight = $('#editor-view');
+	const authorName = cookie.username;
 
-	let defaultThumbnailURL = '';
-	let defaultKeywords = '';
+	let isNoteSaved = true;
+
+	let	defaultKeywords = '<%- note.keywords.join(" ") %>';
+	let	defaultThumbnailURL = '<%- note.thumbnailURL %>';
+
+	updateEditor();
 
 	editor.onkeydown = event => {
+		// Insert tab if user presses the tab key.
 		if(event.keyCode === 9) {
 			event.preventDefault();
 
-			let target = event.target;
-			let selection = target.ownerDocument.defaultView.getSelection();
-			let range = selection.getRangeAt(0);
+			const target = event.target;
+			const selection = target.ownerDocument.defaultView.getSelection();
+			const range = selection.getRangeAt(0);
 
-			let tabNode = document.createTextNode("\t");
+			const tabNode = document.createTextNode("\t");
 			range.insertNode(tabNode);
 
 			range.setStartAfter(tabNode);
 			range.setEndAfter(tabNode);
 			selection.removeAllRanges();
 			selection.addRange(range);
-		}
 
-		updateEditor();
+			// updateEditor();
+		}
 	}
 
 	editor.oninput = event => {
-		isNoteSaved = false;
-		if(!$('title').innerHTML.startsWith('*')) $('title').innerHTML = '*' + $('title').innerHTML;
+		// Mark as unsaved.
+		save(false);
 
 		updateEditor();
 	}
 
-	function updateEditor() {
-		editorView.innerHTML = editor.innerHTML;
-		Prism.highlightElement(editorView);
-	}
+	// Saved mark.
+	function save(isSaved) {
+		isNoteSaved = isSaved;
 
-	// EDIT MODE
-	if(mode === 'edit') {
-		const note = <%- note %>;
-
-		if(note.authorName !== username) {
-			(async () => {
-				const confirmation = await ui.confirm({ title: 'You shall not pass!', content: 'You can’t edit a note that not yours!' });
-
-				if(confirmation) location.assign(`/user/${note.authorName}`);
-				else location.assign('/');
-			})();
+		if(isSaved && $('title').innerHTML.startsWith('*')) {
+			// Remove the `*` prefix in the title.
+			$('title').innerHTML = $('title').innerHTML.slice(1);
+		} else if(!isSaved && !$('title').innerHTML.startsWith('*')) {
+			// Prefix `*` to the title.
+			$('title').innerHTML = '*' + $('title').innerHTML;
 		}
-
-		$('#title').innerText = note.title;
-		$('#visibility-abbr').title = (note.unlisted) ? 'Visibility: Unlisted' : 'Visibility: Public';
-		$('#visibility').dataset.visible = !note.unlisted;
-		const viewAbbr = new JSH('abbr', null, { title: 'View note in new tab' }).appendTo($('#tools-right'));
-		const viewButton = new JSH('a', '<i class="fa-regular fa-file-lines"></i>', { id: 'view-note', href: `/note/${note.id}`, target: '_blank' }).appendTo(viewAbbr);
-
-		editor.textContent = note.content;
-		updateEditor();
-
-		defaultKeywords = renderString(note.keywords.join(' '));
-		defaultThumbnailURL = note.thumbnailURL;
-	} else if(mode === 'create') {
-		editor.textContent = `# Welcome to eNotes editor\n\nThis is a paragraph`;
-		updateEditor();
 	}
-	// ----
 
-	// PUBLISH MANAGER
-	$('#visibility').onclick = event => {
+	/** Updates the syntax highlighting on the editor */
+	function updateEditor() {
+		editorHighlight.innerHTML = editor.innerHTML;
+		Prism.highlightElement(editorHighlight);
+	}
+
+	// Disallow \n on title input.
+	$('#title').oninput = () => {
+		if($('#title').innerHTML.split('').includes('\n')) $('#title').innerHTML = $('#title').innerHTML.replaceAll('\n', '');
+
+		save(false);
+	};
+
+	// Alert the user if the note isn’t saved yet.
+	window.onbeforeunload = event => {
+		if(!isNoteSaved) return 'Change you made may not be saved';
+	}
+
+	$('#visibility').onclick = () => {
 		$('#visibility').dataset.visible = !JSON.parse($('#visibility').dataset.visible);
-
+		
 		if($('#visibility').dataset.visible === true) $('#visibility-abbr').title = 'Visibility: Public';
 		else $('#visibility-abbr').title = 'Visibility: Unlisted';
 	};
-
+	
 	$('#publish').onclick = publish;
+	
+	// Publish manager.
 	document.addEventListener('keydown', event => {
+		// Publish if the user uses [Ctrl]+[S].
 		if(event.code === 'KeyS' && event.ctrlKey) {
 			event.preventDefault();
-			publish(event);
+			publish();
 		}
 	});
 
 	async function publish() {
-		const noteTitle = $('#title').innerText.replaceAll('\n', '');
-		if(!noteTitle.trim()) {
+		const title = $('#title').innerText.replaceAll('\n', '');
+		if(!title.trim()) {
+			// If the title is empty.
 			ui.alert({ title: 'Name your note!', content: 'The title can’t be empty.' });
 			return;
 		}
 
-		const noteContents = editor.innerText;
-		if(!noteContents.trim()) {
+		const content = editor.innerText;
+		if(!content.trim()) {
+			// If the content is empty.
 			ui.alert({ title: 'You’re trying to publish an empty note …', content: 'Is your mind this empty.' });
 			return;
 		}
 
-		const noteUnlisted = !JSON.parse($('#visibility').dataset.visible);
+		const unlisted = !JSON.parse($('#visibility').dataset.visible);
 
-		let {
-			thumbnailURL: noteThumbnailURL,
-			keywords: noteKeywords
-		} = await ui.prompt({
+		let { thumbnailURL, keywords } = await ui.prompt({
 			title: 'Publish!',
 			inputs: [
 				{
@@ -171,14 +173,15 @@
 		});
 
 		// If the user cancels.
-		if(noteKeywords === null) return;
+		if(keywords === null) return;
 
 		// Only allows certain filetypes.
-		if(noteThumbnailURL) {
+		if(thumbnailURL) {
 			const allowedTypes = ['image/png', 'image/jpeg'];
 
+			// Check thumbnail size and type.
 			try {
-				const thumbnail = await fetch(noteThumbnailURL);
+				const thumbnail = await fetch(thumbnailURL);
 
 				const thumbnailType = thumbnail.headers.get('Content-Type');
 				if(!allowedTypes.includes(thumbnailType)) {
@@ -186,50 +189,45 @@
 					return;
 				}
 
-				// Thumbnail file size in bytes, disallow thumbnail exceeding 2 MB.
+				// Thumbnail file size in bytes, disallow thumbnail exceeding `maxSize` in bytes.
 				const thumbnailSize = thumbnail.headers.get('Content-Length');
-				const maxSize = 100e3;
+				const maxThumbnailSize = 100e3;
 				console.log(thumbnailSize);
-				if(thumbnailSize > maxSize) {
-					ui.alert({ title: 'Keep it low.', content: `Your thumbnail exceeds ${maxSize/1e3} kB. This is a thumbnail, not a wallpaper!` });
+				if(thumbnailSize > maxThumbnailSize) {
+					ui.alert({ title: 'Keep it low.', content: `Your thumbnail exceeds ${maxThumbnailSize/1e3} kB. This is a thumbnail, not a wallpaper!` });
 					return;
 				}
 			} catch(error) {
 				ui.alert({ title: 'Error.', content: error });
 				return;
 			}
-		}
+		} else thumbnailURL = null;
 
-		noteKeywords = noteKeywords.trim().toLowerCase();
+		keywords = keywords.trim().toLowerCase();
 
-		defaultKeywords = noteKeywords;
-		defaultThumbnailURL = noteThumbnailURL;
+		defaultKeywords = keywords;
+		defaultThumbnailURL = thumbnailURL;
 
-		if(noteKeywords === '') noteKeywords = [];
-		else noteKeywords = noteKeywords.split(' ');
+		if(keywords === '') keywords = [];
+		else keywords = keywords.split(' ');
 
 		if(mode === 'create') {
-			socket.emit('set--note', username, noteTitle, noteContents, noteUnlisted, noteThumbnailURL, noteKeywords, callback);
+			socket.emit('set--note', title, content, keywords, authorName, thumbnailURL, unlisted, publishedAlert);
 		} else if(mode === 'edit') {
-			socket.emit('edit--note', username, noteTitle, noteContents, noteUnlisted, noteThumbnailURL, noteKeywords, location.pathname.split('/').at(-1), callback);
+			socket.emit('edit--note', '<% note.id %>', title, content, keywords, authorName, thumbnailURL, unlisted, publishedAlert);
 		}
 
-		function callback(id) {
-			isNoteSaved = true;
+		function publishedAlert(id) {
+			// Mark as saved.
+			save(true);
 
-			if($('title').innerHTML.startsWith('*')) $('title').innerHTML = $('title').innerHTML.replace('*', '');
+			// Alert the user.
 			ui.alert({ title: 'Note published successfully!', content: `Note published with ID:<br><span style="font-family:'Cascadia Mono'">${id}</span>` });
+
+			// Reload if this is a new note.
 			if(mode === 'create') location.replace(`/create/${id}`);
 		}
 	};
 	// ----
-
-	$('#title').oninput = () => {
-		if($('#title').innerHTML.split('').includes('\n')) $('#title').innerHTML = $('#title').innerHTML.replaceAll('\n', '')
-	};
-
-	window.onbeforeunload = event => {
-		if(!isNoteSaved) return 'Change you made may not be saved';
-	}
 </script>
 </html>
