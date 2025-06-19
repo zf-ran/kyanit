@@ -371,6 +371,8 @@ app.post('/api/signup', async (req, res) => {
 	res.cookie('username', name, { maxAge: new Date('9999-12-31T23:46:40.000Z') });
 	res.cookie('password', password, { maxAge: new Date('9999-12-31T23:46:40.000Z') });
 
+	await db.set('users', users);
+
 	res.sendStatus(201);
 });
 
@@ -524,8 +526,6 @@ app.patch('/api/notes/:noteId', async (req, res) => {
 	if(keywords) note.keywords = keywords;
 	if(thumbnailURL !== undefined) note.thumbnailURL = thumbnailURL;
 	if(unlisted !== undefined) note.unlisted = unlisted;
-
-	console.log(note);
 
 	notes.push(note);
 	await db.set('notes', notes);
