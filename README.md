@@ -2,7 +2,7 @@ Kyanit is a note sharing platform. It’s simple to use, no ads, no bloats! *Sti
 
 A user can post a note. Here, a note is like an article, or a post; that has a title, content, comments, and votes.
 
->	[!TIP] Feedback
+>	[!NOTE]
 >	**This project is still in development.** If you have a bug report, feature request, or feedbacks, don’t mind putting it in <https://github.com/zf-ran/kyanit/issues>.
 
 # TODOs
