@@ -34,28 +34,31 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 
 with prefix `/api`.
 
-## GETs
+## GET
 
 -	`/note/{noteId}/comments` - returns comments from the note with ID `{noteId}`.
 
-## POSTs
+## POST
 
 -	`/signup`.
 -	`/login`.
--	`/notes/{noteId}/comments` - create a comment.
--	`/notes/{noteId}/comments/{commentId}/votes` - assign a vote to a comment.
+-	`/notes`.
+-	`/notes/{noteId}/comments`.
+-	`/notes/{noteId}/comments/{commentId}/votes`.
 
-## DELETEs
+## DELETE
 
--	`/notes/{noteId}` - delete a note.
--	`/notes/{noteId}/comments/{commentId}` - delete a comment.
+-	`/notes/{noteId}`.
+-	`/notes/{noteId}/comments/{commentId}`.
+
+## PATCH
+
+-	`/users`.
+-	`/notes/{noteId}`.
 
 # Socket Events
 
 ## Client to Server
 
--	`user:update(name, { displayName, about, password })`.
--	`note:publish(title, content, keywords, authorName, thumbnailURL, unlisted, () => {})`.
--	`note:update(noteId, title, content, keywords, authorName, thumbnailURL, unlisted, () => {})`.
 -	`note:connect(noteId)`.
 -	`note:view(uername, noteId)`.
