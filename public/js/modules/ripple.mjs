@@ -1,4 +1,4 @@
-import JSH from '/js/modules/jsh.js';
+import JSH from '/js/modules/jsh.mjs';
 
 export function addRipple(element) {
 	/** @type {number} - Speed in pixels per second */

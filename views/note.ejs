@@ -100,9 +100,9 @@
 	</div>
 </body>
 <script type="module">
-	import JSH from '/js/modules/jsh.js';
-	import ui from '/js/modules/ui.js';
-	import { absoluteTime, relativeTime } from '/js/modules/date-utils.js';
+	import JSH from '/js/modules/jsh.mjs';
+	import ui from '/js/modules/ui.mjs';
+	import { absoluteTime, relativeTime } from '/js/modules/date-utils.mjs';
 	
 	const socket = io('/');
 	const noteId = '<%- note.id %>';
@@ -414,7 +414,7 @@
 
 <% if($isLoggedIn && $cookies.username === user.name) { %>
 <script type="module">
-	import ui from '/js/modules/ui.js';
+	import ui from '/js/modules/ui.mjs';
 
 	$('#delete-button').onclick = async () => {
 		const confirmation = await ui.confirm({ title: 'Delete?', content: `Delete “<%- note.title %>”? This cannot be undone!` });
