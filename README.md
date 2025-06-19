@@ -12,7 +12,6 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 - [ ] Fix the code.
 	- [80%] Refactor back-end.
 	- [10%] Refactor front-end.
-- [ ] Rename socket events to `object:verb` format.
 - [ ] Remove unnecessary try-catch blocks.
 - [ ] Document APIs.
 
