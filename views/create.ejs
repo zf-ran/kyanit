@@ -227,9 +227,9 @@
 		save(true);
 
 		// Alert the user.
-		ui.alert({ title: 'Note published successfully!', content: `Note published with ID:<br><span style="font-family:'Cascadia Mono'">${json.data.noteId}</span>` });
+		ui.alert({ title: 'Note published successfully!', content: `Note published with ID:<br><span style="font-family:'Cascadia Mono'">${json.data.id}</span>` });
 
-		if(mode === 'create') location.replace(`/create/${json.data.noteId}`);
+		if(mode === 'create') location.replace(`/create/${json.data.id}`);
 	};
 	// ----
 </script>

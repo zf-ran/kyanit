@@ -1,11 +1,11 @@
 {
   "name": "kyanit",
-  "version": "0.1.0",
+  "version": "1.0.0-alpha+001",
   "description": "Website for creating a text note",
   "author": "Zafran",
   "main": "index.js",
   "scripts": {
-    "start": "node index"
+    "start": "node --env-file .env index"
   },
   "dependencies": {
     "body-parser": "^2.2.0",
