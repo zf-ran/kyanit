@@ -5,26 +5,17 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
-	<link
-		rel="stylesheet"
-		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-		integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
-		crossorigin="anonymous"
-		referrerpolicy="no-referrer"
-	/>
-  <link rel="shortcut icon" type="image/png" href="/favicon.ico">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/index.css">
 	<link rel="stylesheet" href="/css/dashboard.css">
-	<script src="/main.js"></script>
-	<script src="/js/modules/jsh.js"></script>
 
   <!-- MATHJAX -->
   <script src="/js/mathjax-options.js"></script>
 	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
+
+  <!-- SOCKET -->
+  <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
@@ -35,11 +26,11 @@
       <% if(isUserOwner) { %>
         <div class="prompt--input">
           <label class="prompt--input--label" for="displayName">Display Name</label>
-          <input id="displayName" type="text" placeholder="Display Name" autocomplete="false" oninput="javascript:addSavePopup()" value="<%- user.displayName %>" />
+          <input id="displayName" type="text" placeholder="Display Name" autocomplete="false" value="<%- user.displayName %>" />
         </div>
         <div class="prompt--input">
           <label class="prompt--input--label" for="password">Password</label>
-          <input id="password" type="password" placeholder="Password" autocomplete="false" oninput="javascript:addSavePopup()" value="<%- $cookies.password %>" />
+          <input id="password" type="password" placeholder="Password" autocomplete="false" value="<%- $cookies.password %>" />
         </div>
       <% } else { %>
         <input id="displayName" type="text" autocomplete="false" value="<%- user.displayName %>" disabled />
@@ -60,7 +51,6 @@
               <a href="/note/<%- note.id %>"></a>
               <div class="note--title"><%= note.title %></div>
               <div class="note--information">
-                <!-- <span class="note--information--author"><%= user.displayName %> <% if(user.verified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></span> -->
                 <span class="note--information--views"><% if (note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views.toLocaleString() %> views</span>
                 <% if(!note.lastEdited) { %>
                   <span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(note.published) %></span>
@@ -96,20 +86,24 @@
 	</main>
 </body>
 <script>
-  let page;
-  
   $('#tab--notes').onclick = () => {
     window.history.replaceState(null, '', `/user/<%- user.name %>/notes`);
     $('#tabs').dataset.opening = 'notes';
-  }
-  
+  };
+
   $('#tab--about').onclick = () => {
     window.history.replaceState(null, '', `/user/<%- user.name %>/about`);
     $('#tabs').dataset.opening = 'about';
-  }
+  };
 </script>
 <% if(isUserOwner) { %>
-  <script>
+  <script type="module">
+    import ui from '/js/modules/ui.js';
+    import JSH from '/js/modules/jsh.js';
+    import { addRipple } from '/js/modules/ripple.js';
+
+    const socket = io('/');
+
     ui.promptAbout = async () => {
       const id = crypto.randomUUID();
       const promptWrapper = new JSH('div', null, { id: `prompt_${id}`, class: 'prompt-wrapper prompt-about-wrapper' }).appendTo(document.body);
@@ -135,7 +129,6 @@
       aboutEditorInput.oninput = updateEditor;
 
       async function updateEditor() {
-        console.log(aboutEditorInput.innerHTML);
         aboutEditorView.innerHTML = aboutEditorInput.innerHTML;
         Prism.highlightElement(aboutEditorView);
       }
@@ -180,8 +173,11 @@
 
       const about = await ui.promptAbout();
 
-      socket.emit('set--user-information', '<%- user.name %>', { about });
-    }
+      patchUser({ about });
+    };
+
+    $('#displayName').onclick = addSavePopup;
+    $('#password').onclick = addSavePopup;
 
     function addSavePopup() {
       const saveEdit = $('#saveEdit') || new JSH('div', '<i class="fa-regular fa-floppy-disk"></i> Save changes', { id: 'saveEdit' }).appendTo($('body'));
@@ -199,7 +195,20 @@
       const password = $('#password').value;
       const displayName = $('#displayName').value;
 
-      socket.emit('set--user-information', '<%- user.name %>', { displayName, password });
+      patchUser({ displayName, password });
+    }
+
+    async function patchUser(data) {
+      const response = await fetch(`/api/users`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if(!response.ok) {
+        const json = await response.json();
+        ui.alert({ title: 'Error', content: json.error.message });
+      }
     }
   </script>
 <% } %>

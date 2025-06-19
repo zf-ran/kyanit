@@ -4,7 +4,7 @@ class JSH {
   constructor(tag = 'p', text = '', attributes = {}) {
     this.element = document.createElement(tag);
     this.element.innerHTML = text;
-        
+
 		for (let i = 0; i < Object.keys(attributes).length; i++) {
 			const attribute = [Object.keys(attributes)[i], Object.values(attributes)[i]];
 			this.element.setAttribute(attribute[0], attribute[1]);
@@ -14,13 +14,6 @@ class JSH {
 	appendTo(parent = document.body) {
 		parent.appendChild(this.element);
 		return this.element;
-	}
-}
-
-HTMLElement.prototype.css = function (css) {
-	for (let i = 0; i < Object.keys(css).length; i++) {
-		const style = [Object.keys(css)[i], Object.values(css)[i]];
-		this.style[style[0]] = style[1];
 	}
 }
 
@@ -37,3 +30,5 @@ function useJS(filename = '', { type, defer, crossOrigin } = { type: undefined, 
 
 	return (new JSH('script', null, attribute).appendTo(document.head));
 }
+
+export default JSH;

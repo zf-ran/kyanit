@@ -6,24 +6,14 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<link
-		rel="stylesheet"
-		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-		integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
-		crossorigin="anonymous"
-		referrerpolicy="no-referrer"
-	/>
-	<link rel="shortcut icon" type="image/png" href="/favicon.ico">
-	<link rel="icon" type="image/x-icon" href="/favicon.ico">
-
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/create.css">
 
-	<script src="/main.js"></script>
-	<script src="/js/modules/jsh.js"></script>
-
 	<!-- PRISM -->
 	<script src="/js/modules/prism.min.js" data-manual></script>
+
+	<!-- SOCKET -->
+	<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
@@ -47,7 +37,10 @@
 		</div>
 	</main>
 </body>
-<script>
+<script type="module">
+	import ui from '/js/modules/ui.js';
+
+	const socket = io('/');
 	const mode = '<%- mode %>';
 	const editor = $('#editor-input');
 	const editorHighlight = $('#editor-view');
@@ -198,7 +191,7 @@
 					return;
 				}
 			} catch(error) {
-				ui.alert({ title: 'Error.', content: error });
+				ui.alert({ title: 'Error', content: error });
 				return;
 			}
 		} else thumbnailURL = null;
@@ -211,22 +204,32 @@
 		if(keywords === '') keywords = [];
 		else keywords = keywords.split(' ');
 
-		if(mode === 'create') {
-			socket.emit('set--note', title, content, keywords, authorName, thumbnailURL, unlisted, publishedAlert);
-		} else if(mode === 'edit') {
-			socket.emit('edit--note', '<% note.id %>', title, content, keywords, authorName, thumbnailURL, unlisted, publishedAlert);
+		let request;
+		const headers = { 'Content-Type': 'application/json' };
+		const body = JSON.stringify({
+			title, content, keywords, thumbnailURL, unlisted
+		});
+
+		if(mode === 'create')
+			request = new Request('/api/notes', { method: 'POST', headers, body });
+		else if(mode === 'edit')
+			request = new Request('/api/notes/<%- note.id %>', { method: 'PATCH', headers, body });
+
+		const response = await fetch(request);
+		const json = await response.json();
+
+		if(!response.ok) {
+			ui.alert({ title: 'Error', content: json.error.message });
+			return;
 		}
 
-		function publishedAlert(id) {
-			// Mark as saved.
-			save(true);
+		// Mark as saved.
+		save(true);
 
-			// Alert the user.
-			ui.alert({ title: 'Note published successfully!', content: `Note published with ID:<br><span style="font-family:'Cascadia Mono'">${id}</span>` });
+		// Alert the user.
+		ui.alert({ title: 'Note published successfully!', content: `Note published with ID:<br><span style="font-family:'Cascadia Mono'">${json.data.noteId}</span>` });
 
-			// Reload if this is a new note.
-			if(mode === 'create') location.replace(`/create/${id}`);
-		}
+		if(mode === 'create') location.replace(`/create/${json.data.noteId}`);
 	};
 	// ----
 </script>

@@ -5,50 +5,45 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
-	<link
-		rel="stylesheet"
-		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-		integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
-		crossorigin="anonymous"
-		referrerpolicy="no-referrer"
-	/>
-	<link rel="shortcut icon" type="image/png" href="/favicon.ico">
-	<link rel="icon" type="image/x-icon" href="/favicon.ico">
-	
+
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/signup.css">
-	<script src="/main.js"></script>
-	<script src="/js/modules/jsh.js"></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
 	<main>
-		<div id="signup">
-			<div id="signup--title">Login <a href="/signup">Signup</a></div>
-			<div id="signup--message"></div>
-			<div id="signup--username">
-				<label for="signup--username--input">Username</label>
-				<input type="text" id="signup--username--input" placeholder="Username"/>
+		<form action="" method="post" id="signup-form">
+			<div id="signup">
+				<div id="signup--title">Login <a href="/signup">Signup</a></div>
+				<div id="signup--message"></div>
+				<div id="signup--username">
+					<label for="signup--username--input">Username</label>
+					<input type="text" id="signup--username--input" placeholder="Username" required/>
+				</div>
+				<div id="signup--password">
+					<label for="signup--password--input">Password</label>
+					<input type="password" id="signup--password--input" placeholder="Password" required/>
+				</div>
+				<button type="submit" id="signup--button" class="ripple">Login</button>
+				<div id="signup--bottom-text">Don’t have an account? <a href="/signup">Sign up</a></div>
 			</div>
-			<div id="signup--password">
-				<label for="signup--password--input">Password</label>
-				<input type="password" id="signup--password--input" placeholder="Password"/>
-			</div>
-			<div id="signup--button" class="ripple">Login</div>
-			<div id="signup--bottom-text">Don’t have an account? <a href="/signup">Sign up</a></div>
-		</div>
+		</form>
 	</main>
 </body>
-<script>
+<script type="module">
+	import ui from '/js/modules/ui.js';
+
+	const form = $('#signup-form')
 	const messageBox = $('#signup--message');
 	const usernameInput = $('#signup--username--input');
 	const passwordInput = $('#signup--password--input');
 	const signupButton = $('#signup--button');
 
-	signupButton.onclick = handleOnSubmit;
+	form.onsubmit = submit;
 
-	function handleOnSubmit(event) {
+	async function submit(event) {
+		event.preventDefault();
+
 		if(!usernameInput.value) {
 			messageBox.innerText = 'Username is required!';
 			return;
@@ -56,44 +51,50 @@
 			messageBox.innerText = 'Password is required!';
 			return;
 		}
-		
-		// Disable Inputs
-		usernameInput.disabled = true;
-		passwordInput.disabled = true;
-		messageBox.innerText = '';
-		signupButton.onclick = null;
-		
-		// Check Usernames
-		socket.emit('get--usernames', usernames => {
-			if(!usernames.includes(usernameInput.value)) {
-				usernameInput.disabled = false;
-				passwordInput.disabled = false;
-				signupButton.onclick = handleOnSubmit;
-				messageBox.innerText = 'Username or password is wrong';
-				return;
-			}
-			
-			// Check Password
-			socket.emit('get--is-password-correct', usernameInput.value, passwordInput.value, login);
-		});
-	}
 
-	function login(isPasswordCorrect) {
-		if(!isPasswordCorrect) {
-			usernameInput.disabled = false;
-			passwordInput.disabled = false;
-			signupButton.onclick = handleOnSubmit;
-			messageBox.innerText = 'Username or password is wrong';
-			return;
+		// Disable inputs and clear message box.
+		toggleInputs(false);
+		messageBox.innerText = '';
+
+		const inputs = {
+			name: usernameInput.value,
+			password: passwordInput.value
 		}
 
-		// Insert Cookie
-		document.cookie = `username=${usernameInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
-		document.cookie = `password=${passwordInput.value};expires=${new Date(new Date().getTime() + 3.154e+10).toGMTString()};path=/`;
-		$('#signup--title').innerHTML = 'Logged in! <a href="/login">Signup</a>';
-		$('#signup').classList.add('success');
+		try {
+			const response = await fetch('/api/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(inputs)
+			});
 
-		setTimeout(() => { location.assign('/'); }, 200);
+			if(!response.ok) {
+				// Handle invalid requests.
+				const json = await response.json();
+
+				messageBox.innerText = json.error.message;
+				toggleInputs(true);
+			} else {
+				// Success.
+				$('#signup--title').innerHTML = 'Logged in! <a href="/login">Signup</a>';
+				$('#signup').classList.add('success');
+
+				location.assign(`/user/${inputs.name}`);
+			}
+		} catch (error) {
+			ui.alert({ title: 'Unexpected Error', content: error });
+			toggleInputs(true);
+		}
+	}
+
+	/** @param {boolean} state - `true` means enabled, `false` means disabled */
+	function toggleInputs(state) {
+		usernameInput.disabled = !state;
+		passwordInput.disabled = !state;
+		signupButton.disabled = !state;
+
+		if(state) form.onsubmit = submit;
+		else form.onsubmit = null;
 	}
 </script>
 </html>

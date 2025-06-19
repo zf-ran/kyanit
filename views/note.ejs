@@ -9,25 +9,16 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<noscript><meta http-equiv="refresh" content="0; URL='/min/note/<%- note.id %>'" /></noscript>
-	
-	<link
-		rel="stylesheet"
-		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-		integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
-		crossorigin="anonymous"
-		referrerpolicy="no-referrer"
-	/>
-	<link rel="shortcut icon" type="image/png" href="/favicon.ico">
-	<link rel="icon" type="image/x-icon" href="/favicon.ico">
-	
+
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/note.css">
-	<script src="/main.js"></script>
-	<script src="/js/modules/jsh.js"></script>
-	
+
 	<!-- MATHJAX -->
 	<script src="/js/mathjax-options.js"></script>
 	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
+
+	<!-- SOCKET -->
+	<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
@@ -108,8 +99,12 @@
 		<% } %>
 	</div>
 </body>
-<script>
-(() => {
+<script type="module">
+	import JSH from '/js/modules/jsh.js';
+	import ui from '/js/modules/ui.js';
+	import { absoluteTime, relativeTime } from '/js/modules/date-utils.js';
+	
+	const socket = io('/');
 	const noteId = '<%- note.id %>';
 	const authorName = '<%- note.authorName %>';
 
@@ -171,7 +166,7 @@
 	}
 
 	// Comment handlers.
-	socket.emit('connect-to-note', noteId);
+	socket.emit('note:connect', noteId);
 	const commentsContainer = $('#comments');
 
 	async function loadComments() {
@@ -185,6 +180,7 @@
 		while(comments.length > 0) {
 			// If the parent of the comment doesn’t exist, move the comment to the end of the array.
 			if(loadComment(comments[0]) === 0) comments.push(comments.shift());
+
 			// Otherwise remove.
 			else comments.shift();
 		}
@@ -196,13 +192,19 @@
 	}
 
 	async function fetchComments() {
-		const queries = new URLSearchParams();
-		queries.append('note_id', noteId);
+		try {
+			const response = await fetch(`/api/notes/${noteId}/comments`);
+			const json = await response.json();
 
-		const response = await fetch(`/api/comments?${queries}`);
-		const comments = await response.json();
+			if(!response.ok) {
+				ui.alert({ title: 'Error', content: json.error.message });
+				return [];
+			}
 
-		return comments;
+			return json.data;
+		} catch (error) {
+			ui.alert({ title: 'Unexpected Error', content: error });
+		}
 	}
 
 	/** Load a comment @type {0|void} Returns `0` if the comment has a parent and the parent element doesn’t exist. */
@@ -235,25 +237,20 @@
 
 		commentCollapseElement.onclick = () => { commentRepliesElement.dataset.collapsed = !JSON.parse(commentRepliesElement.dataset.collapsed); };
 
-		const commentUpvote = new JSH('div', '<i class="fa-solid fa-up-long">', { class: 'comment--action--upvote', 'data-vote': 1 }).appendTo(commentActionsElement);
+		const commentUpvote = new JSH('div', '<i class="fa-solid fa-up-long">', { class: 'comment--action--upvote', 'data-vote': 1, 'data-voted': false }).appendTo(commentActionsElement);
 		const commentVoteCount = new JSH('div', null, { class: 'comment--action--vote-count', 'data-count': comment.voteCount }).appendTo(commentActionsElement);
-		const commentDownvote = new JSH('div', '<i class="fa-solid fa-down-long">', { class: 'comment--action--downvote', 'data-vote': -1 }).appendTo(commentActionsElement);
+		const commentDownvote = new JSH('div', '<i class="fa-solid fa-down-long">', { class: 'comment--action--downvote', 'data-vote': -1, 'data-voted': false }).appendTo(commentActionsElement);
 
 		if(LOGGED_IN) {
 			// Shows if the user had voted.
-			const commentVote = comment.votes.find(commentVote =>
-				commentVote.commentId === comment.id
-				&& commentVote.voterName === cookie.username);
-
-			commentUpvote.dataset.voted = false;
-			commentDownvote.dataset.voted = false;
+			const commentVote = comment.votes.find(commentVote => commentVote.voterName === cookie.username);
 
 			if(commentVote) {
 				commentUpvote.dataset.voted = (commentVote.value === 1);
 				commentDownvote.dataset.voted = (commentVote.value === -1);
 			}
 
-			// Add a reply button.
+			// Add reply button.
 			const commentReply = new JSH('div', '<i class="fa-solid fa-reply"></i>', { class: 'comment--action--reply' }).appendTo(commentActionsElement);
 			commentReply.onclick = async event => {
 				const { content } = await ui.prompt({
@@ -267,28 +264,62 @@
 				});
 
 				if(content === null || !content.trim()) return;
-				socket.emit('set--comment', noteId, cookie.username, content, comment.id, handleCommentSuccessfullyUploaded);
+
+				try {
+					const body = {
+						content, parentId: comment.id
+					};
+
+					const response = await fetch(`/api/notes/${noteId}/comments`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(body)
+					});
+
+					if(!response.ok) {
+						const json = await response.json();
+
+						ui.alert({ title: 'Error', content: json.error.message });
+					}
+				} catch (error) {
+					ui.alert({ title: 'Unexpected Error', content: error });
+				}
 			};
 
 			// Add vote buttons.
 			commentUpvote.onclick = vote;
 			commentDownvote.onclick = vote;
 
-			function vote() {
+			async function vote() {
 				const value = JSON.parse(this.dataset.vote);
 
 				commentVoteCount.classList.add('wait');
 
-				socket.emit('set--comment-vote', noteId, comment.id, cookie.username, value, () => {
+				try {
+					const body = { value };
+
+					const response = await fetch(`/api/notes/${noteId}/comments/${comment.id}/votes`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(body)
+					});
+
+					if(!response.ok) {
+						const json = await response.json();
+						ui.alert({ title: 'Error', content: json.error.message });
+					}
+
 					commentVoteCount.classList.remove('wait');
-				});
+				} catch (error) {
+					ui.alert({ title: 'Unexpected Error', content: error });
+				}
 
 				if(value >= 1) {
-					// Upvote
+					// Fills the upvote button.
 					commentUpvote.dataset.voted = !JSON.parse(commentUpvote.dataset.voted);
 					commentDownvote.dataset.voted = false;
 				} else if(value <= -1) {
-					// Downvote
+					// Fills the downvote button.
 					commentDownvote.dataset.voted = !JSON.parse(commentDownvote.dataset.voted);
 					commentUpvote.dataset.voted = false;
 				}
@@ -304,9 +335,19 @@
 						content: 'Are you sure to delete your comment?'
 					});
 
-					if(confirm) socket.emit('delete--comment', noteId, comment.id, id => {
-						commentElement.remove();
-					});
+					if(!confirm) return;
+
+					try {
+						const response = await fetch(`/api/notes/${noteId}/comments/${comment.id}`, { method: 'DELETE' });
+
+						if(!response.ok) {
+							const json = await response.json();
+
+							ui.alert({ title: 'Error', content: json.error.message });
+						}
+					} catch (error) {
+						ui.alert({ title: 'Unexpected Error', content: error });
+					}
 				}
 			}
 		}
@@ -315,88 +356,89 @@
 	// If the user is logged in,
 	if(LOGGED_IN) {
 		// add comment input.
-		$('#add-comment-button:not(.wait)').onclick = event => {
+		const addCommentButton = $('#add-comment-button');
+		addCommentButton.onclick = async () => {
+			// Skip on cooldown.
+			if(addCommentButton.classList.contains('wait')) return;
+
 			const commentContent = $('#add-comment-input').value;
 			if(!commentContent.trim()) return;
 
-			socket.emit('set--comment', noteId, cookie.username, commentContent, null, handleCommentSuccessfullyUploaded);
 			$('#add-comment-button').classList.add('wait');
+
+			try {
+				const body = {
+					content: commentContent
+				};
+
+				const response = await fetch(`/api/notes/${noteId}/comments`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(body)
+				});
+
+				if(!response.ok) {
+					const json = await response.json();
+
+					ui.alert({ title: 'Error', content: json.error.message });
+				} else {
+					$('#add-comment-input').value = '';
+				}
+
+				$('#add-comment-button').classList.remove('wait');
+			} catch (error) {
+				ui.alert({ title: 'Unexpected Error', content: error });
+			}
 		};
 	}
 
-	function handleCommentSuccessfullyUploaded() {
-		$('#add-comment-button').classList.remove('wait');
-		$('#add-comment-input').value = '';
-	}
-	
-	socket.on('send--comment-deleted', commentId => {
-		$(`#comment-${commentId}`)?.remove();
-	})
+	socket.on('comment:created', loadComment);
 
-	socket.on('send--comment-added', comment => {
-		loadComment(comment);
+	socket.on('comment:deleted', commentId => {
+		$(`#comment-${commentId}`)?.remove();
 	});
 
-	socket.on('send--comment-voted', (commentId, voteCount) => {
+	socket.on('comment:voted', (commentId, voteCount) => {
 		// Update the vote count every time one of the users votes.
 		$(`#comment-${commentId} > .comment--action > .comment--action--vote-count`).dataset.count = voteCount;
 	});
 
 	$('#comment-button').onclick = event => {
-		$('aside#comments-aside').dataset.opened = !JSON.parse($('aside#comments-aside').dataset.opened);
+		$('#comments-aside').dataset.opened = !JSON.parse($('#comments-aside').dataset.opened);
 	};
-	
+
 	if((LOGGED_IN && cookie.username !== authorName) || (!LOGGED_IN)) {
-		socket.emit('add--view-timeout', authorName, noteId);
+		socket.emit('note:view', authorName, noteId);
 	}
-
-	// Date handlers.
-	/**
-	 * @param {number} date - The date (in milliseconds) to format
-	 * @type {string} - The formatted date
-	 */
-	function absoluteTime(date) {
-		const formatter = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', hour12: false, year: 'numeric', month: 'numeric', day: 'numeric' });
-		return formatter.format(date);
-	}
-
-	/**
-	 * @param {number} date - The date (in milliseconds) to format
-	 * @type {string} - The formatted date
-	 */
-	function relativeTime(date) {
-		const now = new Date().getTime();
-
-		let option = { style: 'long', numeric: 'always' };
-		let args = [];
-		let timeDifference = date - now;
-
-		if(Math.abs(timeDifference) > 3.154e+10)
-			args = [Math.floor(timeDifference / 3.154e+9)/10, 'year'];
-		else if(Math.abs(timeDifference) > 2.628e+9)
-			args = [Math.floor(timeDifference / 2.628e+9), 'month'];
-		else if(Math.abs(timeDifference) > 8.64e+7)
-			args = [Math.floor(timeDifference / 8.64e+7), 'day'];
-		else if(Math.abs(timeDifference) > 3.6e+6)
-			args = [Math.floor(timeDifference / 3.6e+6), 'hour'];
-		else if(Math.abs(timeDifference) > 6e+4)
-			args = [Math.floor(timeDifference / 6e+4), 'minute'];
-		else args = [Math.floor(timeDifference / 100)/10, 'second'];
-
-		return new Intl.RelativeTimeFormat('en-us', option).format(...args);
-	};
-})();
 </script>
 
 <% if($isLoggedIn && $cookies.username === user.name) { %>
-	<script>
-		$('#delete-button').onclick = async () => {
-			const confirmation = await ui.confirm({ title: 'Delete?', content: `Delete “<%- note.title %>”?` });
-			if(confirmation) socket.emit('delete--note', cookie.username, cookie.password, '<%- note.id %>', () => {
-				ui.alert({ content: 'Note deleted' });
+<script type="module">
+	import ui from '/js/modules/ui.js';
+
+	$('#delete-button').onclick = async () => {
+		const confirmation = await ui.confirm({ title: 'Delete?', content: `Delete “<%- note.title %>”? This cannot be undone!` });
+
+		if(!confirmation) return;
+
+		try {
+			const response = await fetch(`/api/notes/<%- note.id %>`, { method: 'DELETE' });
+
+			console.log(response);
+
+			if(!response.ok) {
+				// Response is not okie-dokie.
+				const json = await response.json();
+				ui.alert({ title: `Error ${response.status}`, content: json.error.messsage });
+			} else {
+				// Success.
+				ui.alert({ content: 'Note deleted successfully' });
 				history.back();
-			});
-		};
-	</script>
+			}
+		} catch (error) {
+			ui.alert({ title: 'Unexpected Error', content: error });
+		}
+	};
+</script>
 <% } %>
 </html>

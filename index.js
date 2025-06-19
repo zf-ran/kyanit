@@ -10,10 +10,11 @@ const io = new Server(server);
 const fs = require('fs');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 const marked = require('marked');
 const markedRenderer = {
-	heading(text, level, raw) {
+	heading(text, level) {
 		const headingIdRegex = /(?: +|^)\{#(\d|[a-z]|[\w-]*)\}(?: +|$)/i;
 		const matches = text.match(headingIdRegex);
 
@@ -30,7 +31,7 @@ const markedRenderer = {
 		if(title) return `<img class="simple-image" loading="lazy" alt="${text}" title="${title}" src="${href}">`;
 		else return `<img class="simple-image" loading="lazy" alt="${text}" src="${href}">`;
 	},
-	codespan(text, raw) {
+	codespan(text) {
 		return `<code>${text}</code>`;
 	}
 }
@@ -64,9 +65,9 @@ const mathjaxOptions = {
 const crypto = require('crypto');
 
 const Kyanit = require('./modules/Kyanit.js');
-const { kStringMaxLength } = require('buffer');
+const { JSONResponse, JSONErrorResponse } = Kyanit;
 
-// DATABASE -----------------
+//* Database
 const db = {
 	path: path.join(__dirname, '.data', 'database.json'),
 	indentation: parseInt(process.env.DATABASE_INDENTATION),
@@ -97,15 +98,6 @@ const db = {
 		await fs.writeFileSync(this.path, '{}', { encoding: this.encoding });
 	}
 };
-// -------------------------
-
-let operatorKey = resetOperatorKey();
-
-function resetOperatorKey() {
-	let newOperatorKey = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-	console.log(newOperatorKey);
-	return newOperatorKey;
-}
 
 // Checks if two arrays intersect.
 Array.prototype.intersectsWith = function(array) {
@@ -135,11 +127,12 @@ Array.prototype.sum = function() {
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(cookieParser());
+app.use(bodyParser.json());
 
 /** Is the server in maintenance mode? @type {boolean} */
 const MAINTENANCE = JSON.parse(process.env.MAINTENANCE);
-
 const maintenanceUsers = process.env.MAINTENANCE_USERS.split('\n');
+
 app.use(async (req, res, next) => {
 	if(MAINTENANCE) {
 		// Check if the user has access to maintenance.
@@ -159,7 +152,7 @@ app.use(async (req, res, next) => {
 
 	res.locals.$relativeTime = date => {
 		const now = new Date().getTime();
-		let option = { style: 'long', numeric: 'always' };
+		const options = { style: 'long', numeric: 'always' };
 		let args = [];
 		let timeDifference = date - now;
 
@@ -175,16 +168,12 @@ app.use(async (req, res, next) => {
 			args = [Math.floor(timeDifference / 6e+4), 'minute'];
 		else args = [Math.floor(timeDifference / 100)/10, 'second'];
 
-		return new Intl.RelativeTimeFormat('en-us', option).format(...args);
+		return new Intl.RelativeTimeFormat('en-us', options).format(...args);
 	}
 
 	res.locals.$cookies = req.cookies;
 
 	next();
-});
-
-app.get('/operator', (req, res) => {
-	res.render('operator');
 });
 
 app.get('/', async (req, res) => {
@@ -269,8 +258,8 @@ app.get('/create/:noteid', async (req, res) => {
 	/** @type {Kyanit.Note|null} */
 	const note = (await db.get('notes')).find(note => note.id === req.params.noteid);
 
-	if(!note) res.redirect('back');
-	if(req.cookies.username !== note.authorName) res.redirect('back');
+	if(!note) return res.redirect('/create');
+	if(req.cookies.username !== note.authorName) return res.redirect('back');
 
 	res.render('create', { note, mode: 'edit' });
 });
@@ -343,9 +332,270 @@ app.get('/login', async (req, res) => {
 	res.render('login');
 });
 
-// APIs
-app.get('/api/comments', async (req, res) => {
-	const noteId = req.query.note_id;
+//* APIs 
+app.post('/api/signup', async (req, res) => {
+	if(!req.body) {
+		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
+		return;
+	}
+	
+	const { name, password } = req.body;
+
+	if(!name || !password) {
+		res.status(400).json(new JSONErrorResponse(400, 'Username and password is required'));
+		return;
+	}
+
+	if(name.length < 4 || name.length > 16) {
+		res.status(400).json(new JSONErrorResponse(400, 'Username should be 4–16 characters'));
+		return;
+	}
+
+	if(password.length < 4) {
+		res.status(400).json(new JSONErrorResponse(400, 'Password must be at least 4 characters'));
+		return;
+	}
+
+	/** @type {Kyanit.User[]} */
+	const users = await db.get('users');
+
+	if(users.find(user => user.name === name)) {
+		res.status(409).json(new JSONErrorResponse(409, 'Username is taken'));
+		return;
+	}
+
+	const user = new Kyanit.User(name, password);
+
+	users.push(user);
+
+	res.cookie('username', name, { maxAge: new Date('9999-12-31T23:46:40.000Z') });
+	res.cookie('password', password, { maxAge: new Date('9999-12-31T23:46:40.000Z') });
+
+	res.sendStatus(201);
+});
+
+app.post('/api/login', async (req, res) => {
+	if(!req.body) {
+		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
+		return;
+	}
+
+	const { name, password } = req.body;
+
+	if(!name || !password) {
+		res.status(400).json(new JSONErrorResponse(400, 'No username or password given'));
+	}
+
+	/** @type {Kyanit.User[]} */
+	const users = await db.get('users');
+	const user = users.find(user => user.name === name);
+
+	if(!user || user.password !== password) {
+		res.status(404).json(new JSONErrorResponse(404, 'Invalid username or password'));
+		return;
+	}
+
+	res.cookie('username', name, { maxAge: new Date('9999-12-31T23:46:40.000Z') });
+	res.cookie('password', password, { maxAge: new Date('9999-12-31T23:46:40.000Z') });
+
+	res.sendStatus(204);
+});
+
+app.patch('/api/users', async (req, res) => {
+	if(!req.body) {
+		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
+		return;
+	}
+
+	if(!res.locals.$isLoggedIn) {
+		res.status(401).json(new JSONErrorResponse(401, 'No login credentials'));
+		return;
+	}
+
+	const { username } = req.cookies;
+
+	const { displayName, about, password } = req.body;
+
+	/** @type {Kyanit.User[]} */
+	const users = await db.get('users');
+	const user = users.find(user => user.name === username);
+
+	if(!user) {
+		res.status(404).json(new JSONErrorResponse(404, 'User not found'));
+		return;
+	}
+
+	if(displayName) user.displayName = displayName;
+	if(about !== undefined) user.about = about;
+	if(password) {
+		user.password = password;
+		res.cookie('password', password, { maxAge: new Date('9999-12-31T23:46:40.000Z') });
+	}
+
+	await db.set('users', users);
+
+	res.sendStatus(204);
+});
+
+app.post('/api/notes', async (req, res) => {
+	if(!req.body) {
+		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
+		return;
+	}
+
+	if(!res.locals.$isLoggedIn) {
+		res.status(401).json(new JSONErrorResponse(401, 'No login credentials'));
+		return;
+	}
+
+	const authorName = req.cookies.username;
+	const { title, content, keywords, thumbnailURL, unlisted } = req.body;
+
+	if(!title) {
+		res.status(400).json(new JSONErrorResponse(400, 'Field `title` is missing'));
+		return;
+	}
+
+	if(!content) {
+		res.status(400).json(new JSONErrorResponse(400, 'Field `content` is missing'));
+		return;
+	}
+
+	if(!Array.isArray(keywords)) {
+		res.status(400).json(new JSONErrorResponse(400, 'Field `keywords` must be an array'));
+		return;
+	}
+
+	if(thumbnailURL && !URL.canParse(thumbnailURL)) {
+		res.status(400).json(new JSONErrorResponse(400, 'Field `thumbnailURL` must be a valid URL'));
+		return;
+	}
+
+	if(typeof unlisted !== 'boolean') {
+		res.status(400).json(new JSONErrorResponse(400, 'Field `unlisted` must be a boolean'));
+		return;
+	}
+
+	/** @type {Kyanit.Note[]} */
+	const notes = await db.get('notes');
+	const noteIDs = notes.map(note => note.id);
+
+	let id = crypto.randomUUID();
+
+	while(noteIDs.includes(id)) {
+		id = crypto.randomUUID();
+	}
+
+	const note = new Kyanit.Note(id, title, content, keywords, authorName, thumbnailURL, unlisted);
+
+	notes.push(note);
+	await db.set('notes', notes);
+
+	res.status(201).json(new JSONResponse({ id }));
+});
+
+// TODO
+app.patch('/api/notes/:noteId', async (req, res) => {
+	if(!req.body) {
+		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
+		return;
+	}
+
+	if(!res.locals.$isLoggedIn) {
+		res.status(401).json(new JSONErrorResponse(401, 'No login credentials'));
+		return;
+	}
+
+	const { noteId } = req.params;
+
+	/** @type {Kyanit.Note[]} */
+	const notes = await db.get('notes');
+	const note = notes.find(note => note.id === noteId);
+
+	if(!note) {
+		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
+		return;
+	}
+
+	const { title, content, keywords, thumbnailURL, unlisted } = req.body;
+
+	if(title) note.title = title;
+	if(content) note.content = content;
+	if(keywords) note.keywords = keywords;
+	if(thumbnailURL !== undefined) note.thumbnailURL = thumbnailURL;
+	if(unlisted !== undefined) note.unlisted = unlisted;
+
+	console.log(note);
+
+	notes.push(note);
+	await db.set('notes', notes);
+
+	res.status(200).json(new JSONResponse({ noteId }));
+});
+
+app.delete('/api/notes/:noteId', async (req, res) => {
+	if(!res.locals.$isLoggedIn) {
+		res.status(401).json(new JSONErrorResponse(401, 'No login credentials'));
+		return;
+	}
+
+	const { noteId } = req.params;
+
+	if(!noteId) {
+		res.status(400).json(new JSONErrorResponse(400, 'No note ID given'));
+		return;
+	}
+
+	/** @type {Kyanit.Note[]} */
+	const notes = await db.get('notes');
+	const note = notes.find(note => note.id === noteId);
+
+	if(!note) {
+		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
+		return;
+	}
+
+	/** @type {Kyanit.User[]} */
+	const users = await db.get('users');
+	const user = users.find(user => user.name === note.authorName);
+
+	if(user.name !== req.cookies.username || user.password !== req.cookies.password) {
+		res.status(403).json(new JSONErrorResponse(403, 'Trying to delete other user’s note'));
+		return;
+	}
+
+	// Delete the note’s comments.
+	/** @type {Kyanit.Comment[]} */
+	let comments = await db.get('comments');
+	comments = comments.filter(comment => comment.noteId !== noteId); // Filters different note ID, the same note ID will be “deleted”.
+
+	// Delete the comments’ votes.
+	/** @type {Kyanit.CommentVote[]} */
+	let commentVotes = await db.get('commentVotes');
+	commentVotes = commentVotes.filter(commentVote => commentVote.noteId !== noteId);
+
+	// Delete the specified note.
+	const noteIndex = notes.indexOf(note);
+	notes.splice(noteIndex, 1);
+
+	await db.set('notes', notes);
+	await db.set('comments', comments);
+	await db.set('commentVotes', commentVotes);
+
+	res.sendStatus(204);
+});
+
+app.get('/api/notes/:noteId/comments', async (req, res) => {
+	const { noteId } = req.params;
+
+	/** @type {Kyanit.Note[]} */
+	const notes = await db.get('notes');
+	const note = notes.find(note => note.id === noteId);
+
+	if(!note) {
+		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
+		return;
+	}
 
 	/** Comments on the specified note @type {Kyanit.Comment[]} */
 	const noteComments = (await db.get('comments')).filter(comment => comment.noteId === noteId);
@@ -364,278 +614,264 @@ app.get('/api/comments', async (req, res) => {
 
 		// Add property `voteCount` and `votes`.
 		comment.voteCount = commentVotes.map(vote => vote.value).sum();
-		comment.votes = commentVotes;
+		comment.votes = commentVotes.map(vote => { delete vote.commentId; delete vote.noteId; return vote; });
 
 		// Add property `displayName` for commenter’s display name.
 		comment.displayName = users.find(user => user.name === comment.username).displayName;
 	}
 
-	res.json(noteComments);
+	res.json(new JSONResponse(noteComments));
+});
+
+app.post('/api/notes/:noteId/comments', async (req, res) => {
+	if(!req.body) {
+		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
+		return;
+	}
+
+	if(!res.locals.$isLoggedIn) {
+		res.status(401).json(new JSONErrorResponse(401, 'No login credentials'));
+		return;
+	}
+
+	const { noteId } = req.params;
+
+	const { content, parentId } = req.body;
+	const commenterName = req.cookies.username;
+
+	if(!content) {
+		res.status(400).json(new JSONErrorResponse(400, 'Missing required fields `content`'));
+		return;
+	}
+
+	/** @type {Kyanit.Note[]} */
+	const notes = await db.get('notes');
+	const note = notes.find(note => note.id === noteId);
+
+	if(!note) {
+		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
+		return;
+	}
+
+	/** @type {Kyanit.Comment[]} */
+	const comments = await db.get('comments');
+
+	if(parentId) {
+		const parentComment = comments.find(comment => comment.id === parentId);
+
+		// Check if parent comment exists.
+		if(!parentComment) {
+			res.status(404).json(new JSONErrorResponse(404, 'Parent comment not found'));
+			return;
+		}
+	}
+
+	const commentIDs = comments.map(comment => comment.id);
+
+	let id = crypto.randomUUID();
+
+	// Loops until a unique UUID is found.
+	while(commentIDs.includes(id)) {
+		id = crypto.randomUUID();
+	}
+
+	const comment = new Kyanit.Comment(id, noteId, commenterName, DOMPurify.sanitize(content), parentId);
+
+	comments.push(comment);
+
+	await db.set('comments', comments);
+
+	/** @type {Kyanit.User[]} */
+	const users = await db.get('users');
+	const commenter = users.find(user => user.name === commenterName);
+
+	comment.displayName = commenter.displayName;
+	comment.voteCount = 0;
+	comment.votes = [];
+
+	io.to(`note:${noteId}`).emit('comment:created', comment);
+
+	res.sendStatus(204);
+});
+
+app.delete('/api/notes/:noteId/comments/:commentId', async (req, res) => {
+	if(!res.locals.$isLoggedIn) {
+		res.status(401).json(new JSONErrorResponse(401, 'No login credentials'));
+		return;
+	}
+
+	const { noteId, commentId } = req.params;
+
+	/** @type {Kyanit.Note[]} */
+	const notes = await db.get('notes');
+	const note = notes.find(note => note.id === noteId);
+
+	if(!note) {
+		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
+		return;
+	}
+
+	/** @type {Kyanit.Comment[]} */
+	const comments = await db.get('comments');
+	const comment = comments.find(comment => comment.id === commentId);
+
+	if(!comment) {
+		res.status(404).json(new JSONErrorResponse(404, 'Comment not found'));
+		return;
+	}
+
+	if(req.cookies.username !== comment.username) {
+		res.status(403).json(new JSONErrorResponse(403, 'Trying to delete other user’s comment'));
+		return;
+	}
+
+	/** @type {Kyanit.User[]} */
+	const users = await db.get('users');
+	const commenter = users.find(user => user.name === comment.username);
+
+	if(req.cookies.password !== commenter.password) {
+		res.status(401).json(new JSONErrorResponse(401, 'Invalid login credentials'));
+		return;
+	}
+
+	// Deletes the comment.
+	comments.splice(comments.indexOf(comment), 1);
+
+	// Delete the comment’s votes.
+	let commentVotes = await db.get('commentVotes');
+	commentVotes = commentVotes.filter(commentVote => commentVote.commentId !== commentId);
+
+	// Delete the comment’s children.
+	let parentIDs = [ commentId ];
+	// Reverse and increment from the last element so the indexing won’t be fucked up while looping. (The indexing is still same as normal looping.)
+	comments.reverse(); 
+	for(let i = comments.length - 1; i >= 0; i--) {
+		const comment = comments[i];
+
+		// If the comment is the root, don’t do anything.
+		if(comment.parentId === null) continue;
+
+		// If the comment’s parent is in `parentIDs`,
+		if(parentIDs.includes(comment.parentId)) {
+			// push the comment ID to `parentIDs`,
+			parentIDs.push(comment.id);
+
+			// delete the comment,
+			comments.splice(comments.indexOf(comment), 1);
+
+			// and delete the comment’s votes.
+			commentVotes = commentVotes.filter(commentVote => commentVote.commentId !== comment.id);
+		}
+	}
+	comments.reverse();
+
+	await db.set('comments', comments);
+	await db.set('commentVotes', commentVotes);
+
+	io.to(`note:${noteId}`).emit('comment:deleted', commentId);
+
+	res.sendStatus(204);
+});
+
+app.post('/api/notes/:noteId/comments/:commentId/votes', async (req, res) => {
+	if(!req.body) {
+		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
+		return;
+	}
+
+	if(!res.locals.$isLoggedIn) {
+		res.status(400).json(new JSONErrorResponse(401, 'No login credentials'));
+		return;
+	}
+
+	const { noteId, commentId } = req.params;
+	const { value } = req.body;
+
+	if(!value) {
+		res.status(400).json(new JSONErrorResponse(400, 'Note value given'));
+		return;
+	}
+
+	const validValues = [1, -1];
+	if(!validValues.includes(value)) {
+		res.status(400).json(new JSONErrorResponse(400, 'Invalid value given'));
+		return;
+	}
+
+	/** @type {Kyanit.Note[]} */
+	const notes = await db.get('notes');
+	const note = notes.find(note => note.id === noteId);
+
+	if(!note) {
+		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
+		return;
+	}
+
+	/** @type {Kyanit.Comment[]} */
+	const comments = await db.get('comments');
+	const comment = comments.find(comment => comment.id === commentId);
+	
+	if(!comment) {
+		res.status(404).json(new JSONErrorResponse(404, 'Comment not found'));
+		return;
+	}
+
+	/** @type {Kyanit.CommentVote[]} */
+	const commentVotes = await db.get('commentVotes');
+	const existingVote = commentVotes.find(vote => {
+		return (
+			vote.noteId === noteId &&
+			vote.commentId === commentId &&
+			vote.voterName === req.cookies.username
+		);
+	});
+
+	if(!existingVote) {
+		// A new vote.
+		const commentVote = new Kyanit.CommentVote(noteId, commentId, req.cookies.username, value);
+		commentVotes.push(commentVote);
+		res.sendStatus(201);
+	} else if(existingVote.value === value) {
+		// Cancel vote.
+		const commentVoteIndex = commentVotes.indexOf(existingVote);
+		commentVotes.splice(commentVoteIndex, 1);
+		res.sendStatus(204);
+	} else {
+		// Change vote.
+		existingVote.value = value;
+	}
+
+	const currentCount = commentVotes
+		.filter(commentVote => commentVote.commentId === commentId) // Filter the votes to comment ID.
+		.map(commentVote => commentVote.value) // Map it to the vote value. [{...}, {...}, ...] -> [-1, 1, ...]
+		.sum();
+
+	await db.set('commentVotes', commentVotes);
+
+	io.to(`note:${noteId}`).emit('comment:voted', commentId, currentCount);
 });
 
 io.on('connection', socket => {
 	let addViewTimeout;
 	let viewedInTheSameSession = false;
 
-	socket.on('get--usernames', async (callback) => {
-		const users = await db.get('users');
-		const usernames = users.map(user => user.name);
-		callback(usernames);
-	});
-
-	socket.on('set--user', async (name, password) => {
-		const users = await db.get('users');
-
-		const user = new Kyanit.User(name, password);
-		users.push(user);
-
-		await db.set('users', users);
-	});
-
-	socket.on('get--is-password-correct', async (name, password, callback) => {
-		const users = await db.get('users');
-		const user = users.find(user => user.name === name);
-		const isCorrect = (user?.password === password);
-
-		callback(isCorrect);
-	});
-
-	socket.on('get--user-password', async (name, cookiePassword, callback) => {
-		const users = await db.get('users');
-
-		/** @type {Kyanit.User} */
-		const user = users.find(user => user.name === name);
-		if(!user) return;
-
-		if(user.password === cookiePassword) callback(user.password);
-	});
-
-	socket.on('set--user-information', async (name, { displayName, about, password }) => {
-		const users = await db.get('users');
-
-		/** @type {Kyanit.User} */
-		const user = users.find(user => user.name === name);
-
-		// Empty string means the user inputs nothing, (inputs a literal '').
-		// Undefined means the user didn’t input anything, (didn’t change anything).
-
-		if(displayName === '') user.displayName = name;
-		else if(displayName !== undefined) user.displayName = displayName;
-
-		if(about !== undefined) user.about = about;
-
-		if(password) user.password = password;
-
-		await db.set('users', users);
-	});
-
-	socket.on('set--note', async (title, content, keywords, authorName, thumbnailURL, unlisted, callback) => {
-		const notes = await db.get('notes');
-
-		const noteIDs = notes.map(note => note.id);
-
-		let id = crypto.randomUUID();
-
-		// If the ID is taken, loop until a unique ID is found.
-		while(noteIDs.includes(id)) {
-			id = crypto.randomUUID();
-		}
-
-		const note = new Kyanit.Note(id, title, content, keywords, authorName, thumbnailURL, unlisted);
-		notes.push(note);
-
-		await db.set('notes', notes);
-
-		callback(id);
-	});
-
-	socket.on('edit--note', async (id, title, content, keywords, authorName, thumbnailURL, unlisted, callback) => {
-		const notes = await db.get('notes');
-
-		/** @type {Kyanit.Note} */
-		const note = notes.find(note => note.id === id);
-
-		note.title = title;
-		note.content = content;
-		note.unlisted = unlisted;
-		note.thumbnailURL = thumbnailURL
-		note.keywords = keywords;
-		note.lastEdited = new Date().getTime();
-
-		await db.set('notes', notes);
-
-		callback(id);
-	});
-
-	socket.on('delete--note', async (name, password, noteId, callback) => {
-		const notes = await db.get('notes');
-		/** @type {Kyanit.Note} */
-		const note = notes.find(note => note.id === noteId);
-		if(!note) return;
-
-		// Check if the user is authorized.
-		const users = await db.get('users');
-		/** @type {Kyanit.User} */
-		const user = users.find(user => user.name === name);
-		if(!user) return;
-		if(user.password !== password) return;
-
-		// Delete the note’s comments.
-		/** @type {Kyanit.Comment[]} */
-		let comments = await db.get('comments');
-		comments = comments.filter(comment => comment.noteId !== noteId); // Filters different note ID, the same note ID will be “deleted”.
-
-		// Delete the comments’ votes.
-		/** @type {Kyanit.CommentVote[]} */
-		let commentVotes = await db.get('commentVotes');
-		commentVotes = commentVotes.filter(commentVote => commentVote.noteId !== noteId);
-
-		// Delete the specified note.
-		const noteIndex = notes.indexOf(note);
-		notes.splice(noteIndex, 1);
-
-		await db.set('notes', notes);
-		await db.set('comments', comments);
-		await db.set('commentVotes', commentVotes);
-
-		callback();
-	});
-
 	// COMMENTS’ SOCKETS
-	socket.on('connect-to-note', noteId => {
-		socket.join(`note/${noteId}`)
+	socket.on('note:connect', noteId => {
+		socket.join(`note:${noteId}`);
 	});
 
-	socket.on('set--comment', async (noteId, commenterName, content, parentId, callback) => {
-		/** @type {Kyanit.User} */
-		const commenter = (await db.get('users')).find(user => user.name === commenterName);
-
-		const comments = await db.get('comments');
-
-		const commentIDs = comments.map(comment => comment.id);
-		let id = crypto.randomUUID();
-		while(commentIDs.includes(id)) {
-			id = crypto.randomUUID();
-		}
-
-		const comment = new Kyanit.Comment(id, noteId, commenterName, DOMPurify.sanitize(content), parentId);
-
-		comments.push(comment);
-
-		await db.set('comments', comments);
-
-		comment.displayName = commenter.displayName;
-		comment.votes = []; comment.voteCount = 0;
-		io.to(`note/${noteId}`).emit('send--comment-added', comment);
-		callback();
-	});
-
-	socket.on('delete--comment', async (noteId, commentId, callback) => {
-		const comments = await db.get('comments');
-		const comment = comments.find(comment => comment.id === commentId);
-
-		// Deletes the comment.
-		comments.splice(comments.indexOf(comment), 1);
-
-		// Delete the comment’s votes.
-		let commentVotes = await db.get('commentVotes');
-		commentVotes = commentVotes.filter(commentVote => commentVote.commentId !== commentId);
-
-		// Delete the comment’s children (or replies, or threads, or whatever).
-		let parentIDs = [ commentId ];
-		// Reverse and increment from the last element so the indexing won’t be fucked up while looping. (The indexing is still same as normal looping.)
-		comments.reverse(); 
-		for(let i = comments.length - 1; i >= 0; i--) {
-			const comment = comments[i];
-
-			// If the comment is the root, don’t do anything.
-			if(comment.parentId === null) continue;
-
-			// If the comment’s parent is in `parentIDs`,
-			if(parentIDs.includes(comment.parentId)) {
-				// push the comment ID to `parentIDs`,
-				parentIDs.push(comment.id);
-
-				// delete the comment,
-				comments.splice(comments.indexOf(comment), 1);
-
-				// and delete the comment’s votes.
-				commentVotes = commentVotes.filter(commentVote => commentVote.commentId !== comment.id);
-			}
-		}
-		comments.reverse();
-
-		await db.set('comments', comments);
-		await db.set('commentVotes', commentVotes);
-
-		callback(commentId);
-		io.to(`note/${noteId}`).emit('send--comment-deleted', commentId);
-	});
-
-	socket.on('set--comment-vote', async (noteId, commentId, voterName, value, callback = () => {}) => {
-		if(value <= -1) value = -1;
-		else if(value >= 1) value = 1;
-		else return;
-
-		// If the voter doesn’t exist, return.
-		const user = (await db.get('users')).find(user => user.name === voterName);
-		if(!user) return;
-
-		/** @type {Kyanit.CommentVote[]} */
-		const commentVotes = await db.get('commentVotes');
-		const commentVote = commentVotes.find(commentVote => 
-			commentVote.noteId === noteId
-			&& commentVote.commentId === commentId
-			&& commentVote.voterName === voterName);
-
-		if(!commentVote) {
-			// Creates a vote if there's no vote yet.
-			const commentVote = new Kyanit.CommentVote(noteId, commentId, voterName, value);
-			commentVotes.push(commentVote);
-		} else if(commentVote.value === value) {
-			// If the user clicks vote again, the vote is deleted.
-			const commentVoteIndex = commentVotes.indexOf(commentVote);
-			commentVotes.splice(commentVoteIndex, 1);
-		} else {
-			// Modify the vote value if the vote already exists.
-			commentVote.value = value;
-		}
-
-		const currentCount = commentVotes
-			.filter(commentVote => commentVote.commentId === commentId) // Selects the vote that has the comment ID.
-			.map(commentVote => commentVote.value) // Map it to only the vote value. [{}, {}, ...] -> [-1, 1, ...]
-			.sum();
-
-		await db.set('commentVotes', commentVotes);
-
-		callback(currentCount);
-		io.to(`note/${noteId}`).emit('send--comment-voted', commentId, currentCount);
-	});
-
-	socket.on('get--user-to-display-name', async () => {
-		const users = await db.get('users');
-		let userToDisplay = {};
-
-		for(let i = 0; i < users.length; i++) {
-			const user = users[i];
-			userToDisplay[user.name] = user.displayName;
-		}
-
-		socket.emit('send--user-to-display-name');
-	});
-
-	socket.on('add--view-timeout', (username, noteId) => {
+	socket.on('note:view', (username, noteId) => {
 		if(viewedInTheSameSession) return;
 
 		viewedInTheSameSession = true;
 
 		addViewTimeout = setTimeout(async () => {
 			const users = await db.get('users');
-
 			const user = users.find(user => username === user.name);
 			if(!user) return;
 
-			const note = user.notes.find(note => note.id === noteId);
+			const notes = await db.get('notes');
+			const note = notes.find(note => note.id === noteId);
 			if(!note) return;
 
 			if(typeof note.views !== 'number' || note.views < 0 || isNaN(note.views)) note.views = 0;
@@ -649,31 +885,7 @@ io.on('connection', socket => {
 	socket.on('disconnect', () => {
 		clearTimeout(addViewTimeout);
 	});
-
-	socket.on('req--check-operator-key', (_operatorKey, callback) => {
-		if(_operatorKey !== operatorKey) callback(false)
-		else if(_operatorKey === operatorKey) callback(true)
-
-		operatorKey = resetOperatorKey();
-	});
-
-	socket.on('req--database', async callback => {
-		callback(await db.getAll());
-	});
 });
-
-// function resetDatabase() {
-// 	await db.set('users', []);
-// }
-
-async function verifyUser(name, verified) {
-	const users = await db.get('users');
-	const user = users.find(user => user.name === name);
-
-	user.verified = verified;
-
-	await db.set('users', users);
-}
 
 async function isLoggedIn(cookies) {
 	if(!cookies.username || !cookies.password) return false;
@@ -685,18 +897,6 @@ async function isLoggedIn(cookies) {
 
 	return (user.password === cookies.password);
 }
-
-async function userToDisplayName() {
-	const users = await db.get('users');
-	let userToDisplay = {};
-
-	for(let i = 0; i < users.length; i++) {
-		const user = users[i];
-		userToDisplay[user.name] = user.displayName;
-	}
-
-	return JSON.stringify(userToDisplay);
-};
 
 const PORT = process.env.PORT;
 server.listen(PORT, async () => {
