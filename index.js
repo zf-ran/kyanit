@@ -7,7 +7,6 @@ const server = http.createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server);
 
-const fs = require('fs');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
@@ -62,12 +61,7 @@ const mathjaxOptions = {
 	}
 }
 
-const crypto = require('crypto');
-
 const Kyanit = require('./modules/Kyanit.js');
-const { JSONResponse, JSONErrorResponse } = Kyanit;
-
-//* Database
 const db = require('./modules/database.js');
 
 // Checks if two arrays intersect.
