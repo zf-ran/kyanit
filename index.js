@@ -290,11 +290,11 @@ app.get('/:reduce/note/:noteid', async (req, res) => {
 	}
 });
 
-app.get('/signup', async (req, res) => {
+app.get('/signup', (req, res) => {
 	res.render('signup');
 });
 
-app.get('/login', async (req, res) => {
+app.get('/login', (req, res) => {
 	res.render('login');
 });
 
@@ -304,10 +304,18 @@ const noteRoutes = require('./routes/notes');
 const commentRoutes = require('./routes/comments');
 const commentVoteRoutes = require('./routes/commentVotes');
 
-app.use('/api', userRoutes);
-app.use('/api', noteRoutes);
-app.use('/api', commentRoutes);
-app.use('/api', commentVoteRoutes);
+app.use(
+	'/api',
+	(req, _res, next) => {
+		// Inject IO using middleware.
+		req.io = io;
+		next();
+	},
+	userRoutes,
+	noteRoutes,
+	commentRoutes,
+	commentVoteRoutes
+);
 
 io.on('connection', socket => {
 	let addViewTimeout;

@@ -85,7 +85,7 @@ router.post('/notes/:noteId/comments/:commentId/votes', async (req, res) => {
 
 	await db.set('commentVotes', commentVotes);
 
-	io.to(`note:${noteId}`).emit('comment:voted', commentId, currentCount);
+	req.io.to(`note:${noteId}`).emit('comment:voted', commentId, currentCount);
 });
 
 module.exports = router;

@@ -114,7 +114,7 @@ router.post('/notes/:noteId/comments', async (req, res) => {
 	comment.voteCount = 0;
 	comment.votes = [];
 
-	io.to(`note:${noteId}`).emit('comment:created', comment);
+	req.io.to(`note:${noteId}`).emit('comment:created', comment);
 
 	res.sendStatus(204);
 });
@@ -193,7 +193,7 @@ router.delete('/notes/:noteId/comments/:commentId', async (req, res) => {
 	await db.set('comments', comments);
 	await db.set('commentVotes', commentVotes);
 
-	io.to(`note:${noteId}`).emit('comment:deleted', commentId);
+	req.io.to(`note:${noteId}`).emit('comment:deleted', commentId);
 
 	res.sendStatus(204);
 });
