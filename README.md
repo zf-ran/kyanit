@@ -1,4 +1,4 @@
-Kyanit is a note sharing platform. It’s simple to use, no ads, no bloats! *Still needs optimization though.*
+Kyanit is a note sharing platform. It’s simple to use, no ads, no bloats! *Still needs optimization, though.*
 
 A user can post a note. Here, a note is like an article, or a post; that has a title, content, comments, and votes.
 
@@ -10,9 +10,11 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 ## Refactors
 
 - [ ] Fix the code.
-	- [80%] Refactor back-end.
-	- [10%] Refactor front-end.
-- [ ] Remove unnecessary try-catch blocks.
+	- [ ] Refactor back-end.
+		- [ ] Improve input validations in APIs.
+		- [ ] Use PostgreSQL for the database.
+	- [ ] Refactor front-end.
+		- [ ] Remove unnecessary try-catch blocks.
 - [ ] Document APIs.
 
 ## New stuff
@@ -62,3 +64,11 @@ with prefix `/api`.
 
 -	`note:connect(noteId)`.
 -	`note:view(uername, noteId)`.
+
+## Server to Client
+
+### on room `note:{noteId}`
+
+-	`comment:created(comment)`.
+-	`comment:deleted(commentId)`.
+-	`comment:voted(commentId, commentVoteCount)`.
