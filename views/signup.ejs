@@ -79,10 +79,11 @@
 				body: JSON.stringify(inputs)
 			});
 
-			const json = await response.json();
 
 			if(!response.ok) {
 				// Handle invalid requests.
+				const json = await response.json();
+
 				messageBox.innerText = json.error.message;
 				toggleInputs(true);
 			} else {
