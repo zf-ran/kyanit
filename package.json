@@ -5,7 +5,9 @@
   "author": "Zafran",
   "main": "index.js",
   "scripts": {
-    "start": "node --env-file .env index"
+    "start": "node --env-file .env index",
+    "prod": "node --env-file prod.env index",
+    "test": "node --env-file test.env index"
   },
   "dependencies": {
     "body-parser": "^2.2.0",
