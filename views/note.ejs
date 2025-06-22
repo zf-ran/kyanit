@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 	<title><%= note.title %></title>
-	<meta name="description" content="Author: <%- user.displayName %> @<%- note.authorName %>">
-	<meta name="author" content="<%- user.displayName %>">
+	<meta name="description" content="Author: <%- note.author_display_name %> @<%- note.author_name %>">
+	<meta name="author" content="<%- note.author_display_name %>">
 	<meta name="keywords" content="<%- note.keywords?.join(', ') %>">
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -23,20 +23,20 @@
 <body>
 	<%- include('partials/header.ejs') %>
 	<% const absoluteDate = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric' }); %>
-	
-	<% if(note.thumbnailURL) { %><div id="thumbnail-block" style="background-image: url('<%- note.thumbnailURL %>')"></div><% } %>
-	
+
+	<% if(note.thumbnail_url) { %><div id="thumbnail-block" style="background-image: url('<%- note.thumbnail_url %>')"></div><% } %>
+
 	<div id="title-bar">
-		<span class="tb--author"><%= user.displayName %><% if(user.verified) { %><span id="verified"><i class="fa-solid fa-check"></i></span><% } %></span>
+		<span class="tb--author"><%= note.author_display_name %><% if(note.is_author_verified) { %><span id="verified"><i class="fa-solid fa-check"></i></span><% } %></span>
 		<span class="tb--title"><%= note.title %></span>
 		<span class="tb--views"><% if(note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views.toLocaleString() %></span>
 		<% if(commentCount > 0) { %>
 			<span class="tb--comments"><i class="fa-regular fa-comment"></i> <%= commentCount %></span>
 		<% } %>
-		<% if(note.lastEdited) { %>
-			<span class="tb--edited"><i class="fa-solid fa-pen-nib"></i> <%= new Date(note.lastEdited).toLocaleDateString() %></span>
+		<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
+			<span class="tb--published"><i class="fa-solid fa-upload"></i> <%= new Date(note.created_at).toLocaleDateString() %></span>
 		<% } else { %>
-			<span class="tb--published"><i class="fa-solid fa-upload"></i> <%= new Date(note.published).toLocaleDateString() %></span>
+			<span class="tb--edited"><i class="fa-solid fa-pen-nib"></i> <%= new Date(note.updated_at).toLocaleDateString() %></span>
 		<% } %>
 		<a class="tb--redirect" href="#title-block"></a>
 	</div>
@@ -44,20 +44,26 @@
 	<main>
 		<div id="title-block">
 			<div id="title"><%= note.title %></div>
-			<div id="description"><%= note.description %></div>
 			<div id="information">
-				<span class="info--author"><a href="/user/<%- note.authorName %>"><span class="info--author--display-name"><%= user.displayName %><% if(user.verified) { %><span id="verified"><i class="fa-solid fa-check"></i></span><% } %></span><span class="info--author--username">@<%= note.authorName %></span></a></span>
-				<% if(note.lastEdited) { %>
-					<span class="info--edited"><%= absoluteDate.format(new Date(note.lastEdited)) %></span>
+				<span class="info--author">
+					<a href="/user/<%- note.author_name %>">
+						<span class="info--author--display-name">
+							<%= note.author_display_name %><% if(note.is_author_verified) { %><span id="verified"><i class="fa-solid fa-check"></i></span><% } %>
+						</span>
+						<span class="info--author--username">@<%= note.author_name %></span>
+					</a>
+				</span>
+				<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
+					<span class="info--published"><%= absoluteDate.format(new Date(note.created_at)) %></span>
 				<% } else { %>
-					<span class="info--published"><%= absoluteDate.format(new Date(note.published)) %></span>
+					<span class="info--edited"><%= absoluteDate.format(new Date(note.updated_at)) %></span>
 				<% } %>
 				<span class="info--views"><% if(note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views %></span>
 				<span class="info--comments"><i class="fa-regular fa-comment"></i> <%= commentCount %></span>
 			</div>
 		</div>
 
-		<div id="content" class="markdown-document"><%- content %></div>      
+		<div id="content" class="markdown-document"><%- htmlContent %></div>
 	</main>
 
 	<!-- TABLE OF CONTENTS -->
@@ -66,7 +72,7 @@
 	<!-- COMMENTS -->
 	<aside id="comments-aside" data-opened="false">
 		<div id="comments-title"><i class="fa-regular fa-comments"></i> Comments</div>
-		<% if($isLoggedIn) { %>
+		<% if(isLoggedIn) { %>
 			<div id="add-comment-wrapper">
 				<div id="add-comment">
 					<input id="add-comment-input" type="text" placeholder="Share your thoughts..." />
@@ -89,8 +95,8 @@
 		<div id="content-list-button" title="Contents">
 			<i class="fa-solid fa-list-ol"></i>
 		</div>
-		<% if($isLoggedIn && $cookies.username === user.name) { %>
-			<a id="edit-button" title="Edit" href="/create/<%- note.id %>">
+		<% if(isLoggedIn && username === note.author_name) { %>
+			<a id="edit-button" title="Edit" href="/edit/<%- note.id %>">
 				<i class="fa-regular fa-pen-to-square"></i>
 			</a>
 			<div id="delete-button" title="Delete">
@@ -106,7 +112,7 @@
 	
 	const socket = io('/');
 	const noteId = '<%- note.id %>';
-	const authorName = '<%- note.authorName %>';
+	const authorName = '<%- note.author_name %>';
 
 	addTableOfContents();
 	addURLConfirmations();
@@ -173,9 +179,6 @@
 		// Fetch the comments.
 		const comments = await fetchComments();
 
-		// Sort comments by vote count (descending).
-		comments.sort((a, b) => b.voteCount - a.voteCount);
-
 		// Loops.
 		while(comments.length > 0) {
 			// If the parent of the comment doesn’t exist, move the comment to the end of the array.
@@ -209,23 +212,23 @@
 
 	/** Load a comment @type {0|void} Returns `0` if the comment has a parent and the parent element doesn’t exist. */
 	function loadComment(comment) {
-		if(comment.parentId && !$(`#comment-${comment.parentId} .comment--replies`)) return 0;
+		if(comment.parent_comment_id && !$(`#comment-${comment.parent_comment_id} .comment--replies`)) return 0;
 
 		// If there’s no parent, set `parentElement` to `commentsContainer`.
-		const parentElement = (comment.parentId) ? $(`#comment-${comment.parentId} .comment--replies`) : commentsContainer;
+		const parentElement = (comment.parent_comment_id) ? $(`#comment-${comment.parent_comment_id} .comment--replies`) : commentsContainer;
 		const commentElement = new JSH('div', null, { class: 'comment', id: `comment-${comment.id}` }).appendTo(parentElement);
 
 		const commentInfoElement = new JSH('div', null, { class: 'comment--info' }).appendTo(commentElement);
-		const displayNameElement = new JSH('a', null, { class: 'comment--info--display-name', href: `/user/${encodeURI(comment.username)}` }).appendTo(commentInfoElement);
-		displayNameElement.innerText = comment.displayName;
+		const displayNameElement = new JSH('a', null, { class: 'comment--info--display-name', href: `/user/${encodeURIComponent(comment.commenter_name)}` }).appendTo(commentInfoElement);
+		displayNameElement.innerText = comment.commenter_display_name;
 
 		// Detect if the commenter is the author.
-		if(comment.username === authorName) displayNameElement.classList.add('author');
+		if(comment.commenter_name === authorName) displayNameElement.classList.add('author');
 
-		new JSH('div', '@'+comment.username, { class: 'comment--info--username' }).appendTo(commentInfoElement);
+		new JSH('div', '@'+comment.commenter_name, { class: 'comment--info--username' }).appendTo(commentInfoElement);
 
-		new JSH('div', relativeTime(comment.time), { class: 'comment--info--relative-time' }).appendTo(commentInfoElement);
-		new JSH('div', absoluteTime(comment.time), { class: 'comment--info--absolute-time' }).appendTo(commentInfoElement);
+		new JSH('div', relativeTime(new Date(comment.created_at)), { class: 'comment--info--relative-time' }).appendTo(commentInfoElement);
+		new JSH('div', absoluteTime(new Date(comment.created_at)), { class: 'comment--info--absolute-time' }).appendTo(commentInfoElement);
 
 		const commentContentElement = new JSH('div', comment.content, { class: 'comment--content' }).appendTo(commentElement);
 
@@ -238,12 +241,12 @@
 		commentCollapseElement.onclick = () => { commentRepliesElement.dataset.collapsed = !JSON.parse(commentRepliesElement.dataset.collapsed); };
 
 		const commentUpvote = new JSH('div', '<i class="fa-solid fa-up-long">', { class: 'comment--action--upvote', 'data-vote': 1, 'data-voted': false }).appendTo(commentActionsElement);
-		const commentVoteCount = new JSH('div', null, { class: 'comment--action--vote-count', 'data-count': comment.voteCount }).appendTo(commentActionsElement);
+		const commentVoteCount = new JSH('div', null, { class: 'comment--action--vote-count', 'data-count': comment.vote_count }).appendTo(commentActionsElement);
 		const commentDownvote = new JSH('div', '<i class="fa-solid fa-down-long">', { class: 'comment--action--downvote', 'data-vote': -1, 'data-voted': false }).appendTo(commentActionsElement);
 
-		if(LOGGED_IN) {
+		/* <% if(isLoggedIn) { %> */
 			// Shows if the user had voted.
-			const commentVote = comment.votes.find(commentVote => commentVote.voterName === cookie.username);
+			const commentVote = comment.votes.find(commentVote => commentVote.voter_name === '<%- username %>');
 
 			if(commentVote) {
 				commentUpvote.dataset.voted = (commentVote.value === 1);
@@ -254,7 +257,7 @@
 			const commentReply = new JSH('div', '<i class="fa-solid fa-reply"></i>', { class: 'comment--action--reply' }).appendTo(commentActionsElement);
 			commentReply.onclick = async event => {
 				const { content } = await ui.prompt({
-					title: `Replying to @${comment.username}<div style="font-size:0.9rem;font-style:normal;font-weight:400;margin-top:1em;line-height:1.5;">${comment.content}</div>`,
+					title: `Replying to @${comment.commenter_name}<div style="font-size:0.9rem;font-style:normal;font-weight:400;margin-top:1em;line-height:1.5;">${comment.content}</div>`,
 					inputs: [{
 						type: 'text',
 						label: 'Reply',
@@ -326,7 +329,7 @@
 			}
 
 			// If the commenter is the user.
-			if(comment.username === cookie.username) {
+			if(comment.commenter_name === '<%- username %>') {
 				// Add a delete button.
 				const deleteComment = new JSH('div', '<i class="fa-solid fa-trash"></i>', { class: 'comment--action--delete' }).appendTo(commentActionsElement);
 				deleteComment.onclick = async event => {
@@ -350,11 +353,11 @@
 					}
 				}
 			}
-		}
+		/* <% } %> */
 	}
 	
-	// If the user is logged in,
-	if(LOGGED_IN) {
+	/* <% if(isLoggedIn) { %> */
+		// If the user is logged in,
 		// add comment input.
 		const addCommentButton = $('#add-comment-button');
 		addCommentButton.onclick = async () => {
@@ -390,7 +393,7 @@
 				ui.alert({ title: 'Unexpected Error', content: error });
 			}
 		};
-	}
+	/* <% } %> */
 
 	socket.on('comment:created', loadComment);
 
@@ -407,12 +410,12 @@
 		$('#comments-aside').dataset.opened = !JSON.parse($('#comments-aside').dataset.opened);
 	};
 
-	if((LOGGED_IN && cookie.username !== authorName) || (!LOGGED_IN)) {
+	/* <% if(username !== note.author_name) { %> */
 		socket.emit('note:view', authorName, noteId);
-	}
+	/* <% } %> */
 </script>
 
-<% if($isLoggedIn && $cookies.username === user.name) { %>
+<% if(isLoggedIn && username === note.author_name) { %>
 <script type="module">
 	import ui from '/js/modules/ui.mjs';
 

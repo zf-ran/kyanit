@@ -9,11 +9,11 @@
     main * {
       tab-size: 4;
     }
-    
+
     table {
       border-collapse: collapse;
     }
-    
+
     table, td, th {
       border: 1px solid black;
     }
@@ -21,7 +21,7 @@
 </head>
 <body>
 	<main>
-    <center><h1><%= note.title %></h1> <strong><%= authorDisplayName %></strong> <em>@<%= note.authorName %></em></center>
+    <center><h1><%= note.title %></h1> <strong><%= note.author_display_name %></strong> <em>@<%= note.author_name %></em></center>
     <hr>
     <%- content %>
 	</main>

@@ -68,12 +68,12 @@
 		messageBox.innerText = '';
 
 		const inputs = {
-			name: usernameInput.value,
+			username: usernameInput.value,
 			password: passwordInput.value
 		};
 
 		try {
-			const response = await fetch('/api/signup', {
+			const response = await fetch('/auth/signup', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(inputs)
@@ -91,7 +91,7 @@
 				$('#signup--title').innerHTML = 'Signed in! <a href="/login">Login</a>';
 				$('#signup').classList.add('success');
 
-				location.assign(`/user/${inputs.name}`);
+				location.assign(`/user/${inputs.username}`);
 			}
 		} catch(error) {
 			ui.alert({ title: 'Unexpected Error', content: error });

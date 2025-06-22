@@ -12,57 +12,25 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
 const marked = require('marked');
-const markedRenderer = {
-	heading(text, level) {
-		const headingIdRegex = /(?: +|^)\{#(\d|[a-z]|[\w-]*)\}(?: +|$)/i;
-		const matches = text.match(headingIdRegex);
-
-		let id;
-		if(!matches) return `<h${level} class="heading"><span class="heading-content" data-header="${level}">${text.replace(headingIdRegex, '')}</span></h${level}>`;
-		else id = matches[1];
-
-		return `<h${level} class="heading" id="section-${id}"><span class="heading-content" data-header="${level}">${text.replace(headingIdRegex, '')}</span><a href="#section-${id}" class="header-redirect">§</a></h${level}>`;
-	},
-	code(code, infostring, escaped) {
-		return `<pre class="code-block"><code class="language-${infostring}">` + code + '</code></pre>';
-	},
-	image(href, title, text) {
-		if(title) return `<img class="simple-image" loading="lazy" alt="${text}" title="${title}" src="${href}">`;
-		else return `<img class="simple-image" loading="lazy" alt="${text}" src="${href}">`;
-	},
-	codespan(text) {
-		return `<code>${text}</code>`;
-	}
-}
-
+const { markedRenderer } = require('./config.js');
 marked.use({ renderer: markedRenderer });
 
 const DOMPurify = require('isomorphic-dompurify');
 const purifyOptions = { ADD_TAGS: ['fn'], ADD_ATTR: ['note'] };
 
 const { mjpage } = require('mathjax-node-page');
-const mathjaxOptions = {
-	format: [ 'TeX' ],
-	singleDollars: true,
-	MathJax: {
-		loader: { load: [ 'input/tex', 'output/svg', '[tex]/ams' ] },
-		tex: {
-			inlineMath: [['$', '$'], ['\\(', '\\)']],
-			packages: { '[+]': ['ams'] }
-		},
-		options: {
-			ignoreHtmlClass: 'code-text',
-			renderActions: {
-				addMenu: []
-			}
-		},
-		svg: { mtextInheritFont: true },
-		showMathMenu: false
-	}
-}
+const { mathjaxOptions } = require('./config.js');
 
 const Kyanit = require('./modules/Kyanit.js');
-const db = require('./modules/database.js');
+const { isUUID } = Kyanit;
+
+const { validateToken } = require('./modules/token.js');
+
+//* Database
+const { neon } = require('@neondatabase/serverless');
+
+const { PG_HOST, PG_DATABASE, PG_USER, PG_PASSWORD } = process.env;
+const sql = neon(`postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}/${PG_DATABASE}?sslmode=require`);
 
 // Checks if two arrays intersect.
 Array.prototype.intersectsWith = function(array) {
@@ -75,20 +43,6 @@ Array.prototype.intersectsWith = function(array) {
 	return false;
 };
 
-// Sums all the elements in an array.
-// If the array is empty, returns 0.
-// If one of the element is NaN, throw a TypeError.
-Array.prototype.sum = function() {
-	let sum = 0;
-
-	for(let i = 0; i < this.length; i++) {
-		if(isNaN(this[i])) throw TypeError(`Element at index ${i} (${this[i]}) is not a number (NaN)`);
-		sum += this[i];
-	}
-
-	return sum;
-};
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -99,17 +53,11 @@ app.use(bodyParser.json());
 const MAINTENANCE = JSON.parse(process.env.MAINTENANCE);
 const maintenanceUsers = process.env.MAINTENANCE_USERS.split('\n');
 
-app.use(async (req, res, next) => {
-	// Delete cookies if the user isn't logged in.
-	res.locals.$isLoggedIn = await isLoggedIn(req.cookies);
-	if(!res.locals.$isLoggedIn) {
-		res.clearCookie('username');
-		res.clearCookie('password');
-	}
-
-	if(MAINTENANCE) {
+app.use(validateToken);
+app.use(async (_req, res, next) => {
+	if(MAINTENANCE && res.locals.isLoggedIn) {
 		// Check if the user has access to maintenance.
-		const hasMaintenanceAccess = maintenanceUsers.includes(req.cookies.username);
+		const hasMaintenanceAccess = maintenanceUsers.includes(res.locals.username);
 		if(!hasMaintenanceAccess) {
 			res.send('<center><h1>Maintenance!</h1></center><hr>');
 			return;
@@ -137,164 +85,231 @@ app.use(async (req, res, next) => {
 		return new Intl.RelativeTimeFormat('en-us', options).format(...args);
 	}
 
-	res.locals.$cookies = req.cookies;
-
 	next();
 });
 
 app.get('/', async (req, res) => {
-	/** @type {Kyanit.User[]} */
-	const users = await db.get('users');
-
 	/** @type {Kyanit.Note[]} */
-	let notes = (await db.get('notes')).filter(note => !note.unlisted).map(note => { delete note.content; delete note.comments; delete note.thumbnailURL; return note; });
+	let notes;
 
 	if(req.query.search) {
-		const searchQuery = req.query.search.toLowerCase().split(/ +/g);
-		notes = notes.filter(note => note.keywords.intersectsWith(searchQuery));
+		const searchQueries = req.query.search.toLowerCase().split(/ +/g);
+
+		notes = await sql`
+		select
+			n.id,
+			n.author_name,
+			u.display_name as author_display_name,
+			u.is_verified as is_author_verified,
+			n.title,
+			n.keywords,
+			n.thumbnail_url,
+			n.views,
+			n.created_at,
+			n.updated_at
+		from notes n join users u
+			on n.author_name = u.name
+		where unlisted = false and keywords && ${searchQueries}::text[]
+		order by views desc;
+	`;
+	} else {
+		notes = await sql`
+		select
+			n.id,
+			n.author_name,
+			u.display_name as author_display_name,
+			u.is_verified as is_author_verified,
+			n.title,
+			n.keywords,
+			n.thumbnail_url,
+			n.views,
+			n.created_at,
+			n.updated_at
+		from notes n join users u
+			on n.author_name = u.name
+		where unlisted = false
+		order by views desc;
+	`;
 	}
-
-	// Add `authorDisplayName` and `isAuthorVerified` to every `notes`.
-	for(let i = 0; i < notes.length; i++) {
-		const note = notes[i];
-
-		const user = users.find(user => user.name === note.authorName);
-		note.authorDisplayName = user.displayName;
-		note.isAuthorVerified = user.verified;
-	}
-
-	// Sort by views.
-	notes.sort((a, b) => b.views - a.views);
 
 	// Pin the tutorial note.
-	const tutorial = notes.find(note => note.id === 'tutorial');
+	const tutorial = notes.find(note => note.id === '00000000-0000-0000-0000-000000000000');
 	if(tutorial) {
 		notes = notes.filter(note => note.id !== tutorial.id);
 		notes.unshift(tutorial);
 	}
 
 	res.render('index', {
-		notes,
-		searchQuery: req.query.search
+		notes, searchQuery: req.query.search
 	});
 });
 
-app.get('/note/:noteid', async (req, res) => {
-	const noteId = req.params.noteid;
+app.get('/note/:noteId', async (req, res) => {
+	const noteId = req.params.noteId;
 
-	/** @type {Kyanit.Note[]} */
-	const notes = await db.get('notes');
-	const note = notes.find(note => note.id === req.params.noteid);
-
-	if(!note) {
-		res.status(404).send(`Note with id ${noteId} not found.`)
+	if(!isUUID(noteId)) {
+		res.status(400).send(`Invalid UUID: <code>${noteId}</code>.`);
 		return;
 	}
 
-	const user = (await db.get('users')).find(user => user.name === note.authorName);
-	const commentCount = (await db.get('comments')).filter(comment => comment.noteId === noteId).length;
+	const notes = await sql`
+		select
+			n.*,
+			u.display_name as author_display_name,
+			u.is_verified as is_author_verified
+		from notes n join users u
+			on n.author_name = u.name
+		where id = ${noteId};
+	`;
 
+	if(notes.length === 0) {
+		res.status(404).send(`Note with id ${noteId} not found.`);
+		return;
+	}
+
+	const commentCount = (await sql`select count(*) from comments where note_id = ${noteId}`)[0].count;
+
+	const note = notes[0];
 	const backslash = /\\(?![*_$~`])/g;
+	const htmlContent = DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions);
 
-	res.render('note', {
-		note, user, commentCount,
-		content: DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions)
-	});
+	delete note.content;
+
+	res.render('note', { note, commentCount, htmlContent });
 });
 
 app.get('/create', async (req, res) => {
-	if(!res.locals.$isLoggedIn) res.redirect('back');
+	if(!res.locals.isLoggedIn) return res.redirect('back');
 
-	const startingNote = new Kyanit.Note(
-		'',
-		'Untitled',
-		'# Welcome to eNotes editor!\n\neNotes uses markdown with GitHub Flavoured Markdown, parsed using `marked.js`, and syntax highlighted by `prism.js`.',
-		[],
-		req.cookies.username,
-		'',
-		false
-	);
+	const startingNote = {
+		title: 'Untitled',
+		content: '# Welcome to eNotes editor!\n\neNotes uses markdown with GitHub Flavoured Markdown, parsed using `marked.js`, and syntax highlighted by `prism.js`.',
+		keywords: [],
+		unlisted: false,
+		thumbnail_url: '',
+	};
 
 	res.render('create', { note: startingNote, mode: 'create' });
 });
 
-app.get('/create/:noteid', async (req, res) => {
-	if(!res.locals.$isLoggedIn) res.redirect('back');
+app.get('/edit/:noteId', async (req, res) => {
+	if(!res.locals.isLoggedIn) return res.redirect('back');
 
-	/** @type {Kyanit.Note|null} */
-	const note = (await db.get('notes')).find(note => note.id === req.params.noteid);
+	const noteId = req.params.noteId;
+
+	if(!isUUID(noteId)) {
+		res.redirect('/create');
+		return;
+	}
+
+	const notes = await sql`
+		select
+			id, title, content, keywords, unlisted, thumbnail_url
+		from notes
+		where id = ${noteId} and author_name = ${res.locals.username};
+	`;
+
+	const note = notes[0];
 
 	if(!note) return res.redirect('/create');
-	if(req.cookies.username !== note.authorName) return res.redirect('back');
 
 	res.render('create', { note, mode: 'edit' });
 });
 
 app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
-	/** @type {Kyanit.User[]} */
-	const users = await db.get('users');
+	const users = await sql`
+		select
+			name, display_name, about, created_at, is_verified
+		from users
+		where name = ${req.params.username};
+	`;
 
-	const user = users.find(user => user.name === req.params.username);
+	const user = users[0];
 
 	if(!user) {
 		res.status(404).send(`User with username ${req.params.username} not found.`)
 		return;
 	}
 
-	/** The user’s notes @type {Kyanit.Note[]} */
-	let notes = (await db.get('notes')).filter(note => note.authorName === user.name).map(note => { delete note.content; delete note.comments; delete note.thumbnailURL; return note; });
-
-	// Hide unlisted notes if the user is not the author.
-	if(!res.locals.$isLoggedIn || req.cookies.username !== user.name) {
-		notes = notes.filter(note => !note.unlisted);
+	let notes;
+	if(res.locals.username === user.name) {
+		// If the user is viewing their own profile, show unlisted notes.
+		notes = await sql`
+			select
+				id, title, keywords, thumbnail_url, views, created_at, updated_at, unlisted
+			from notes
+			where author_name = ${user.name}
+			order by created_at;
+		`;
+	} else {
+		// Otherwise, only show listed notes.
+		notes = await sql`
+			select
+				id, title, keywords, thumbnail_url, views, created_at, updated_at
+			from notes
+			where author_name = ${user.name} and unlisted = false
+			order by created_at;
+		`;
 	}
 
-	const userPublicInfo = Kyanit.User.prototype.getPublicInfo.call(user);
 	const page = req.params.page || 'about';
+
 	const backslash = /\\(?![*_$~`])/g;
+	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(user.about.replace(backslash, "\\\\")), purifyOptions);
 
 	res.render('dashboard', {
-		user: userPublicInfo, notes, about: DOMPurify.sanitize(marked.parse(user.about.replace(backslash, "\\\\")), purifyOptions), page
+		user, notes, about: aboutHTMLContent, page
 	});
 });
 
 // Send simplified or minimized note. No CSS.
-app.get('/:reduce/note/:noteid', async (req, res) => {
-	const noteId = req.params.noteid;
-	const note = (await db.get('notes')).find(note => note.id === req.params.noteid);
+app.get('/:reduce/note/:noteId', async (req, res) => {
+	const noteId = req.params.noteId;
 
-	if(!note) res.status(404).send(`Note with id <code>${noteId}</code> not found.`);
+	if(!isUUID(noteId)) {
+		res.status(400).send(`Invalid UUID: <code>${noteId}</code>.`);
+		return;
+	}
 
-	const user = (await db.get('users')).find(user => user.name === note.authorName);
+	const notes = await sql`
+		select
+			n.title,
+			n.content,
+			n.author_name,
+			u.display_name as author_display_name
+		from notes n join users u
+			on n.author_name = u.name
+		where id = ${noteId};
+	`;
+
+	const note = notes[0];
+
+	if(!note) {
+		res.status(404).send(`Note with id <code>${noteId}</code> not found.`);
+		return;
+	}
 
 	const backslash = /\\(?![*_$~`])/g;
+	const htmlContent = DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions);
 
-	let contentInput = DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions);
+	delete note.content;
 
 	if(req.params.reduce === 'min') {
-		// `min` is the bare bones, no LaTeX.
-		res.render('min/note', {
-			content: contentInput,
-			note,
-			authorDisplayName: user.displayName
-		});
+		// `min` is the bare bones, no MathJAX.
+		res.render('min/note', { content: htmlContent, note });
 	} else if(req.params.reduce === 'simple') {
 		// `simple` still contains LaTeX in svg.
-		mjpage(contentInput, mathjaxOptions, { svg: true }, output => {
-			res.render('min/note', {
-				content: output,
-				note,
-				authorDisplayName: user.displayName
-			});
+		mjpage(htmlContent, mathjaxOptions, { svg: true }, output => {
+			res.render('min/note', { content: output, note });
 		});
 	}
 });
 
-app.get('/signup', (req, res) => {
+app.get('/signup', (_req, res) => {
 	res.render('signup');
 });
 
-app.get('/login', (req, res) => {
+app.get('/login', (_req, res) => {
 	res.render('login');
 });
 
@@ -307,14 +322,27 @@ const commentVoteRoutes = require('./routes/commentVotes');
 app.use(
 	'/api',
 	(req, _res, next) => {
-		// Inject IO using middleware.
+		// Inject Socket.IO and database.
 		req.io = io;
+		req.sql = sql;
 		next();
 	},
 	userRoutes,
 	noteRoutes,
 	commentRoutes,
 	commentVoteRoutes
+);
+
+//* Authentication
+const authRoutes = require('./routes/auth');
+app.use(
+	'/auth', 
+	(req, _res, next) => {
+		// Inject database.
+		req.sql = sql;
+		next();
+	},
+	authRoutes
 );
 
 io.on('connection', socket => {
@@ -326,25 +354,28 @@ io.on('connection', socket => {
 		socket.join(`note:${noteId}`);
 	});
 
-	socket.on('note:view', (username, noteId) => {
+	socket.on('note:view', async (username, noteId) => {
 		if(viewedInTheSameSession) return;
 
 		viewedInTheSameSession = true;
 
+		if(!isUUID(noteId)) return;
+
+		const users = await sql`select exists(select 1 from users where name = ${username});`;
+		if(!users[0].exist) return;
+
+		const notes = await sql`select author_name from notes where id = ${noteId};`;
+		if(notes.length === 0) return;
+
+		const note = notes[0];
+		if(note.author_name === username) return;
+
 		addViewTimeout = setTimeout(async () => {
-			const users = await db.get('users');
-			const user = users.find(user => username === user.name);
-			if(!user) return;
-
-			const notes = await db.get('notes');
-			const note = notes.find(note => note.id === noteId);
-			if(!note) return;
-
-			if(typeof note.views !== 'number' || note.views < 0 || isNaN(note.views)) note.views = 0;
-
-			note.views++;
-
-			await db.set('users', users);
+			await sql`
+				update notes
+				set views = views + 1
+				where id = ${noteId};
+			`;
 		}, 30_000);
 	});
 
@@ -352,17 +383,6 @@ io.on('connection', socket => {
 		clearTimeout(addViewTimeout);
 	});
 });
-
-async function isLoggedIn(cookies) {
-	if(!cookies.username || !cookies.password) return false;
-
-	const users = await db.get('users');
-	const user = users.find(user => user.name === cookies.username);
-
-	if(!user) return false;
-
-	return (user.password === cookies.password);
-}
 
 const PORT = process.env.PORT;
 server.listen(PORT, async () => {

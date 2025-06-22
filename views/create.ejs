@@ -44,12 +44,12 @@
 	const mode = '<%- mode %>';
 	const editor = $('#editor-input');
 	const editorHighlight = $('#editor-view');
-	const authorName = cookie.username;
+	const authorName = '<%- note.author_name %>';
 
 	let isNoteSaved = true;
 
 	let	defaultKeywords = '<%- note.keywords.join(" ") %>';
-	let	defaultThumbnailURL = '<%- note.thumbnailURL %>';
+	let	defaultThumbnailURL = '<%- note.thumbnail_url %>';
 
 	updateEditor();
 
@@ -141,7 +141,7 @@
 		const content = editor.innerText;
 		if(!content.trim()) {
 			// If the content is empty.
-			ui.alert({ title: 'You’re trying to publish an empty note …', content: 'Is your mind this empty.' });
+			ui.alert({ title: 'You’re trying to publish an empty note …', content: 'Is your mind this empty?' });
 			return;
 		}
 
@@ -229,7 +229,7 @@
 		// Alert the user.
 		ui.alert({ title: 'Note published successfully!', content: `Note published with ID:<br><span style="font-family:'Cascadia Mono'">${json.data.id}</span>` });
 
-		if(mode === 'create') location.replace(`/create/${json.data.id}`);
+		if(mode === 'create') location.replace(`/edit/${json.data.id}`);
 	};
 	// ----
 </script>

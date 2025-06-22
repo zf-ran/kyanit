@@ -23,8 +23,8 @@
 			<div id="search--button"><i class="fa-solid fa-magnifying-glass"></i></div>
 		</div>
 		<div id="account" class="ripple">
-			<% if($isLoggedIn) { %>
-				<a href="/user/<%- $cookies.username %>" title="Dashboard: @<%- $cookies.username %>"><%= $cookies.username[0].toUpperCase() %></a>
+			<% if(isLoggedIn) { %>
+				<a href="/user/<%- username %>" title="Profile: @<%- username %>"><%= username[0].toUpperCase() %></a>
 			<% } else { %>
 				<a href="/login" title="Login"><i class="fa-solid fa-user-plus" style="font-size: 16px;"></i></a>
 			<% } %>
@@ -32,11 +32,9 @@
 	</header>
 </body>
 <script>
-	const LOGGED_IN = JSON.parse('<%- $isLoggedIn %>');
 	const searchBox = $('#search');
 	const searchInput = $('#search--input');
 	const searchButton = $('#search--button');
-	const cookie = parseCookie(document.cookie);
 
 	searchButton.onclick = search;
 	searchBox.onkeydown = event => {

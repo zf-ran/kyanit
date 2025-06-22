@@ -1,5 +1,15 @@
 # Version Changelogs
 
+## 1.0.0-beta
+
+- Added JWT authentication with access and refresh tokens, including middleware for token validation.
+- Added privacy policy documentation.
+- Added Vercel deployment settings.
+- Added PostgreSQL as a database.
+- Changed login and signup views to use `username` instead of `name` for clarity.
+- Changed note views to handle created and updated timestamps more accurately.
+- Changed comment handling in note views, ensuring proper display of commenter information.
+
 ## 1.0.0-alpha+001
 
 - Added `body-parser` package.

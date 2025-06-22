@@ -1,15 +1,15 @@
 {
   "name": "kyanit",
-  "version": "1.0.0-alpha+001",
+  "version": "1.0.0-beta",
   "description": "Website for creating a text note",
   "author": "Zafran",
   "main": "index.js",
   "scripts": {
     "start": "node --env-file .env index",
-    "prod": "node --env-file prod.env index",
-    "test": "node --env-file test.env index"
+    "test": "node --env-file .test.env index"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
     "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.6",
     "ejs": "^3.1.10",
@@ -17,6 +17,7 @@
     "fs": "^0.0.2",
     "http": "^0.0.0",
     "isomorphic-dompurify": "1.4",
+    "jsonwebtoken": "^9.0.2",
     "marked": "^12.0.0",
     "mathjax-node-page": "^3.2.0",
     "node-fetch": "^3.2.6",

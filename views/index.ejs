@@ -13,16 +13,16 @@
 	<%- include('partials/header.ejs') %>
 	<main>
 		<% for(let i = 0; i < notes.length; i++) { %>
-			<div class="note ripple"<% if(notes[i].thumbnailURL) { %> style="--thumbnail: url(<%- notes[i].thumbnailURL %>);"<% } %>>
+			<div class="note ripple"<% if(notes[i].thumbnail_url) { %> style="--thumbnail: url(<%- notes[i].thumbnail_url %>);"<% } %>>
 				<a href="/note/<%- notes[i].id %>"></a>
 				<div class="note--title"><%= notes[i].title %></div>
 				<div class="note--information">
-					<span class="note--information--author"><%= notes[i].authorDisplayName %> <% if(notes[i].isAuthorVerified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></span>
+					<span class="note--information--author"><%= notes[i].author_display_name %> <% if(notes[i].is_author_verified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></span>
 					<span class="note--information--views"><i class="fa-regular fa-eye"></i> <%= notes[i].views.toLocaleString() %></span>
-					<% if(!notes[i].lastEdited) { %>
-						<span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(notes[i].published) %></span>
+					<% if(notes[i].created_at.getTime() === notes[i].updated_at.getTime()) { %>
+						<span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(notes[i].created_at) %></span>
 					<% } else { %>
-						<span class="note--information--created"><i class="fa-regular fa-pen-to-square"></i> <%= $relativeTime(notes[i].lastEdited) %></span>
+						<span class="note--information--created"><i class="fa-regular fa-pen-to-square"></i> <%= $relativeTime(notes[i].updated_at) %></span>
 					<% } %>
 				</div>
 				<div class="note--keywords">

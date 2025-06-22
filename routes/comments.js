@@ -1,49 +1,79 @@
 const express = require('express');
 const router = express.Router();
 
-const crypto = require('crypto');
-
 const Kyanit = require('../modules/Kyanit')
-const { JSONErrorResponse, JSONResponse } = Kyanit;
+const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
 
-const db = require('../modules/database');
+// Sums all the elements in an array.
+// If the array is empty, returns 0.
+// If one of the element is NaN, throw a TypeError.
+Array.prototype.sum = function() {
+	let sum = 0;
+
+	for(let i = 0; i < this.length; i++) {
+		if(isNaN(this[i])) throw TypeError(`Element at index ${i} (${this[i]}) is not a number (NaN)`);
+		sum += this[i];
+	}
+
+	return sum;
+};
+
+const MAX_COMMENT_LENGTH = 500;
 
 //* [ROUTE] /api
 
 router.get('/notes/:noteId/comments', async (req, res) => {
 	const { noteId } = req.params;
 
-	/** @type {Kyanit.Note[]} */
-	const notes = await db.get('notes');
-	const note = notes.find(note => note.id === noteId);
+	if(!isUUID(noteId)) {
+		res.status(400).send(`Invalid UUID: <code>${noteId}</code>`);
+		return;
+	}
 
-	if(!note) {
+	const notes = await req.sql`select exists(select 1 from notes where id = ${noteId});`;
+
+	if(!notes[0].exists) {
 		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
 		return;
 	}
 
-	/** Comments on the specified note @type {Kyanit.Comment[]} */
-	const noteComments = (await db.get('comments')).filter(comment => comment.noteId === noteId);
+	const noteComments = await req.sql`
+		SELECT
+			c.id,
+			c.commenter_name,
+			c.parent_comment_id,
+			u.display_name as commenter_display_name,
+			c.content,
+			c.created_at
+		FROM comments c
+		LEFT JOIN users u ON u.name = c.commenter_name
+		WHERE c.note_id = ${noteId};
+	`;
 
-	/** Comments’ votes on the specified note @type {Kyanit.CommentVote[]} */
-	const noteCommentVotes = (await db.get('commentVotes')).filter(vote => vote.noteId === noteId);
+	const noteCommentVotes = await req.sql`
+		SELECT
+			comment_id, voter_name, value
+		FROM comment_votes
+		WHERE note_id = ${noteId}
+	`;
 
-	/** @type {Kyanit.User[]} */
-	const users = await db.get('users');
+	for(const comment of noteComments) {
+		comment.vote_count = noteCommentVotes
+			.filter(vote => vote.comment_id === comment.id)
+			.map(vote => vote.value)
+			.sum();
 
-	for (let i = 0; i < noteComments.length; i++) {
-		const comment = noteComments[i];
-
-		/** The votes on the specified comment */
-		const commentVotes = noteCommentVotes.filter(vote => vote.commentId === comment.id);
-
-		// Add property `voteCount` and `votes`.
-		comment.voteCount = commentVotes.map(vote => vote.value).sum();
-		comment.votes = commentVotes.map(vote => { delete vote.commentId; delete vote.noteId; return vote; });
-
-		// Add property `displayName` for commenter’s display name.
-		comment.displayName = users.find(user => user.name === comment.username).displayName;
+		comment.votes = noteCommentVotes
+			.filter(vote => vote.comment_id === comment.id)
+			.map(vote => (
+				{
+					voter_name: vote.voter_name,
+					value: vote.value
+				}
+			));
 	}
+
+	noteComments.sort((a, b) => b.vote_count - a.vote_count);
 
 	res.json(new JSONResponse(noteComments));
 });
@@ -54,147 +84,100 @@ router.post('/notes/:noteId/comments', async (req, res) => {
 		return;
 	}
 
-	if(!res.locals.$isLoggedIn) {
+	if(!res.locals.isLoggedIn) {
 		res.status(401).json(new JSONErrorResponse(401, 'No login credentials'));
 		return;
 	}
 
 	const { noteId } = req.params;
 
+	if(!isUUID(noteId)) {
+		res.status(400).send(`Invalid UUID: <code>${noteId}</code>`);
+		return;
+	}
+
 	const { content, parentId } = req.body;
-	const commenterName = req.cookies.username;
 
 	if(!content) {
 		res.status(400).json(new JSONErrorResponse(400, 'Missing required fields `content`'));
 		return;
 	}
 
-	/** @type {Kyanit.Note[]} */
-	const notes = await db.get('notes');
-	const note = notes.find(note => note.id === noteId);
-
-	if(!note) {
-		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
+	if(typeof content !== 'string') {
+		res.status(400).json(new JSONErrorResponse(400, 'Invalid type for `content`, expected `string`'));
 		return;
 	}
 
-	/** @type {Kyanit.Comment[]} */
-	const comments = await db.get('comments');
+	if(content.length > MAX_COMMENT_LENGTH) {
+		res.status(400).json(new JSONErrorResponse(400, `Content is too long, maximum length is ${MAX_COMMENT_LENGTH} characters`));
+		return;
+	}
 
-	if(parentId) {
-		const parentComment = comments.find(comment => comment.id === parentId);
+	if(parentId && !isUUID(parentId)) {
+		res.status(400).send(`Invalid parent UUID: <code>${parentId}</code>`);
+		return;
+	}
 
-		// Check if parent comment exists.
-		if(!parentComment) {
-			res.status(404).json(new JSONErrorResponse(404, 'Parent comment not found'));
-			return;
+	const commenterName = res.locals.username;
+	let comments;
+
+	try {
+		if(parentId) {
+			comments = await req.sql`
+				INSERT INTO comments (note_id, parent_comment_id, commenter_name, content)
+				VALUES (${noteId}, ${parentId}, ${commenterName}, ${content})
+				RETURNING *, (SELECT display_name FROM users WHERE name = ${commenterName}) as commenter_display_name
+			`;
+		} else {
+			comments = await req.sql`
+				INSERT INTO comments (note_id, commenter_name, content)
+				VALUES (${noteId}, ${commenterName}, ${content})
+				RETURNING *, (SELECT display_name FROM users WHERE name = ${commenterName}) as commenter_display_name
+			`;
 		}
+	} catch (error) {
+		res.status(400).json(new JSONErrorResponse(400, error));
+		return;
 	}
 
-	const commentIDs = comments.map(comment => comment.id);
+	const comment = comments[0];
 
-	let id = crypto.randomUUID();
-
-	// Loops until a unique UUID is found.
-	while(commentIDs.includes(id)) {
-		id = crypto.randomUUID();
-	}
-
-	const comment = new Kyanit.Comment(id, noteId, commenterName, DOMPurify.sanitize(content), parentId);
-
-	comments.push(comment);
-
-	await db.set('comments', comments);
-
-	/** @type {Kyanit.User[]} */
-	const users = await db.get('users');
-	const commenter = users.find(user => user.name === commenterName);
-
-	comment.displayName = commenter.displayName;
-	comment.voteCount = 0;
+	comment.vote_count = 0;
 	comment.votes = [];
 
 	req.io.to(`note:${noteId}`).emit('comment:created', comment);
-
 	res.sendStatus(204);
 });
 
 router.delete('/notes/:noteId/comments/:commentId', async (req, res) => {
-	if(!res.locals.$isLoggedIn) {
+	if(!res.locals.isLoggedIn) {
 		res.status(401).json(new JSONErrorResponse(401, 'No login credentials'));
 		return;
 	}
 
 	const { noteId, commentId } = req.params;
 
-	/** @type {Kyanit.Note[]} */
-	const notes = await db.get('notes');
-	const note = notes.find(note => note.id === noteId);
-
-	if(!note) {
-		res.status(404).json(new JSONErrorResponse(404, 'Note not found'));
+	if(!isUUID(noteId)) {
+		res.status(400).json(new JSONErrorResponse(400, `Invalid note UUID`));
 		return;
 	}
 
-	/** @type {Kyanit.Comment[]} */
-	const comments = await db.get('comments');
-	const comment = comments.find(comment => comment.id === commentId);
-
-	if(!comment) {
-		res.status(404).json(new JSONErrorResponse(404, 'Comment not found'));
+	if(!isUUID(commentId)) {
+		res.status(400).json(new JSONErrorResponse(400, `Invalid comment UUID`));
 		return;
 	}
 
-	if(req.cookies.username !== comment.username) {
-		res.status(403).json(new JSONErrorResponse(403, 'Trying to delete other user’s comment'));
+	try {
+		await req.sql`
+			DELETE FROM comments
+			WHERE id = ${commentId} AND note_id = ${noteId} AND commenter_name = ${res.locals.username};
+		`;
+	} catch(error) {
+		res.status(400).json(new JSONErrorResponse(400, error));
 		return;
 	}
-
-	/** @type {Kyanit.User[]} */
-	const users = await db.get('users');
-	const commenter = users.find(user => user.name === comment.username);
-
-	if(req.cookies.password !== commenter.password) {
-		res.status(401).json(new JSONErrorResponse(401, 'Invalid login credentials'));
-		return;
-	}
-
-	// Deletes the comment.
-	comments.splice(comments.indexOf(comment), 1);
-
-	// Delete the comment’s votes.
-	let commentVotes = await db.get('commentVotes');
-	commentVotes = commentVotes.filter(commentVote => commentVote.commentId !== commentId);
-
-	// Delete the comment’s children.
-	let parentIDs = [ commentId ];
-	// Reverse and increment from the last element so the indexing won’t be fucked up while looping. (The indexing is still same as normal looping.)
-	comments.reverse(); 
-	for(let i = comments.length - 1; i >= 0; i--) {
-		const comment = comments[i];
-
-		// If the comment is the root, don’t do anything.
-		if(comment.parentId === null) continue;
-
-		// If the comment’s parent is in `parentIDs`,
-		if(parentIDs.includes(comment.parentId)) {
-			// push the comment ID to `parentIDs`,
-			parentIDs.push(comment.id);
-
-			// delete the comment,
-			comments.splice(comments.indexOf(comment), 1);
-
-			// and delete the comment’s votes.
-			commentVotes = commentVotes.filter(commentVote => commentVote.commentId !== comment.id);
-		}
-	}
-	comments.reverse();
-
-	await db.set('comments', comments);
-	await db.set('commentVotes', commentVotes);
 
 	req.io.to(`note:${noteId}`).emit('comment:deleted', commentId);
-
 	res.sendStatus(204);
 });
 

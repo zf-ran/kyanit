@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title><%= user.displayName %> | User</title>
+	<title><%= user.display_name %> @<%= user.name %> | User</title>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,23 +20,23 @@
 <body>
 	<%- include('partials/header.ejs') %>
   <% const absoluteDate = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric', weekday: 'long', hourCycle: 'h23', hour: 'numeric', minute: 'numeric', second: 'numeric' }); %>
-  <% const isUserOwner = $isLoggedIn && user.name === $cookies.username; %>
+  <% const isUserOwner = isLoggedIn && user.name === username; %>
 	<main>
 		<div class="information">
       <% if(isUserOwner) { %>
         <div class="prompt--input">
           <label class="prompt--input--label" for="displayName">Display Name</label>
-          <input id="displayName" type="text" placeholder="Display Name" autocomplete="false" value="<%- user.displayName %>" />
+          <input id="displayName" type="text" placeholder="Display Name" autocomplete="false" value="<%- user.display_name %>" />
         </div>
         <div class="prompt--input">
-          <label class="prompt--input--label" for="password">Password</label>
-          <input id="password" type="password" placeholder="Password" autocomplete="false" value="<%- $cookies.password %>" />
+          <label class="prompt--input--label" for="password">Change Password</label>
+          <input id="password" type="password" placeholder="Password" autocomplete="false" value="" />
         </div>
       <% } else { %>
-        <input id="displayName" type="text" autocomplete="false" value="<%- user.displayName %>" disabled />
+        <input id="displayName" type="text" autocomplete="false" value="<%- user.display_name %>" disabled />
       <% } %>
-			<div id="userName">@<%= user.name %> <% if(user.verified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></div>
-			<div id="noteCount"><%= notes.length %> notes</div>
+			<div id="userName">@<%= user.name %> <% if(user.is_verified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></div>
+			<div id="noteCount"><%= notes.length %> note(s)</div>
 		</div>
 		<div id="tabs" data-opening="<%- page %>">
 			<div id="tab">
@@ -47,15 +47,15 @@
         <div id="tab-content--notes">
           <% for(let i = 0; i < notes.length; i++) { %>
             <% const note = notes[i]; %>
-            <div class="note ripple"<% if(note.thumbnailURL) { %> style="--thumbnail: url(<%- note.thumbnailURL %>);"<% } %>>
+            <div class="note ripple"<% if(note.thumbnail_url) { %> style="--thumbnail: url(<%- note.thumbnail_url %>);"<% } %>>
               <a href="/note/<%- note.id %>"></a>
               <div class="note--title"><%= note.title %></div>
               <div class="note--information">
                 <span class="note--information--views"><% if (note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views.toLocaleString() %> views</span>
-                <% if(!note.lastEdited) { %>
-                  <span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(note.published) %></span>
+                <% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
+                  <span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(note.created_at) %></span>
                 <% } else { %>
-                  <span class="note--information--created"><i class="fa-regular fa-pen-to-square"></i> <%= $relativeTime(note.lastEdited) %></span>
+                  <span class="note--information--created"><i class="fa-regular fa-pen-to-square"></i> <%= $relativeTime(note.updated_at) %></span>
                 <% } %>
               </div>
               <div class="note--keywords">
@@ -77,8 +77,8 @@
             <%- about %>
           </div>
           <div id="information">
-            <div id="registered"><%= absoluteDate.format(new Date(user.registered)) %></div>
-            <div id="noteCount"><%= notes.length %> notes</div>
+            <div id="registered"><%= absoluteDate.format(new Date(user.created_at)) %></div>
+            <div id="noteCount"><%= notes.length %> note(s)</div>
           </div>
         </div>
       </div>
@@ -176,8 +176,8 @@
       patchUser({ about });
     };
 
-    $('#displayName').onclick = addSavePopup;
-    $('#password').onclick = addSavePopup;
+    $('#displayName').oninput = addSavePopup;
+    $('#password').oninput = addSavePopup;
 
     function addSavePopup() {
       const saveEdit = $('#saveEdit') || new JSH('div', '<i class="fa-regular fa-floppy-disk"></i> Save changes', { id: 'saveEdit' }).appendTo($('body'));
@@ -186,7 +186,7 @@
       saveEdit.onclick = save;
     }
 
-    function save(event) {
+    function save() {
       const saveEdit = $('#saveEdit');
 
       saveEdit.classList = 'closed';
