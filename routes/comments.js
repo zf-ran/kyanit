@@ -145,8 +145,7 @@ router.post('/notes/:noteId/comments', async (req, res) => {
 	comment.vote_count = 0;
 	comment.votes = [];
 
-	req.io.to(`note:${noteId}`).emit('comment:created', comment);
-	res.sendStatus(204);
+	res.status(200).json(new JSONResponse(comment));
 });
 
 router.delete('/notes/:noteId/comments/:commentId', async (req, res) => {
@@ -177,8 +176,7 @@ router.delete('/notes/:noteId/comments/:commentId', async (req, res) => {
 		return;
 	}
 
-	req.io.to(`note:${noteId}`).emit('comment:deleted', commentId);
-	res.sendStatus(204);
+	res.status(200).json(new JSONResponse({ id: commentId }));
 });
 
 module.exports = router;

@@ -151,4 +151,27 @@ router.delete('/notes/:noteId', async (req, res) => {
 	res.sendStatus(204);
 });
 
+router.post('/notes/:noteId/views', async (req, res) => {
+	const { noteId } = req.params;
+
+	if(!isUUID(noteId)) {
+		res.status(400).json(new JSONErrorResponse(400, 'Invalid note UUID'));
+		return;
+	}
+
+	const notes = await req.sql`select author_name from notes where id = ${noteId};`;
+	if(notes.length === 0) return;
+
+	const note = notes[0];
+	if(note.author_name === res.locals.username) return;
+
+	await req.sql`
+		UPDATE notes
+		SET views = views + 1
+		WHERE id = ${noteId}
+	`;
+
+	res.sendStatus(204);
+});
+
 module.exports = router;

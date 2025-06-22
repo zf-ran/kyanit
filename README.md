@@ -11,8 +11,6 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 
 - [ ] Fix the code.
 	- [ ] Refactor back-end.
-		- [ ] Improve input validations in APIs.
-		- [ ] Use PostgreSQL for the database.
 	- [ ] Refactor front-end.
 		- [ ] Remove unnecessary try-catch blocks.
 - [ ] Document APIs.
@@ -29,8 +27,16 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 
 -	`PORT={number}`.
 -	`MAINTENANCE={boolean}` — Server maintenance mode.
--	`MAINTENANCE_USERS={string.split('\n')}`. — Users that has access to maintenance, split with a `\n`.
--	`DATABASE_INDENTATION={number|null}`.
+-	`MAINTENANCE_USERS={string[] split with \n}`. — Users that has access to maintenance, split with a `\n`.
+-	`JWT_ACCESS_SECRET`.
+-	`JWT_REFRESH_SECRET`.
+-	`ACCESS_TOKEN_AGE={number in ms}`.
+-	`REFRESH_TOKEN_AGE={number in ms}`.
+-	`PG_HOST`.
+-	`PG_DATABASE`.
+-	`PG_USER`.
+-	`PG_PASSWORD`.
+-	`PG_PORT`.
 
 # API
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit')
-const { JSONErrorResponse, isUUID } = Kyanit;
+const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
 
 //* [ROUTE] /api
 
@@ -62,8 +62,6 @@ router.post('/notes/:noteId/comments/:commentId/votes', async (req, res) => {
 			voter_name: res.locals.username,
 			value: value
 		});
-
-		res.sendStatus(201);
 	} else if(existingVote.value === value) {
 		// Cancel vote.
 		await req.sql`
@@ -72,8 +70,6 @@ router.post('/notes/:noteId/comments/:commentId/votes', async (req, res) => {
 		`;
 
 		commentVotes.splice(commentVotes.indexOf(existingVote), 1);
-
-		res.sendStatus(204);
 	} else {
 		// Change vote.
 		await req.sql`
@@ -83,15 +79,13 @@ router.post('/notes/:noteId/comments/:commentId/votes', async (req, res) => {
 		`;
 
 		existingVote.value = value;
-
-		res.sendStatus(204);
 	}
 
 	const currentCount = commentVotes
 		.map(commentVote => commentVote.value) // Map it to the vote value. [{...}, {...}, ...] -> [-1, 1, ...]
 		.sum();
 
-	req.io.to(`note:${noteId}`).emit('comment:voted', commentId, currentCount);
+	res.json(new JSONResponse({ commentId, currentCount }));
 });
 
 module.exports = router;

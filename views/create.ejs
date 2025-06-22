@@ -11,9 +11,6 @@
 
 	<!-- PRISM -->
 	<script src="/js/modules/prism.min.js" data-manual></script>
-
-	<!-- SOCKET -->
-	<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
@@ -39,8 +36,6 @@
 </body>
 <script type="module">
 	import ui from '/js/modules/ui.mjs';
-
-	const socket = io('/');
 	const mode = '<%- mode %>';
 	const editor = $('#editor-input');
 	const editorHighlight = $('#editor-view');
@@ -185,7 +180,7 @@
 				// Thumbnail file size in bytes, disallow thumbnail exceeding `maxSize` in bytes.
 				const thumbnailSize = thumbnail.headers.get('Content-Length');
 				const maxThumbnailSize = 100e3;
-				console.log(thumbnailSize);
+
 				if(thumbnailSize > maxThumbnailSize) {
 					ui.alert({ title: 'Keep it low.', content: `Your thumbnail exceeds ${maxThumbnailSize/1e3} kB. This is a thumbnail, not a wallpaper!` });
 					return;

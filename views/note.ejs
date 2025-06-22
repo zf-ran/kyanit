@@ -16,9 +16,6 @@
 	<!-- MATHJAX -->
 	<script src="/js/mathjax-options.js"></script>
 	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
-
-	<!-- SOCKET -->
-	<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
@@ -109,8 +106,6 @@
 	import JSH from '/js/modules/jsh.mjs';
 	import ui from '/js/modules/ui.mjs';
 	import { absoluteTime, relativeTime } from '/js/modules/date-utils.mjs';
-	
-	const socket = io('/');
 	const noteId = '<%- note.id %>';
 	const authorName = '<%- note.author_name %>';
 
@@ -172,7 +167,6 @@
 	}
 
 	// Comment handlers.
-	socket.emit('note:connect', noteId);
 	const commentsContainer = $('#comments');
 
 	async function loadComments() {
@@ -278,11 +272,12 @@
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify(body)
 					});
+					const json = await response.json();
 
 					if(!response.ok) {
-						const json = await response.json();
-
 						ui.alert({ title: 'Error', content: json.error.message });
+					} else {
+						loadComment(json.data);
 					}
 				} catch (error) {
 					ui.alert({ title: 'Unexpected Error', content: error });
@@ -307,9 +302,13 @@
 						body: JSON.stringify(body)
 					});
 
+					const json = await response.json();
+
 					if(!response.ok) {
-						const json = await response.json();
 						ui.alert({ title: 'Error', content: json.error.message });
+					} else {
+						const { currentCount } = json.data;
+						commentVoteCount.dataset.count = currentCount;
 					}
 
 					commentVoteCount.classList.remove('wait');
@@ -347,6 +346,8 @@
 							const json = await response.json();
 
 							ui.alert({ title: 'Error', content: json.error.message });
+						} else {
+							commentElement.remove();
 						}
 					} catch (error) {
 						ui.alert({ title: 'Unexpected Error', content: error });
@@ -380,12 +381,13 @@
 					body: JSON.stringify(body)
 				});
 
-				if(!response.ok) {
-					const json = await response.json();
+				const json = await response.json();
 
+				if(!response.ok) {
 					ui.alert({ title: 'Error', content: json.error.message });
 				} else {
 					$('#add-comment-input').value = '';
+					loadComment(json.data);
 				}
 
 				$('#add-comment-button').classList.remove('wait');
@@ -395,23 +397,14 @@
 		};
 	/* <% } %> */
 
-	socket.on('comment:created', loadComment);
-
-	socket.on('comment:deleted', commentId => {
-		$(`#comment-${commentId}`)?.remove();
-	});
-
-	socket.on('comment:voted', (commentId, voteCount) => {
-		// Update the vote count every time one of the users votes.
-		$(`#comment-${commentId} > .comment--action > .comment--action--vote-count`).dataset.count = voteCount;
-	});
-
 	$('#comment-button').onclick = event => {
 		$('#comments-aside').dataset.opened = !JSON.parse($('#comments-aside').dataset.opened);
 	};
 
 	/* <% if(username !== note.author_name) { %> */
-		socket.emit('note:view', authorName, noteId);
+		setTimeout(() => {
+			fetch(`/api/notes/${noteId}/views`, { method: 'POST' });
+		}, 30_000);
 	/* <% } %> */
 </script>
 
@@ -426,8 +419,6 @@
 
 		try {
 			const response = await fetch(`/api/notes/<%- note.id %>`, { method: 'DELETE' });
-
-			console.log(response);
 
 			if(!response.ok) {
 				// Response is not okie-dokie.

@@ -1,5 +1,10 @@
 # Version Changelogs
 
+## 1.0.0-beta.2
+
+- Removed Socket.IO.
+- Added API `POST /api/notes/{noteId}/views`.
+
 ## 1.0.0-beta
 
 - Added JWT authentication with access and refresh tokens, including middleware for token validation.

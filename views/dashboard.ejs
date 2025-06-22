@@ -13,9 +13,6 @@
   <!-- MATHJAX -->
   <script src="/js/mathjax-options.js"></script>
 	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
-
-  <!-- SOCKET -->
-  <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 	<%- include('partials/header.ejs') %>
@@ -101,8 +98,6 @@
     import ui from '/js/modules/ui.mjs';
     import JSH from '/js/modules/jsh.mjs';
     import { addRipple } from '/js/modules/ripple.mjs';
-
-    const socket = io('/');
 
     ui.promptAbout = async () => {
       const id = crypto.randomUUID();

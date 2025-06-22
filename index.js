@@ -1,12 +1,6 @@
 const express = require('express');
 const app = express();
 
-const http = require('http');
-const server = http.createServer(app);
-
-const { Server } = require('socket.io');
-const io = new Server(server);
-
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
@@ -322,8 +316,7 @@ const commentVoteRoutes = require('./routes/commentVotes');
 app.use(
 	'/api',
 	(req, _res, next) => {
-		// Inject Socket.IO and database.
-		req.io = io;
+		// Inject database.
 		req.sql = sql;
 		next();
 	},
@@ -345,46 +338,7 @@ app.use(
 	authRoutes
 );
 
-io.on('connection', socket => {
-	let addViewTimeout;
-	let viewedInTheSameSession = false;
-
-	// COMMENTS’ SOCKETS
-	socket.on('note:connect', noteId => {
-		socket.join(`note:${noteId}`);
-	});
-
-	socket.on('note:view', async (username, noteId) => {
-		if(viewedInTheSameSession) return;
-
-		viewedInTheSameSession = true;
-
-		if(!isUUID(noteId)) return;
-
-		const users = await sql`select exists(select 1 from users where name = ${username});`;
-		if(!users[0].exist) return;
-
-		const notes = await sql`select author_name from notes where id = ${noteId};`;
-		if(notes.length === 0) return;
-
-		const note = notes[0];
-		if(note.author_name === username) return;
-
-		addViewTimeout = setTimeout(async () => {
-			await sql`
-				update notes
-				set views = views + 1
-				where id = ${noteId};
-			`;
-		}, 30_000);
-	});
-
-	socket.on('disconnect', () => {
-		clearTimeout(addViewTimeout);
-	});
-});
-
 const PORT = process.env.PORT;
-server.listen(PORT, async () => {
+app.listen(PORT, async () => {
 	console.log('Server is ready! With port', PORT);
 });
