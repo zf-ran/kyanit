@@ -81,6 +81,7 @@
 				Want to comment? <a href="/login">Login!</a>
 			</div>
 		<% } %>
+		<div style="text-align:center;opacity:80%" id="comment-loading">Loading comments...</div>
 		<div id="comments"></div>
 	</aside>
 
@@ -108,11 +109,11 @@
 	import { absoluteTime, relativeTime } from '/js/modules/date-utils.mjs';
 	const noteId = '<%- note.id %>';
 	const authorName = '<%- note.author_name %>';
+	let isCommentsLoaded = false;
 
 	addTableOfContents();
 	addURLConfirmations();
 	handleTitleBar();
-	loadComments();
 
 	// Create table of contents.
 	function addTableOfContents() {
@@ -399,6 +400,10 @@
 
 	$('#comment-button').onclick = event => {
 		$('#comments-aside').dataset.opened = !JSON.parse($('#comments-aside').dataset.opened);
+		if(!isCommentsLoaded) {
+			isCommentsLoaded = true;
+			loadComments().then(() => { $('#comment-loading').remove(); });
+		}
 	};
 
 	/* <% if(username !== note.author_name) { %> */
@@ -423,7 +428,7 @@
 			if(!response.ok) {
 				// Response is not okie-dokie.
 				const json = await response.json();
-				ui.alert({ title: `Error ${response.status}`, content: json.error.messsage });
+				ui.alert({ title: `Error ${response.status}`, content: json.error.message });
 			} else {
 				// Success.
 				ui.alert({ content: 'Note deleted successfully' });
