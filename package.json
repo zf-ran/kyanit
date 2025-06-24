@@ -1,7 +1,7 @@
 {
   "name": "kyanit",
-  "version": "1.0.0-beta.2",
-  "description": "Website for creating a text note",
+  "version": "1.0.0-beta.3",
+  "description": "Website for creating a markdown note",
   "author": "Zafran",
   "main": "index.js",
   "scripts": {

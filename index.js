@@ -177,7 +177,7 @@ app.get('/create', async (req, res) => {
 
 	const startingNote = {
 		title: 'Untitled',
-		content: '# Welcome to eNotes editor!\n\neNotes uses markdown with GitHub Flavoured Markdown, parsed using `marked.js`, and syntax highlighted by `prism.js`.',
+		content: '# Welcome to Kyanit editor!\n\nKyanit uses markdown with GitHub Flavoured Markdown, parsed using `marked.js`, and syntax highlighted by `prism.js`.',
 		keywords: [],
 		unlisted: false,
 		thumbnail_url: '',

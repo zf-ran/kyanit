@@ -1,5 +1,9 @@
 # Version Changelogs
 
+## 1.0.0-beta.3
+
+- Changed the logo from eNotes to Kyanit.
+
 ## 1.0.0-beta.2
 
 - Removed Socket.IO.
