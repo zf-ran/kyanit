@@ -38,14 +38,14 @@ router.patch('/users', async (req, res) => {
 		return;
 	}
 
-	if(displayName && typeof displayName === 'string') user.displayName = displayName;
+	if(displayName && typeof displayName === 'string') user.display_name = displayName;
 	if(about !== undefined && typeof about === 'string') user.about = about;
 	if(password && typeof password === 'string') user.password = password;
 
 	await req.sql`
 		UPDATE users
 		SET
-			display_name = ${user.displayName},
+			display_name = ${user.display_name},
 			about = ${user.about},
 			password = ${user.password}
 		WHERE name = ${username};

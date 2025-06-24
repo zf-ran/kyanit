@@ -1,5 +1,10 @@
 # Version Changelogs
 
+## 1.0.0-beta.4
+
+- Fixed `PATCH /api/users`, `displayName` to `display_name`.
+- Added `updated_at` at `PATCH /api/notes`.
+
 ## 1.0.0-beta.3
 
 - Changed the logo from eNotes to Kyanit.

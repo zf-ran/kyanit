@@ -118,7 +118,8 @@ router.patch('/notes/:noteId', async (req, res) => {
 			content = ${note.content},
 			keywords = ${note.keywords},
 			thumbnail_url = ${note.thumbnailURL},
-			unlisted = ${note.unlisted}
+			unlisted = ${note.unlisted},
+			updated_at = NOW()
 		WHERE id = ${noteId} AND author_name = ${res.locals.username}
 	`;
 
