@@ -9,7 +9,7 @@ const markedRenderer = {
 
 		return `<h${level} class="heading" id="section-${id}"><span class="heading-content" data-header="${level}">${text.replace(headingIdRegex, '')}</span><a href="#section-${id}" class="header-redirect">§</a></h${level}>`;
 	},
-	code(code, infostring, escaped) {
+	code(code, infostring) {
 		return `<pre class="code-block"><code class="language-${infostring}">` + code + '</code></pre>';
 	},
 	image(href, title, text) {
@@ -41,4 +41,17 @@ const mathjaxOptions = {
 	}
 };
 
-module.exports = { markedRenderer, mathjaxOptions };
+const dataConstraints = {
+	MIN_USERNAME_LENGTH: 4,
+	MAX_USERNAME_LENGTH: 16,
+	MIN_PASSWORD_LENGTH: 8,
+	MAX_DISPLAY_NAME_LENGTH: 24,
+	MAX_ABOUT_LENGTH: 5_000,
+	MAX_NOTE_TITLE_LENGTH: 100,
+	MAX_NOTE_CONTENT_LENGTH: 100_000,
+	MAX_COMMENT_LENGTH: 500
+};
+
+Object.freeze(dataConstraints);
+
+module.exports = { markedRenderer, mathjaxOptions, dataConstraints };

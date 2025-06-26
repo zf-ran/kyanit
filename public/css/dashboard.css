@@ -321,9 +321,14 @@ pre, pre * {
   color: white;
 }
 
+#saveEdit.wait {
+  filter: brightness(0.8);
+}
+
 #saveEdit.closed {
   touch-action: none;
   pointer-events: none;
+  filter: brightness(0.8);
 	animation: popdown 200ms ease forwards;
 }
 

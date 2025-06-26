@@ -214,7 +214,7 @@
 		const json = await response.json();
 
 		if(!response.ok) {
-			ui.alert({ title: 'Error', content: json.error.message });
+			ui.alert({ title: 'Error', content: json.error });
 			return;
 		}
 

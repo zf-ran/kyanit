@@ -5,75 +5,64 @@ const Kyanit = require('../modules/Kyanit.js');
 const { JSONErrorResponse } = Kyanit;
 
 const { generateAccessToken, generateRefreshToken } = require('../modules/token.js');
+const { validateBody, Rule } = require('../modules/validateBody.js');
+const { dataConstraints } = require('../config.js');
 
 const accessTokenAge = parseInt(process.env.ACCESS_TOKEN_AGE);
 const refreshTokenAge = parseInt(process.env.REFRESH_TOKEN_AGE);
 
 //* [ROUTE] /auth
 
-router.post('/signup', async (req, res) => {
-	if(!req.body) {
-		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
-		return;
+router.post('/signup',
+	validateBody({
+		username: new Rule('string')
+			.required()
+			.minLength(dataConstraints.MIN_USERNAME_LENGTH)
+			.maxLength(dataConstraints.MAX_USERNAME_LENGTH),
+		password: new Rule('string')
+			.required()
+			.minLength(dataConstraints.MIN_PASSWORD_LENGTH)
+	}),
+	async (req, res) => {
+		const { username, password } = req.body;
+
+		// Check if the username is already taken.
+		const users = await req.sql`SELECT name FROM users WHERE name = ${username}`;
+
+		if(users.length !== 0) {
+			res.status(409).json(new JSONErrorResponse('Username is taken'));
+			return;
+		}
+
+		await req.sql`INSERT INTO users (name, password, display_name) VALUES (${username}, ${password}, ${username})`;
+
+		setAuthCookies(res, username);
+
+		res.sendStatus(201);
 	}
-	
-	const { username, password } = req.body;
+);
 
-	if(!username || !password) {
-		res.status(400).json(new JSONErrorResponse(400, 'Username and password is required'));
-		return;
+router.post('/login',
+	validateBody({
+		username: new Rule('string').required().notEmpty(),
+		password: new Rule('string').required().notEmpty()
+	}),
+	async (req, res) => {
+		const { username, password } = req.body;
+
+		/** @type {Kyanit.User[]} */
+		const users = await req.sql`SELECT 1 FROM users WHERE name = ${username} AND password = ${password}`;
+
+		if(users.length === 0) {
+			res.status(404).json(new JSONErrorResponse('Invalid username or password'));
+			return;
+		}
+
+		setAuthCookies(res, username);
+
+		res.sendStatus(204);
 	}
-
-	if(username.length < 4 || username.length > 16) {
-		res.status(400).json(new JSONErrorResponse(400, 'Username should be 4–16 characters'));
-		return;
-	}
-
-	if(password.length < 4) {
-		res.status(400).json(new JSONErrorResponse(400, 'Password must be at least 4 characters'));
-		return;
-	}
-
-	// Check if the username is already taken.
-	const users = await req.sql`SELECT name FROM users WHERE name = ${username}`;
-
-	if(users.length !== 0) {
-		res.status(409).json(new JSONErrorResponse(409, 'Username is taken'));
-		return;
-	}
-
-	await req.sql`INSERT INTO users (name, password, display_name) VALUES (${username}, ${password}, ${username}) RETURNING *`;
-
-	setAuthCookies(res, username);
-
-	res.sendStatus(201);
-});
-
-router.post('/login', async (req, res) => {
-	if(!req.body) {
-		res.status(400).json(new JSONErrorResponse(400, 'No body sent'));
-		return;
-	}
-
-	const { username, password } = req.body;
-
-	if(!username || !password) {
-		res.status(400).json(new JSONErrorResponse(400, 'No username or password given'));
-		return;
-	}
-
-	/** @type {Kyanit.User[]} */
-	const users = await req.sql`SELECT 1 FROM users WHERE name = ${username} AND password = ${password}`;
-
-	if(users.length === 0) {
-		res.status(404).json(new JSONErrorResponse(404, 'Invalid username or password'));
-		return;
-	}
-
-	setAuthCookies(res, username);
-
-	res.sendStatus(204);
-});
+);
 
 function setAuthCookies(res, username) {
 	const accessToken = generateAccessToken(username);

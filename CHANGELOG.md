@@ -1,5 +1,16 @@
 # Version Changelogs
 
+## 1.0.0-beta.5
+
+Refactored validation and error handling across routes.
+
+- Added `validateBody` middleware.
+- Added module `express-rate-limit`.
+- Changed `JSONErrorResponse` to accept a single error message string.
+- Changed Save button on user profile to have wait property.
+- Changed minimum password length to 8 characters.
+- Updated routes to utilize new validation rules.
+
 ## 1.0.0-beta.4
 
 - Fixed `PATCH /api/users`, `displayName` to `display_name`.

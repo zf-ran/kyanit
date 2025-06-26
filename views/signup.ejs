@@ -58,8 +58,8 @@
 		} else if(usernameInput.value.length > 16) {
 			messageBox.innerText = 'Username can’t be longer than 16 letters';
 			return;
-		} else if(passwordInput.value.length < 4) {
-			messageBox.innerText = 'Password can’t be shorter than 4 letters';
+		} else if(passwordInput.value.length < 8) {
+			messageBox.innerText = 'Password can’t be shorter than 8 letters';
 			return;
 		}
 
@@ -84,7 +84,7 @@
 				// Handle invalid requests.
 				const json = await response.json();
 
-				messageBox.innerText = json.error.message;
+				messageBox.innerText = json.error;
 				toggleInputs(true);
 			} else {
 				// Success.

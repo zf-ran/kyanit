@@ -9,11 +9,10 @@ class JSONResponse {
 
 class JSONErrorResponse {
 	/**
-	 * @param {number} code - Error code
-	 * @param {string} message - Error message
+	 * @param {string} error - Error message
 	 */
-	constructor(code, message) {
-		this.error = { code, message };
+	constructor(error) {
+		this.error = error;
 	}
 }
 

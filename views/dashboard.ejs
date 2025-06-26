@@ -181,16 +181,25 @@
       saveEdit.onclick = save;
     }
 
-    function save() {
+    async function save() {
       const saveEdit = $('#saveEdit');
 
-      saveEdit.classList = 'closed';
+      saveEdit.classList = 'wait';
       saveEdit.onclick = null;
 
-      const password = $('#password').value;
-      const displayName = $('#displayName').value;
+      const data = {};
 
-      patchUser({ displayName, password });
+      if($('#displayName').value !== '') {
+        data.displayName = $('#displayName').value;
+      }
+
+      if($('#password').value !== '') {
+        data.password = $('#password').value;
+      }
+
+      await patchUser(data);
+
+      saveEdit.classList = 'closed';
     }
 
     async function patchUser(data) {
@@ -202,7 +211,7 @@
 
       if(!response.ok) {
         const json = await response.json();
-        ui.alert({ title: 'Error', content: json.error.message });
+        ui.alert({ title: 'Error', content: json.error });
       }
     }
   </script>

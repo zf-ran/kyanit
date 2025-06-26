@@ -195,7 +195,7 @@
 			const json = await response.json();
 
 			if(!response.ok) {
-				ui.alert({ title: 'Error', content: json.error.message });
+				ui.alert({ title: 'Error', content: json.error });
 				return [];
 			}
 
@@ -276,7 +276,7 @@
 					const json = await response.json();
 
 					if(!response.ok) {
-						ui.alert({ title: 'Error', content: json.error.message });
+						ui.alert({ title: 'Error', content: json.error });
 					} else {
 						loadComment(json.data);
 					}
@@ -306,7 +306,7 @@
 					const json = await response.json();
 
 					if(!response.ok) {
-						ui.alert({ title: 'Error', content: json.error.message });
+						ui.alert({ title: 'Error', content: json.error });
 					} else {
 						const { currentCount } = json.data;
 						commentVoteCount.dataset.count = currentCount;
@@ -346,7 +346,7 @@
 						if(!response.ok) {
 							const json = await response.json();
 
-							ui.alert({ title: 'Error', content: json.error.message });
+							ui.alert({ title: 'Error', content: json.error });
 						} else {
 							commentElement.remove();
 						}
@@ -385,7 +385,7 @@
 				const json = await response.json();
 
 				if(!response.ok) {
-					ui.alert({ title: 'Error', content: json.error.message });
+					ui.alert({ title: 'Error', content: json.error });
 				} else {
 					$('#add-comment-input').value = '';
 					loadComment(json.data);
@@ -407,9 +407,15 @@
 	};
 
 	/* <% if(username !== note.author_name) { %> */
-		setTimeout(() => {
-			fetch(`/api/notes/${noteId}/views`, { method: 'POST' });
-		}, 30_000);
+		try {
+			await fetch(`/api/notes/${noteId}/views`, {
+				method: 'POST',
+				headers: { 'x-note-id': noteId }
+			});
+		} catch (error) {
+			ui.alert({ title: 'Unexpected Error', message: 'Unexpected error when incrementing note view.' });
+			console.error(error);
+		};
 	/* <% } %> */
 </script>
 
@@ -428,7 +434,7 @@
 			if(!response.ok) {
 				// Response is not okie-dokie.
 				const json = await response.json();
-				ui.alert({ title: `Error ${response.status}`, content: json.error.message });
+				ui.alert({ title: `Error ${response.status}`, content: json.error });
 			} else {
 				// Success.
 				ui.alert({ content: 'Note deleted successfully' });

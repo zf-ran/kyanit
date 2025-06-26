@@ -72,7 +72,7 @@
 				// Handle invalid requests.
 				const json = await response.json();
 
-				messageBox.innerText = json.error.message;
+				messageBox.innerText = json.error;
 				toggleInputs(true);
 			} else {
 				// Success.
