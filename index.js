@@ -90,40 +90,40 @@ app.get('/', async (req, res) => {
 		const searchQueries = req.query.search.toLowerCase().split(/ +/g);
 
 		notes = await sql`
-		select
-			n.id,
-			n.author_name,
-			u.display_name as author_display_name,
-			u.is_verified as is_author_verified,
-			n.title,
-			n.keywords,
-			n.thumbnail_url,
-			n.views,
-			n.created_at,
-			n.updated_at
-		from notes n join users u
-			on n.author_name = u.name
-		where unlisted = false and keywords && ${searchQueries}::text[]
-		order by views desc;
-	`;
+			select
+				n.id,
+				n.author_name,
+				u.display_name as author_display_name,
+				u.is_verified as is_author_verified,
+				n.title,
+				n.keywords,
+				n.thumbnail_url,
+				n.views,
+				n.created_at,
+				n.updated_at
+			from notes n join users u
+				on n.author_name = u.name
+			where unlisted = false and keywords && ${searchQueries}::text[]
+			order by n.views/((EXTRACT(epoch FROM now()-n.created_at)+1)/86400)^5 desc;
+		`;
 	} else {
 		notes = await sql`
-		select
-			n.id,
-			n.author_name,
-			u.display_name as author_display_name,
-			u.is_verified as is_author_verified,
-			n.title,
-			n.keywords,
-			n.thumbnail_url,
-			n.views,
-			n.created_at,
-			n.updated_at
-		from notes n join users u
-			on n.author_name = u.name
-		where unlisted = false
-		order by views desc;
-	`;
+			select
+				n.id,
+				n.author_name,
+				u.display_name as author_display_name,
+				u.is_verified as is_author_verified,
+				n.title,
+				n.keywords,
+				n.thumbnail_url,
+				n.views,
+				n.created_at,
+				n.updated_at
+			from notes n join users u
+				on n.author_name = u.name
+			where unlisted = false
+			order by n.views/((EXTRACT(epoch FROM now()-n.created_at)+1)/86400)^5 desc;
+		`;
 	}
 
 	// Pin the tutorial note.

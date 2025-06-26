@@ -4,12 +4,16 @@
 
 Refactored validation and error handling across routes.
 
-- Added `validateBody` middleware.
-- Added module `express-rate-limit`.
-- Changed `JSONErrorResponse` to accept a single error message string.
-- Changed Save button on user profile to have wait property.
-- Changed minimum password length to 8 characters.
-- Updated routes to utilize new validation rules.
+-	Added `validateBody` middleware.
+-	Added module `express-rate-limit`.
+-	Changed `JSONErrorResponse` to accept a single error message string.
+-	Changed Save button on user profile to have wait property.
+-	Changed minimum password length to 8 characters.
+-	Updated routes to utilize new validation rules.
+-	Changed note sorting by trending score instead of view count,
+	-	Trending score is calculated by
+		$$ \frac{\text{views}}{(\text{time since published})^5}. $$
+
 
 ## 1.0.0-beta.4
 
