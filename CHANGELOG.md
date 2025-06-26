@@ -12,6 +12,7 @@ Refactored validation and error handling across routes.
 -	Updated routes to utilize new validation rules.
 -	Changed note sorting by trending score instead of view count,
 	-	Trending score is calculated by
+
 		$$ \frac{\text{views}}{(\text{time since published})^5}. $$
 
 
