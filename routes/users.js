@@ -3,7 +3,7 @@ const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse } = Kyanit;
-const { validateBody, Rule } = require('../modules/validateBody');
+const { validateBody, Rule } = require('../modules/bodyValidator');
 const { dataConstraints } = require('../config');
 
 //* [ROUTE] /api
@@ -19,8 +19,7 @@ router.patch('/users',
 	}),
 	async (req, res) => {
 		if(!res.locals.isLoggedIn) {
-			res.status(401).json(new JSONErrorResponse('No login credentials'));
-			return;
+			return res.status(401).json(new JSONErrorResponse('No login credentials'));
 		}
 
 		const username = res.locals.username;
@@ -35,8 +34,7 @@ router.patch('/users',
 		const user = users[0];
 
 		if(!user) {
-			res.status(404).json(new JSONErrorResponse('User not found'));
-			return;
+			return res.status(404).json(new JSONErrorResponse('User not found'));
 		}
 
 		// Undefined or null means not changes, empty string means literal empty string.

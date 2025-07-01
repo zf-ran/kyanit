@@ -407,19 +407,21 @@
 	};
 
 	/* <% if(username !== note.author_name) { %> */
-		try {
-			await fetch(`/api/notes/${noteId}/views`, {
-				method: 'POST',
-				headers: { 'x-note-id': noteId }
-			});
-		} catch (error) {
-			ui.alert({ title: 'Unexpected Error', message: 'Unexpected error when incrementing note view.' });
-			console.error(error);
-		};
+		setInterval(async () => {
+			try {
+				await fetch(`/api/notes/${noteId}/views`, {
+					method: 'POST',
+					headers: { 'x-note-id': noteId }
+				});
+			} catch (error) {
+				ui.alert({ title: 'Unexpected Error', message: 'Unexpected error when incrementing note view.' });
+				console.error(error);
+			}
+		}, 30_000); // 30 seconds
 	/* <% } %> */
 </script>
 
-<% if(isLoggedIn && username === note.author_name) { %>
+<% if(username === note.author_name) { %>
 <script type="module">
 	import ui from '/js/modules/ui.mjs';
 

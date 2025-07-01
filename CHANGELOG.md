@@ -1,5 +1,19 @@
 # Version Changelogs
 
+## 1.0.0-beta.5.1
+
+-	Renamed `module/validateBody.js` to `module/bodyValidator.js`.
+-	Removed `.js` suffix in `require()`.
+-	Added standardization routes error handling to
+	```js
+	if(condition) {
+		return res.status(code).json(data);
+	}
+	```
+-	Separated the `/min` routes into `routes/minified.js`.
+-	Separated API docs to `docs/api-reference.md` from `README.md`.
+-	Updated the favicon.
+
 ## 1.0.0-beta.5
 
 Refactored validation and error handling across routes.

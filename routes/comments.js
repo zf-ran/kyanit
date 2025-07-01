@@ -3,7 +3,7 @@ const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
-const { validateBody, Rule } = require('../modules/validateBody');
+const { validateBody, Rule } = require('../modules/bodyValidator');
 const { dataConstraints } = require('../config');
 
 // Sums all the elements in an array.
@@ -26,15 +26,13 @@ router.get('/notes/:noteId/comments', async (req, res) => {
 	const { noteId } = req.params;
 
 	if(!isUUID(noteId)) {
-		res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
-		return;
+		return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 	}
 
 	const notes = await req.sql`select exists(select 1 from notes where id = ${noteId});`;
 
 	if(!notes[0].exists) {
-		res.status(404).json(new JSONErrorResponse('Note not found'));
-		return;
+		return res.status(404).json(new JSONErrorResponse('Note not found'));
 	}
 
 	const noteComments = await req.sql`
@@ -87,15 +85,13 @@ router.post('/notes/:noteId/comments',
 	}),
 	async (req, res) => {
 		if(!res.locals.isLoggedIn) {
-			res.status(401).json(new JSONErrorResponse('No login credentials'));
-			return;
+			return res.status(401).json(new JSONErrorResponse('No login credentials'));
 		}
 
 		const { noteId } = req.params;
 
 		if(!isUUID(noteId)) {
-			res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
-			return;
+			return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 		}
 
 		const { content, parentId } = req.body;
@@ -118,8 +114,7 @@ router.post('/notes/:noteId/comments',
 				`;
 			}
 		} catch (error) {
-			res.status(400).json(new JSONErrorResponse(error));
-			return;
+			return res.status(400).json(new JSONErrorResponse(error));
 		}
 
 		const comment = comments[0];
@@ -133,20 +128,17 @@ router.post('/notes/:noteId/comments',
 
 router.delete('/notes/:noteId/comments/:commentId', async (req, res) => {
 	if(!res.locals.isLoggedIn) {
-		res.status(401).json(new JSONErrorResponse('No login credentials'));
-		return;
+		return res.status(401).json(new JSONErrorResponse('No login credentials'));
 	}
 
 	const { noteId, commentId } = req.params;
 
 	if(!isUUID(noteId)) {
-		res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
-		return;
+		return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 	}
 
 	if(!isUUID(commentId)) {
-		res.status(400).json(new JSONErrorResponse('Invalid comment UUID'));
-		return;
+		return res.status(400).json(new JSONErrorResponse('Invalid comment UUID'));
 	}
 
 	try {
@@ -155,8 +147,7 @@ router.delete('/notes/:noteId/comments/:commentId', async (req, res) => {
 			WHERE id = ${commentId} AND note_id = ${noteId} AND commenter_name = ${res.locals.username};
 		`;
 	} catch(error) {
-		res.status(400).json(new JSONErrorResponse(error));
-		return;
+		return res.status(400).json(new JSONErrorResponse(error));
 	}
 
 	res.json(new JSONResponse({ id: commentId }));

@@ -41,6 +41,8 @@ const mathjaxOptions = {
 	}
 };
 
+const purifyOptions = { ADD_TAGS: ['fn'], ADD_ATTR: ['note'] };
+
 const dataConstraints = {
 	MIN_USERNAME_LENGTH: 4,
 	MAX_USERNAME_LENGTH: 16,
@@ -54,4 +56,9 @@ const dataConstraints = {
 
 Object.freeze(dataConstraints);
 
-module.exports = { markedRenderer, mathjaxOptions, dataConstraints };
+module.exports = {
+	markedRenderer,
+	mathjaxOptions,
+	purifyOptions,
+	dataConstraints
+};

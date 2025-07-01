@@ -6,22 +6,17 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    main * {
-      tab-size: 4;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    table, td, th {
-      border: 1px solid black;
-    }
+    main * { tab-size: 4; }
+    table { border-collapse: collapse; }
+    table, td, th { border: 1px solid black; }
   </style>
 </head>
 <body>
 	<main>
-    <center><h1><%= note.title %></h1> <strong><%= note.author_display_name %></strong> <em>@<%= note.author_name %></em></center>
+    <div style="text-align: center;">
+      <h1><%= note.title %></h1>
+      <strong><%= note.author_display_name %></strong> <em>@<%= note.author_name %></em>
+    </div>
     <hr>
     <%- content %>
 	</main>

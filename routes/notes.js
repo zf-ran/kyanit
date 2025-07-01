@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
-const { validateBody, Rule } = require('../modules/validateBody');
+const { validateBody, Rule } = require('../modules/bodyValidator');
 const { dataConstraints } = require('../config');
 
 const URL_OR_EMPTY = /(^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*$)|^$)/i;
@@ -30,8 +30,7 @@ router.post('/notes',
 	}),
 	async (req, res) => {
 		if(!res.locals.isLoggedIn) {
-			res.status(401).json(new JSONErrorResponse('No login credentials'));
-			return;
+			return res.status(401).json(new JSONErrorResponse('No login credentials'));
 		}
 
 		const authorName = res.locals.username;
@@ -74,15 +73,13 @@ router.patch('/notes/:noteId',
 	}),
 	async (req, res) => {
 		if(!res.locals.isLoggedIn) {
-			res.status(401).json(new JSONErrorResponse('No login credentials'));
-			return;
+			return res.status(401).json(new JSONErrorResponse('No login credentials'));
 		}
 
 		const { noteId } = req.params;
 
 		if(!isUUID(noteId)) {
-			res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
-			return;
+			return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 		}
 
 		const notes = await req.sql`
@@ -94,8 +91,7 @@ router.patch('/notes/:noteId',
 		const note = notes[0];
 
 		if(!note) {
-			res.status(404).json(new JSONErrorResponse('Note not found'));
-			return;
+			return res.status(404).json(new JSONErrorResponse('Note not found'));
 		}
 
 		const { title, content, keywords, thumbnailURL, unlisted } = req.body;
@@ -128,15 +124,13 @@ router.patch('/notes/:noteId',
 
 router.delete('/notes/:noteId', async (req, res) => {
 	if(!res.locals.isLoggedIn) {
-		res.status(401).json(new JSONErrorResponse('No login credentials'));
-		return;
+		return res.status(401).json(new JSONErrorResponse('No login credentials'));
 	}
 
 	const { noteId } = req.params;
 
 	if(!isUUID(noteId)) {
-		res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
-		return;
+		return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 	}
 
 	await req.sql`
@@ -159,21 +153,27 @@ const viewLimiter = rateLimit({
 	statusCode: 304
 });
 
+// This route is rate-limited using Vercel Firewall (1 request per 10 minutes).
 router.post('/notes/:noteId/views', async (req, res) => {
 	const { noteId } = req.params;
 
 	if(!isUUID(noteId)) {
-		res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
-		return;
+		return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 	}
 
-	if(req.headers['x-note-id'] !== noteId) return res.status(403);
+	if(req.headers['x-note-id'] !== noteId) {
+		return res.status(400).json(new JSONErrorResponse('X-Note-ID header not found'));
+	}
 
 	const notes = await req.sql`select author_name from notes where id = ${noteId};`;
-	if(notes.length === 0) return res.status(404);
+	if(notes.length === 0) {
+		return res.status(404).json(new JSONErrorResponse('Note not found'));
+	}
 
 	const note = notes[0];
-	if(note.author_name === res.locals.username) return res.status(403);
+	if(note.author_name === res.locals.username) {
+		return res.sendStatus(204);
+	}
 
 	await req.sql`
 		UPDATE notes
@@ -181,7 +181,7 @@ router.post('/notes/:noteId/views', async (req, res) => {
 		WHERE id = ${noteId}
 	`;
 
-	res.sendStatus(204);
+	res.sendStatus(200);
 });
 
 module.exports = router;

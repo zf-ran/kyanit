@@ -24,14 +24,12 @@ function validateToken(req, res, next) {
 			const username = decodedRefreshToken.username;
 			const accessToken = generateAccessToken(username);
 
-			// const accessTokenMaxAge = 60 * (60*1000); // 1 hour.
-			const accessTokenMaxAge = 2 * (60*1000); // 2 minute for testing.
-
 			// Set the access token cookie.
 			res.cookie('accessToken', accessToken, {
-				maxAge: accessTokenMaxAge,
+				maxAge: accessTokenAge,
 				httpOnly: true,
-				sameSite: 'strict'
+				sameSite: 'strict',
+				secure: true
 			});
 
 			res.locals.username = decodedRefreshToken.username;

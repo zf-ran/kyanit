@@ -3,7 +3,7 @@ const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
-const { validateBody, Rule } = require('../modules/validateBody');
+const { validateBody, Rule } = require('../modules/bodyValidator');
 
 //* [ROUTE] /api
 
@@ -15,20 +15,17 @@ router.post('/notes/:noteId/comments/:commentId/votes',
 	}),
 	async (req, res) => {
 		if(!res.locals.isLoggedIn) {
-			res.status(400).json(new JSONErrorResponse('No login credentials'));
-			return;
+			return res.status(400).json(new JSONErrorResponse('No login credentials'));
 		}
 
 		const { noteId, commentId } = req.params;
 
 		if(!isUUID(noteId)) {
-			res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
-			return;
+			return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 		}
 
 		if(!isUUID(commentId)) {
-			res.status(400).json(new JSONErrorResponse('Invalid comment UUID'));
-			return;
+			return res.status(400).json(new JSONErrorResponse('Invalid comment UUID'));
 		}
 
 		const { value } = req.body;

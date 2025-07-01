@@ -17,64 +17,10 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 
 ## New stuff
 
+- [ ] Make official documents in separate section.
 - [ ] Vote system for note.
+	- Rating system (1–5) or voting system (up, down) ... I can’t decide.
 - [ ] Log out.
 - [ ] Delete account.
-- [ ] Add sorting and filters to the search page and dashboard.
 - [ ] Make better homepage, explaining the website better.
-
-# Environments
-
--	`PORT={number}`.
--	`MAINTENANCE={boolean}` — Server maintenance mode.
--	`MAINTENANCE_USERS={string[] split with \n}`. — Users that has access to maintenance, split with a `\n`.
--	`JWT_ACCESS_SECRET`.
--	`JWT_REFRESH_SECRET`.
--	`ACCESS_TOKEN_AGE={number in ms}`.
--	`REFRESH_TOKEN_AGE={number in ms}`.
--	`PG_HOST`.
--	`PG_DATABASE`.
--	`PG_USER`.
--	`PG_PASSWORD`.
--	`PG_PORT`.
-
-# API
-
-with prefix `/api`.
-
-## GET
-
--	`/note/{noteId}/comments` - returns comments from the note with ID `{noteId}`.
-
-## POST
-
--	`/signup`.
--	`/login`.
--	`/notes`.
--	`/notes/{noteId}/comments`.
--	`/notes/{noteId}/comments/{commentId}/votes`.
-
-## DELETE
-
--	`/notes/{noteId}`.
--	`/notes/{noteId}/comments/{commentId}`.
-
-## PATCH
-
--	`/users`.
--	`/notes/{noteId}`.
-
-# Socket Events
-
-## Client to Server
-
--	`note:connect(noteId)`.
--	`note:view(uername, noteId)`.
-
-## Server to Client
-
-### on room `note:{noteId}`
-
--	`comment:created(comment)`.
--	`comment:deleted(commentId)`.
--	`comment:voted(commentId, commentVoteCount)`.
+- [ ] Make an explore page, having filters and stuff.

@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const Kyanit = require('../modules/Kyanit.js');
+const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse } = Kyanit;
 
-const { generateAccessToken, generateRefreshToken } = require('../modules/token.js');
-const { validateBody, Rule } = require('../modules/validateBody.js');
-const { dataConstraints } = require('../config.js');
+const { generateAccessToken, generateRefreshToken } = require('../modules/token');
+const { validateBody, Rule } = require('../modules/bodyValidator');
+const { dataConstraints } = require('../config');
 
 const accessTokenAge = parseInt(process.env.ACCESS_TOKEN_AGE);
 const refreshTokenAge = parseInt(process.env.REFRESH_TOKEN_AGE);
@@ -30,8 +30,7 @@ router.post('/signup',
 		const users = await req.sql`SELECT name FROM users WHERE name = ${username}`;
 
 		if(users.length !== 0) {
-			res.status(409).json(new JSONErrorResponse('Username is taken'));
-			return;
+			return res.status(409).json(new JSONErrorResponse('Username is taken'));
 		}
 
 		await req.sql`INSERT INTO users (name, password, display_name) VALUES (${username}, ${password}, ${username})`;
@@ -54,8 +53,7 @@ router.post('/login',
 		const users = await req.sql`SELECT 1 FROM users WHERE name = ${username} AND password = ${password}`;
 
 		if(users.length === 0) {
-			res.status(404).json(new JSONErrorResponse('Invalid username or password'));
-			return;
+			return res.status(404).json(new JSONErrorResponse('Invalid username or password'));
 		}
 
 		setAuthCookies(res, username);
@@ -65,22 +63,24 @@ router.post('/login',
 );
 
 function setAuthCookies(res, username) {
+	// Set the access token cookie.
 	const accessToken = generateAccessToken(username);
 
-	// Set the access token cookie.
 	res.cookie('accessToken', accessToken, {
 		maxAge: accessTokenAge,
 		httpOnly: true,
-		sameSite: 'strict'
+		sameSite: 'strict',
+		secure: true
 	});
 
+	// Set the refresh token cookie.
 	const refreshToken = generateRefreshToken(username);
 
-	// Set the refresh token cookie.
 	res.cookie('refreshToken', refreshToken, {
 		maxAge: refreshTokenAge,
 		httpOnly: true,
-		sameSite: 'strict'
+		sameSite: 'strict',
+		secure: true
 	});
 }
 

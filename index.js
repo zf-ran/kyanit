@@ -6,36 +6,22 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
 const marked = require('marked');
-const { markedRenderer } = require('./config.js');
+const DOMPurify = require('isomorphic-dompurify');
+
+const { markedRenderer, purifyOptions } = require('./config');
+
 marked.use({ renderer: markedRenderer });
 
-const DOMPurify = require('isomorphic-dompurify');
-const purifyOptions = { ADD_TAGS: ['fn'], ADD_ATTR: ['note'] };
-
-const { mjpage } = require('mathjax-node-page');
-const { mathjaxOptions } = require('./config.js');
-
-const Kyanit = require('./modules/Kyanit.js');
+const Kyanit = require('./modules/Kyanit');
 const { isUUID } = Kyanit;
 
-const { validateToken } = require('./modules/token.js');
+const { validateToken } = require('./modules/token');
 
 //* Database
 const { neon } = require('@neondatabase/serverless');
 
 const { PG_HOST, PG_DATABASE, PG_USER, PG_PASSWORD } = process.env;
 const sql = neon(`postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}/${PG_DATABASE}?sslmode=require`);
-
-// Checks if two arrays intersect.
-Array.prototype.intersectsWith = function(array) {
-	if(!array || !Array.isArray(array)) return false;
-
-	for(let i = 0; i < this.length; i++) {
-		if(array.includes(this[i])) return true;
-	}
-
-	return false;
-};
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -92,7 +78,6 @@ app.get('/', async (req, res) => {
 		notes = await sql`
 			select
 				n.id,
-				n.author_name,
 				u.display_name as author_display_name,
 				u.is_verified as is_author_verified,
 				n.title,
@@ -110,7 +95,6 @@ app.get('/', async (req, res) => {
 		notes = await sql`
 			select
 				n.id,
-				n.author_name,
 				u.display_name as author_display_name,
 				u.is_verified as is_author_verified,
 				n.title,
@@ -142,8 +126,7 @@ app.get('/note/:noteId', async (req, res) => {
 	const noteId = req.params.noteId;
 
 	if(!isUUID(noteId)) {
-		res.status(400).send(`Invalid UUID: <code>${noteId}</code>.`);
-		return;
+		return res.status(400).send(`Invalid UUID: <code>${noteId}</code>.`);
 	}
 
 	const notes = await sql`
@@ -157,8 +140,7 @@ app.get('/note/:noteId', async (req, res) => {
 	`;
 
 	if(notes.length === 0) {
-		res.status(404).send(`Note with id ${noteId} not found.`);
-		return;
+		return res.status(404).send(`Note with id ${noteId} not found.`);
 	}
 
 	const commentCount = (await sql`select count(*) from comments where note_id = ${noteId}`)[0].count;
@@ -221,8 +203,7 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 	const user = users[0];
 
 	if(!user) {
-		res.status(404).send(`User with username ${req.params.username} not found.`)
-		return;
+		return res.status(404).send(`User with username ${req.params.username} not found.`);
 	}
 
 	let notes;
@@ -256,49 +237,6 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 	});
 });
 
-// Send simplified or minimized note. No CSS.
-app.get('/:reduce/note/:noteId', async (req, res) => {
-	const noteId = req.params.noteId;
-
-	if(!isUUID(noteId)) {
-		res.status(400).send(`Invalid UUID: <code>${noteId}</code>.`);
-		return;
-	}
-
-	const notes = await sql`
-		select
-			n.title,
-			n.content,
-			n.author_name,
-			u.display_name as author_display_name
-		from notes n join users u
-			on n.author_name = u.name
-		where id = ${noteId};
-	`;
-
-	const note = notes[0];
-
-	if(!note) {
-		res.status(404).send(`Note with id <code>${noteId}</code> not found.`);
-		return;
-	}
-
-	const backslash = /\\(?![*_$~`])/g;
-	const htmlContent = DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions);
-
-	delete note.content;
-
-	if(req.params.reduce === 'min') {
-		// `min` is the bare bones, no MathJAX.
-		res.render('min/note', { content: htmlContent, note });
-	} else if(req.params.reduce === 'simple') {
-		// `simple` still contains LaTeX in svg.
-		mjpage(htmlContent, mathjaxOptions, { svg: true }, output => {
-			res.render('min/note', { content: output, note });
-		});
-	}
-});
-
 app.get('/signup', (_req, res) => {
 	res.render('signup');
 });
@@ -306,6 +244,18 @@ app.get('/signup', (_req, res) => {
 app.get('/login', (_req, res) => {
 	res.render('login');
 });
+
+//* Minified
+const minifiedRoutes = require('./routes/minified');
+app.use(
+	'/min', 
+	(req, _res, next) => {
+		// Inject database.
+		req.sql = sql;
+		next();
+	},
+	minifiedRoutes
+);
 
 //* APIs 
 const userRoutes = require('./routes/users');
