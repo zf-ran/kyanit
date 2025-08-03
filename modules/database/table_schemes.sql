@@ -35,3 +35,10 @@ CREATE TABLE comment_votes (
 	voter_name TEXT NOT NULL REFERENCES users(name) ON DELETE CASCADE,
 	value INTEGER NOT NULL CHECK (value IN (1, -1))
 );
+
+CREATE TABLE note_ratings (
+	rater_name TEXT NOT NULL REFERENCES users(name) ON DELETE CASCADE,
+	note_id UUID NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+	value INTEGER NOT NULL CHECK (value in (1, 2, 3, 4, 5)),
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

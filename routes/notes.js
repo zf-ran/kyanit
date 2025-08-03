@@ -12,6 +12,33 @@ const URL_OR_EMPTY = /(^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-
 
 //* [ROUTE] /api
 
+router.get('/notes', async (req, res) => {
+	const notes = await req.sql`
+		select
+			n.id,
+			u.display_name as author_display_name,
+			u.is_verified as is_author_verified,
+			n.title,
+			n.keywords,
+			n.thumbnail_url,
+			n.views,
+			AVG(r.value)::NUMERIC(10,1) as rating,
+			COUNT(r.value) as rate_count,
+			n.created_at,
+			n.updated_at
+		from notes n
+		join users u
+			on n.author_name = u.name
+		left join note_ratings r
+			on n.id = r.note_id
+		where n.unlisted = false
+		group by n.id, u.display_name, u.is_verified
+		order by n.views desc;
+	`;
+
+	res.json(new JSONResponse(notes));
+});
+
 router.post('/notes',
 	validateBody({
 		title: new Rule('string')

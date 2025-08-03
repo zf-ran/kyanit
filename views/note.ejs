@@ -1,451 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title><%= note.title %></title>
-	<meta name="description" content="Author: <%- note.author_display_name %> @<%- note.author_name %>">
-	<meta name="author" content="<%- note.author_display_name %>">
-	<meta name="keywords" content="<%- note.keywords?.join(', ') %>">
+	<title><%- note.title %> | Kyanit</title>
 	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<noscript><meta http-equiv="refresh" content="0; URL='/min/note/<%- note.id %>'" /></noscript>
+
+	<!-- MATERIAL SYMBOLS -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+	<!-- MATHJAX -->
+	<script src="/js/modules/mathjax-options.js"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
+
+	<!-- PRISM.JS -->
+	<style>
+		@import url("https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css") (prefers-color-scheme: light);
+		@import url("https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-okaidia.min.css") (prefers-color-scheme: dark);
+	</style>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js" integrity="sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js" integrity="sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/note.css">
-
-	<!-- MATHJAX -->
-	<script src="/js/mathjax-options.js"></script>
-	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
+	<link rel="stylesheet" href="/css/partials/markdown-document.css">
 </head>
 <body>
-	<%- include('partials/header.ejs') %>
-	<% const absoluteDate = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric' }); %>
-
-	<% if(note.thumbnail_url) { %><div id="thumbnail-block" style="background-image: url('<%- note.thumbnail_url %>')"></div><% } %>
-
-	<div id="title-bar">
-		<span class="tb--author"><%= note.author_display_name %><% if(note.is_author_verified) { %><span id="verified"><i class="fa-solid fa-check"></i></span><% } %></span>
-		<span class="tb--title"><%= note.title %></span>
-		<span class="tb--views"><% if(note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views.toLocaleString() %></span>
-		<% if(commentCount > 0) { %>
-			<span class="tb--comments"><i class="fa-regular fa-comment"></i> <%= commentCount %></span>
-		<% } %>
-		<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
-			<span class="tb--published"><i class="fa-solid fa-upload"></i> <%= new Date(note.created_at).toLocaleDateString() %></span>
-		<% } else { %>
-			<span class="tb--edited"><i class="fa-solid fa-pen-nib"></i> <%= new Date(note.updated_at).toLocaleDateString() %></span>
-		<% } %>
-		<a class="tb--redirect" href="#title-block"></a>
-	</div>
+	<%- include('partials/header') %>
+	<% const absoluteDate = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric' }).format; %>
 
 	<main>
-		<div id="title-block">
-			<div id="title"><%= note.title %></div>
-			<div id="information">
-				<span class="info--author">
-					<a href="/user/<%- note.author_name %>">
-						<span class="info--author--display-name">
-							<%= note.author_display_name %><% if(note.is_author_verified) { %><span id="verified"><i class="fa-solid fa-check"></i></span><% } %>
-						</span>
-						<span class="info--author--username">@<%= note.author_name %></span>
-					</a>
-				</span>
-				<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
-					<span class="info--published"><%= absoluteDate.format(new Date(note.created_at)) %></span>
-				<% } else { %>
-					<span class="info--edited"><%= absoluteDate.format(new Date(note.updated_at)) %></span>
-				<% } %>
-				<span class="info--views"><% if(note.unlisted) { %><i class="fa-regular fa-eye-slash"></i><% } else { %><i class="fa-regular fa-eye"></i><% } %> <%= note.views %></span>
-				<span class="info--comments"><i class="fa-regular fa-comment"></i> <%= commentCount %></span>
-			</div>
-		</div>
-
-		<div id="content" class="markdown-document"><%- htmlContent %></div>
-	</main>
-
-	<!-- TABLE OF CONTENTS -->
-	<aside id="content-list" data-opened="false"><div class="content-list--title"><i class="fa-solid fa-bars-staggered"></i> List</div></aside>
-
-	<!-- COMMENTS -->
-	<aside id="comments-aside" data-opened="false">
-		<div id="comments-title"><i class="fa-regular fa-comments"></i> Comments</div>
-		<% if(isLoggedIn) { %>
-			<div id="add-comment-wrapper">
-				<div id="add-comment">
-					<input id="add-comment-input" type="text" placeholder="Share your thoughts..." />
-					<div id="add-comment-button" class="ripple"><i class="fa-solid fa-paper-plane"></i></div>
+		<div class="meta-data">
+			<div class="title"><%= note.title %></div>
+			<div class="details">
+				<div class="author-date">
+					<span class="author">by <%= note.author_display_name %></span>
+					<span class="date">
+						<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
+							Published at <%= absoluteDate(note.created_at) %>
+						<% } else { %>
+							Updated at <%= absoluteDate(note.updated_at) %>
+						<% } %>
+					</span>
+				</div>
+				<div class="statistic">
+					<span class="view-count"><%= note.views %> <span class="material-symbols-outlined">visibility</span></span>
+					<span class="comment-count"><%= commentCount %> <span class="material-symbols-outlined">comment</span></span>
+					<% if(ratings.length >= MIN_RATING_COUNT_TO_SHOW) { %>
+						<span class="rating"><%= rating %> <span class="material-symbols-outlined">star</span></span>
+					<% } %>
 				</div>
 			</div>
-		<% } else { %>
-			<div id="add-comment-login">
-				Want to comment? <a href="/login">Login!</a>
-			</div>
-		<% } %>
-		<div style="text-align:center;opacity:80%" id="comment-loading">Loading comments...</div>
-		<div id="comments"></div>
-	</aside>
-
-	<!-- ACTIONS -->
-	<div id="button-actions">
-		<div id="comment-button" title="Comment">
-			<i class="fa-regular fa-comment-dots"></i>
+			<% if(note.thumbnail_url) { %>
+				<div class="thumbnail">
+					<img src="<%- note.thumbnail_url %>"/>
+				</div>
+			<% } %>
 		</div>
-		<div id="content-list-button" title="Contents">
-			<i class="fa-solid fa-list-ol"></i>
-		</div>
-		<% if(isLoggedIn && username === note.author_name) { %>
-			<a id="edit-button" title="Edit" href="/edit/<%- note.id %>">
-				<i class="fa-regular fa-pen-to-square"></i>
-			</a>
-			<div id="delete-button" title="Delete">
-				<i class="fa-solid fa-trash-can"></i>
-			</div>
-		<% } %>
-	</div>
+		<hr class="meta-content-separator">
+		<div class="content markdown-document"><%- htmlContent %></div>
+	</main>
 </body>
-<script type="module">
-	import JSH from '/js/modules/jsh.mjs';
-	import ui from '/js/modules/ui.mjs';
-	import { absoluteTime, relativeTime } from '/js/modules/date-utils.mjs';
-	const noteId = '<%- note.id %>';
-	const authorName = '<%- note.author_name %>';
-	let isCommentsLoaded = false;
-
-	addTableOfContents();
-	addURLConfirmations();
-	handleTitleBar();
-
-	// Create table of contents.
-	function addTableOfContents() {
-		$('#content-list-button').onclick = event => {
-			$('#content-list').dataset.opened = !JSON.parse($('#content-list').dataset.opened);
-		};
-
-		const headings = $$('.heading[id]');
-
-		for(let i = 0; i < headings.length; i++) {
-			const heading = headings[i];
-			const text = heading.childNodes[0].innerHTML;
-			const level = heading.tagName.replace(/h/i, '');
-
-			new JSH('a', heading.childNodes[0].innerHTML, { href: `#${heading.id}`, class: `content-list content-list-h${level}` }).appendTo($('#content-list'));
-		}
-	}
-	
-	// Create confirmation popup for every link except hashed anchors.
-	function addURLConfirmations() {
-		const urls = $$('#content a');
-
-		for(let i = 0; i < urls.length; i++) {
-			const url = urls[i];
-			if(url.href.split('#')[0] === window.location.href.split('#')[0]) continue;
-
-			url.onclick = async (event) => {
-				event.preventDefault();
-
-				const confirm = await ui.confirm({
-					title: 'This will redirect to another site',
-					content: `Redirect <code style="font-family:monospace;">${url.href}</code> to a new tab?`
-				});
-
-				if(confirm) window.open(url.href, '_blank');
-			};
-		}
-	}
-
-	// Handle the title bar observer.
-	function handleTitleBar() {
-		const titleBarObserver = new IntersectionObserver((entries) => {
-			for(let i = 0; i < entries.length; i++) {
-				const entry = entries[i];
-
-				if(entry.intersectionRatio > 0) $('#title-bar').classList.remove('show');
-				else $('#title-bar').classList.add('show');
-			}
-		});
-
-		titleBarObserver.observe($('#title-block'));
-	}
-
-	// Comment handlers.
-	const commentsContainer = $('#comments');
-
-	async function loadComments() {
-		// Fetch the comments.
-		const comments = await fetchComments();
-
-		// Loops.
-		while(comments.length > 0) {
-			// If the parent of the comment doesn’t exist, move the comment to the end of the array.
-			if(loadComment(comments[0]) === 0) comments.push(comments.shift());
-
-			// Otherwise remove.
-			else comments.shift();
-		}
-
-		// Collapse all comments on layer 2.
-		$$('#comments > .comment > .comment--replies > .comment > .comment--replies').forEach(reply => {
-			reply.dataset.collapsed = true;
-		});
-	}
-
-	async function fetchComments() {
-		try {
-			const response = await fetch(`/api/notes/${noteId}/comments`);
-			const json = await response.json();
-
-			if(!response.ok) {
-				ui.alert({ title: 'Error', content: json.error });
-				return [];
-			}
-
-			return json.data;
-		} catch (error) {
-			ui.alert({ title: 'Unexpected Error', content: error });
-		}
-	}
-
-	/** Load a comment @type {0|void} Returns `0` if the comment has a parent and the parent element doesn’t exist. */
-	function loadComment(comment) {
-		if(comment.parent_comment_id && !$(`#comment-${comment.parent_comment_id} .comment--replies`)) return 0;
-
-		// If there’s no parent, set `parentElement` to `commentsContainer`.
-		const parentElement = (comment.parent_comment_id) ? $(`#comment-${comment.parent_comment_id} .comment--replies`) : commentsContainer;
-		const commentElement = new JSH('div', null, { class: 'comment', id: `comment-${comment.id}` }).appendTo(parentElement);
-
-		const commentInfoElement = new JSH('div', null, { class: 'comment--info' }).appendTo(commentElement);
-		const displayNameElement = new JSH('a', null, { class: 'comment--info--display-name', href: `/user/${encodeURIComponent(comment.commenter_name)}` }).appendTo(commentInfoElement);
-		displayNameElement.innerText = comment.commenter_display_name;
-
-		// Detect if the commenter is the author.
-		if(comment.commenter_name === authorName) displayNameElement.classList.add('author');
-
-		new JSH('div', '@'+comment.commenter_name, { class: 'comment--info--username' }).appendTo(commentInfoElement);
-
-		new JSH('div', relativeTime(new Date(comment.created_at)), { class: 'comment--info--relative-time' }).appendTo(commentInfoElement);
-		new JSH('div', absoluteTime(new Date(comment.created_at)), { class: 'comment--info--absolute-time' }).appendTo(commentInfoElement);
-
-		const commentContentElement = new JSH('div', comment.content, { class: 'comment--content' }).appendTo(commentElement);
-
-		const commentActionsElement = new JSH('div', null, { class: 'comment--action' }).appendTo(commentElement);
-
-		const commentRepliesElement = new JSH('div', null, { class: 'comment--replies', 'data-collapsed': false }).appendTo(commentElement);
-
-		const commentCollapseElement = new JSH('div', '<i class="fa-solid fa-minus fa-xs collapse"></i><i class="fa-solid fa-plus fa-xs expand"></i>', { class: 'comment--collapse' }).appendTo(commentElement);
-
-		commentCollapseElement.onclick = () => { commentRepliesElement.dataset.collapsed = !JSON.parse(commentRepliesElement.dataset.collapsed); };
-
-		const commentUpvote = new JSH('div', '<i class="fa-solid fa-up-long">', { class: 'comment--action--upvote', 'data-vote': 1, 'data-voted': false }).appendTo(commentActionsElement);
-		const commentVoteCount = new JSH('div', null, { class: 'comment--action--vote-count', 'data-count': comment.vote_count }).appendTo(commentActionsElement);
-		const commentDownvote = new JSH('div', '<i class="fa-solid fa-down-long">', { class: 'comment--action--downvote', 'data-vote': -1, 'data-voted': false }).appendTo(commentActionsElement);
-
-		/* <% if(isLoggedIn) { %> */
-			// Shows if the user had voted.
-			const commentVote = comment.votes.find(commentVote => commentVote.voter_name === '<%- username %>');
-
-			if(commentVote) {
-				commentUpvote.dataset.voted = (commentVote.value === 1);
-				commentDownvote.dataset.voted = (commentVote.value === -1);
-			}
-
-			// Add reply button.
-			const commentReply = new JSH('div', '<i class="fa-solid fa-reply"></i>', { class: 'comment--action--reply' }).appendTo(commentActionsElement);
-			commentReply.onclick = async event => {
-				const { content } = await ui.prompt({
-					title: `Replying to @${comment.commenter_name}<div style="font-size:0.9rem;font-style:normal;font-weight:400;margin-top:1em;line-height:1.5;">${comment.content}</div>`,
-					inputs: [{
-						type: 'text',
-						label: 'Reply',
-						id: 'content',
-						required: true
-					}]
-				});
-
-				if(content === null || !content.trim()) return;
-
-				try {
-					const body = {
-						content, parentId: comment.id
-					};
-
-					const response = await fetch(`/api/notes/${noteId}/comments`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify(body)
-					});
-					const json = await response.json();
-
-					if(!response.ok) {
-						ui.alert({ title: 'Error', content: json.error });
-					} else {
-						loadComment(json.data);
-					}
-				} catch (error) {
-					ui.alert({ title: 'Unexpected Error', content: error });
-				}
-			};
-
-			// Add vote buttons.
-			commentUpvote.onclick = vote;
-			commentDownvote.onclick = vote;
-
-			async function vote() {
-				const value = JSON.parse(this.dataset.vote);
-
-				commentVoteCount.classList.add('wait');
-
-				try {
-					const body = { value };
-
-					const response = await fetch(`/api/notes/${noteId}/comments/${comment.id}/votes`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify(body)
-					});
-
-					const json = await response.json();
-
-					if(!response.ok) {
-						ui.alert({ title: 'Error', content: json.error });
-					} else {
-						const { currentCount } = json.data;
-						commentVoteCount.dataset.count = currentCount;
-					}
-
-					commentVoteCount.classList.remove('wait');
-				} catch (error) {
-					ui.alert({ title: 'Unexpected Error', content: error });
-				}
-
-				if(value >= 1) {
-					// Fills the upvote button.
-					commentUpvote.dataset.voted = !JSON.parse(commentUpvote.dataset.voted);
-					commentDownvote.dataset.voted = false;
-				} else if(value <= -1) {
-					// Fills the downvote button.
-					commentDownvote.dataset.voted = !JSON.parse(commentDownvote.dataset.voted);
-					commentUpvote.dataset.voted = false;
-				}
-			}
-
-			// If the commenter is the user.
-			if(comment.commenter_name === '<%- username %>') {
-				// Add a delete button.
-				const deleteComment = new JSH('div', '<i class="fa-solid fa-trash"></i>', { class: 'comment--action--delete' }).appendTo(commentActionsElement);
-				deleteComment.onclick = async event => {
-					const confirm = await ui.confirm({
-						title: 'Are you sure?',
-						content: 'Are you sure to delete your comment?'
-					});
-
-					if(!confirm) return;
-
-					try {
-						const response = await fetch(`/api/notes/${noteId}/comments/${comment.id}`, { method: 'DELETE' });
-
-						if(!response.ok) {
-							const json = await response.json();
-
-							ui.alert({ title: 'Error', content: json.error });
-						} else {
-							commentElement.remove();
-						}
-					} catch (error) {
-						ui.alert({ title: 'Unexpected Error', content: error });
-					}
-				}
-			}
-		/* <% } %> */
-	}
-	
-	/* <% if(isLoggedIn) { %> */
-		// If the user is logged in,
-		// add comment input.
-		const addCommentButton = $('#add-comment-button');
-		addCommentButton.onclick = async () => {
-			// Skip on cooldown.
-			if(addCommentButton.classList.contains('wait')) return;
-
-			const commentContent = $('#add-comment-input').value;
-			if(!commentContent.trim()) return;
-
-			$('#add-comment-button').classList.add('wait');
-
-			try {
-				const body = {
-					content: commentContent
-				};
-
-				const response = await fetch(`/api/notes/${noteId}/comments`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(body)
-				});
-
-				const json = await response.json();
-
-				if(!response.ok) {
-					ui.alert({ title: 'Error', content: json.error });
-				} else {
-					$('#add-comment-input').value = '';
-					loadComment(json.data);
-				}
-
-				$('#add-comment-button').classList.remove('wait');
-			} catch (error) {
-				ui.alert({ title: 'Unexpected Error', content: error });
-			}
-		};
-	/* <% } %> */
-
-	$('#comment-button').onclick = event => {
-		$('#comments-aside').dataset.opened = !JSON.parse($('#comments-aside').dataset.opened);
-		if(!isCommentsLoaded) {
-			isCommentsLoaded = true;
-			loadComments().then(() => { $('#comment-loading').remove(); });
-		}
-	};
-
-	/* <% if(username !== note.author_name) { %> */
-		setInterval(async () => {
-			try {
-				await fetch(`/api/notes/${noteId}/views`, {
-					method: 'POST',
-					headers: { 'x-note-id': noteId }
-				});
-			} catch (error) {
-				ui.alert({ title: 'Unexpected Error', message: 'Unexpected error when incrementing note view.' });
-				console.error(error);
-			}
-		}, 30_000); // 30 seconds
-	/* <% } %> */
-</script>
-
-<% if(username === note.author_name) { %>
-<script type="module">
-	import ui from '/js/modules/ui.mjs';
-
-	$('#delete-button').onclick = async () => {
-		const confirmation = await ui.confirm({ title: 'Delete?', content: `Delete “<%- note.title %>”? This cannot be undone!` });
-
-		if(!confirmation) return;
-
-		try {
-			const response = await fetch(`/api/notes/<%- note.id %>`, { method: 'DELETE' });
-
-			if(!response.ok) {
-				// Response is not okie-dokie.
-				const json = await response.json();
-				ui.alert({ title: `Error ${response.status}`, content: json.error });
-			} else {
-				// Success.
-				ui.alert({ content: 'Note deleted successfully' });
-				history.back();
-			}
-		} catch (error) {
-			ui.alert({ title: 'Unexpected Error', content: error });
-		}
-	};
-</script>
-<% } %>
 </html>

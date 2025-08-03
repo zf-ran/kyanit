@@ -1,327 +1,272 @@
-@import url("/css/fonts/lpmq-isep-misbah/font.css");
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
-@import url("/themes/light.css") (prefers-color-scheme: light);
-@import url("/themes/dark.css") (prefers-color-scheme: dark);
+@import url("/reset.css");
+@import url("/fonts/hd-colton/font.css");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,600;1,400;1,600&display=swap");
 
 :root {
-  --heading-font: "Isep Misbah", "Noto Sans Condensed", sans-serif;
-  --content-font: "Isep Misbah", "Noto Sans", sans-serif;
+	--font-family--heading: "HD Colton";
+	--font-family--body: "Noto Sans";
+	--font--button--s: 600 0.875em var(--font-family--body);
+	--font--button--m: 600 1em var(--font-family--body);
+	--font--button--l: 600 1.125em var(--font-family--body);
+	--font--chip: 0.875em var(--font-family--body);
+
+	--transition-duration: 50ms;
+}
+
+:root {
+	--text: hsl(244, 29%, 10%);
+	--text-mute: hsl(244, 10%, 40%);
+	--border: hsl(244, 10%, 40%);
+	--border-mute: hsl(244, 10%, 70%);
+	--background: hsl(240, 6%, 90%);
+	--background-accent: hsl(240, 20%, 99%);
+	--primary: hsl(212, 65%, 35%);
+	--secondary: hsl(205, 65%, 80%);
+
+	--link: var(--primary);
+
+	--success: hsl(116, 84%, 29%);
+	--error: hsl(0, 77%, 49%);
+
+	--info: hsl(224, 85%, 32%);
+	--important: hsl(266, 66%, 42%);
+	--warning: hsl(34, 77%, 49%);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		color-scheme: dark;
+		--text: hsl(244, 29%, 90%);
+		--text-mute: hsl(244, 10%, 60%);
+		--border: hsl(244, 10%, 60%);
+		--border-mute: hsl(244, 10%, 30%);
+		--background: hsl(240, 6%, 1%);
+		--background-accent: hsl(240, 5%, 15%);
+		--primary: hsl(212, 50%, 65%);
+		--secondary: hsl(205, 40%, 25%);
+
+		--link: var(--primary);
+
+		--success: hsl(116, 84%, 60%);
+		--error: hsl(0, 77%, 51%);
+
+		--info: hsl(224, 85%, 68%);
+		--important: hsl(266, 66%, 58%);
+		--warning: hsl(34, 77%, 51%);
+	}
+
+	#logo {
+		filter: invert(96%) sepia(4%) saturate(2161%) hue-rotate(189deg) brightness(97%) contrast(90%);
+	}
 }
 
 * {
-	margin: 0; padding: 0;
-  font-family: var(--content-font);
-	color: var(--text-color);
-	-webkit-tap-highlight-color: transparent;
-  scroll-behavior: smooth !important;
-}
-
-html {
-	background: var(--background);
-	width: 100%; min-height: 100%;
+	scroll-margin-top: calc(var(--top-navigation-height) + 1em);
 }
 
 body {
+	font-family: "Noto Sans", sans-serif;
+	background: var(--background);
+	color: var(--text);
+	height: 100%;
+}
+
+main {
+	margin: auto;
+	padding: 1em 1.5em;
+	max-width: 700px;
+}
+
+span.material-symbols-outlined {
+	font-size: 1.375em;
+	user-select: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0;
+	font-family: var(--font-family--heading);
+	font-weight: 500;
+	font-stretch: extra-condensed;
+} :is(h1, h2, h3, h4, h5, h6):not(:first-child) {
+	margin-top: 1em;
+} :is(h1, h2, h3, h4, h5, h6):not(:last-child) {
+	margin-bottom: 0.5em;
+}
+
+:is(h1, h2, h3, h4, h5, h6) span.material-symbols-outlined {
+	font-size: 1.3125em;
+}
+
+:is(h1, h2, h3, h4, h5, h6) .link {
 	position: absolute;
-	background: transparent;
-	width: 100%; min-height: 100%;
-  overflow: auto;
+	display: flex;
+	color: var(--text-mute);
+	cursor: pointer;
+	left: 0;
+	text-decoration: none;
+	border: none !important;
+	opacity: 0;
+	transition-property: rotate, scale, translate, opacity;
+	transition-duration: var(--transition-duration);
+	transition-timing-function: ease;
+	translate: -90% 0;
+} :is(h1, h2, h3, h4, h5, h6):hover .link {
+	opacity: 1;
+	translate: -100% 0;
+} :is(h1, h2, h3, h4, h5, h6) .link:hover {
+	rotate: -10deg;
+	color: var(--primary);
+} :is(h1, h2, h3, h4, h5, h6) .link:active {
+	scale: 90%;
+}
+
+h1 {
+	font-size: 2.441em;
+}
+
+h2 {
+	font-size: 1.953em;
+}
+
+h3 {
+	font-size: 1.563em;
+}
+
+h4 {
+	font-size: 1.25em;
+}
+
+h5 {
+	font-size: 1em;
+}
+
+h6 {
+	font-size: 0.8em;
+}
+
+p {
+	margin: 0;
+	margin-bottom: 1em;
+}
+
+p, li {
+	line-height: 175%;
 }
 
 a {
+	color: var(--link);
 	text-decoration: none;
 }
 
-abbr {
-	text-decoration: none;
+hr {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border-mute);
+  margin: 1em 0;
 }
 
-::placeholder {
-	color: var(--placeholder-color);
+/** BUTTONS */
+button {
+	display: inline-flex;
+	align-items: center;
+	border: none;
+	margin: 0;
+	gap: 4px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: scale var(--transition-duration);
+
+	/* MEDIUM */
+	font: var(--font--button--m);
+	padding: 0 16px;
+	height: 40px;
+
+	/* PRIMARY */
+	background: var(--primary);
+	color: var(--background);
 }
 
-/* BETTER UI */
-/* 1. ALERT */
-.alert {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: max-content;
-  padding: 10px 20px;
-  margin-block: 14.2145px;
-  background: var(--alert-background);
-  backdrop-filter: blur(3px);
-  border-left: 3px solid var(--alert-border-color);
-  animation: slide-left 500ms ease;
-  transform-origin: 100% 50%;
-  cursor: pointer;
-  z-index: 10000;
-  --time: 5000ms;
-}
-@keyframes slide-left {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-.alert:hover {
-  background: var(--alert-hover-background);
-  border-left: 3px solid var(--alert-hover-border-color);
-  transition: all 200ms ease;
-}
-.alert:active {
-  scale: 0.93;
-  filter: blur(1px);
-  transition: scale 200ms ease, filter 200ms ease;
-}
-.alert.removed {
-  translate: 100% 0;
-  transition: all 500ms ease;
+button.secondary {
+	background: transparent;
+	color: var(--primary);
+	border: 1px solid var(--primary);
 }
 
-.alert::after {
-  content: '';
-  display: block;
-  height: 1px;
-  width: 0;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  background-color: var(--alert-progress-color);
-  animation: loading var(--time) linear forwards;
+button.small {
+	font: var(--font--button--s);
+	padding: 0 12px;
+	height: 32px;
 }
-@keyframes loading {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
-  }
+button.large {
+	font: var(--font--button--l);
+	padding: 0 20px;
+	height: 48px;
 }
 
-.alert--title {
-  font-style: italic;
-  font-weight: 600;
+button span.material-symbols-outlined { font-size: 22px; }
+button.small span.material-symbols-outlined { font-size: 19px; }
+button.large span.material-symbols-outlined { font-size: 25px; }
+
+button:hover { scale: 102%; }
+button:active { scale: 98%; }
+
+button.icon {
+	justify-content: center;
+	width: 40px;
 }
-.alert--content {
-  font-size: 0.8em;
+button.icon.small { width: 32px; }
+button.icon.large { width: 48px; }
+
+/** CHIPS */
+label.chip {
+	display: inline-block;
+	height: 24px;
+	padding: 0 12px;
+	border-radius: 8px;
+	font: var(--font--chip);
+	box-sizing: border-box;
+	border: 1px solid var(--border);
+	align-content: center;
+	color: var(--text);
+	transition:
+		color var(--transition-duration),
+		background-color var(--transition-duration),
+		border-color var(--transition-duration),
+		scale var(--transition-duration);
+	user-select: none;
+	cursor: pointer;
 }
 
-/* 2. PROMPT */
-.prompt-wrapper, .confirm-wrapper {
-  position: fixed;
-  display: grid;
-  place-items: center;
-  width: 100vw; height: 100vh;
-  background: var(--prompt-backdrop);
-  backdrop-filter: blur(1px);
-  z-index: 9999;
-  perspective: 30cm;
-  animation: fade-in 500ms ease;
-}
-.prompt-wrapper.removed,
-.confirm-wrapper.removed {
-  backdrop-filter: blur(0px);
-  background: rgba(0, 0, 0, 0);
-  transition: all 300ms ease;
+label.chip:has(input:checked) {
+	border: 1px solid transparent;
+	background: var(--secondary);
+	color: var(--primary);
 }
 
-.prompt, .confirm {
-  display: flex;
-  gap: 10px;
-  box-sizing: border-box;
-  width: calc(100% - 40px); max-width: 500px;
-  flex-direction: column;
-  padding: 15px 20px;
-  background: var(--background);
-  border: 1px solid var(--prompt-border-color);
-  border-radius: 10px;
-  animation: pop-in 200ms ease;
-}
-.prompt-wrapper.removed .prompt,
-.confirm-wrapper.removed .confirm {
-  transform: scale(0.95);
-  opacity: 0;
-  transition: all 200ms ease;
-}
+label.chip:hover { scale: 102%; }
+label.chip:active { scale: 98%; }
 
-@keyframes fade-in {
-  from {
-    backdrop-filter: blur(0px);
-    background: transparent;
-  }
-  to {
-    backdrop-filter: blur(1px);
-    background: var(--prompt-backdrop);
-  }
+/** SELECT INPUT */
+label.select-input {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 }
-@keyframes pop-in {
-  0% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+label.select-input .label {
+	font-size: small;
+	color: var(--text-mute);
 }
-
-.prompt--title, .confirm--title {
-  font-size: 1.2em;
-  font-style: italic;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.prompt--inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.prompt--input label {
-  position: absolute;
-	display: block;
-	opacity: 0;
-	font-size: 0.95rem;
-  margin-left: 15px;
-  z-index: 1;
-  transform-origin: 0 50%;
-  transition: all 200ms ease;
-}
-.prompt--input:has(input:required) > label::after {
-  content: '*';
-  color: red;
-}
-.prompt--input:has(input:placeholder-shown) > label {
-  opacity: 50%;
-  transform: translateY(7px);
-  transition: all 200ms ease;
-}
-.prompt--input:has(input:focus) > label,
-.prompt--input:has(input:not(:placeholder-shown)) > label {
-  opacity: 70%;
-  transform: translateY(-60%) scale(0.9);
-  transition: all 200ms ease;
-}
-
-.prompt--input input {
-	width: 100%;
-  box-sizing: border-box;
-  border: 1px solid var(--prompt-input-border-color);
-  border-radius: 7px;
-  background: transparent;
-	padding: 7px 14px;
-	font-size: 0.95rem;
-	transition: all 200ms ease;
-  z-index: 2;
-  margin-bottom: 10px;
-}
-.prompt--input input:focus,
-.prompt--input input:not(:placeholder-shown) {
-	outline: none !important;
-  background: var(--prompt-input-hover-background);
-  border-radius: 0;
-  border: 1px solid transparent;
-  border-bottom: 1px solid var(--prompt-input-border-color);
-}
-.prompt--input input::placeholder {
-  opacity: 0;
-}
-
-.prompt--button {
-  display: flex;
-  gap: 10px;
-  box-sizing: border-box;
-}
-
-.prompt--button > * {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: 0 1 50%;
-  font-size: 0.8em;
-  padding: 5px 10px;
-  box-sizing: border-box;
-  border-radius: 7px;
-  cursor: pointer;
-}
-
-.prompt--button * {
-  color: inherit;
-}
-
-.prompt--confirm {
-  background: var(--prompt-confirm-background);
-  color: var(--background);
-  --ripple-color: var(--prompt-confirm-hover-background);
-}
-/* .prompt--confirm:hover {
-  background: var(--prompt-confirm-hover-background);
-} */
-
-.prompt--cancel {
-  border: 1px solid var(--prompt-confirm-background);
-  color: var(--prompt-confirm-background);
-  --ripple-color: var(--prompt-cancel-hover-background);
-}
-
-/* 3. CONFIRM */
-.confirm--title {
-  margin-bottom: 0;
-}
-
-.confirm--content {
-  font-size: 0.9em;
-}
-
-@media (orientation: portrait) {
-  .prompt, .confirm {
-    align-self: start;
-    margin-top: 40%;
-  }
-}
-
-@media (hover: none) {
-  .prompt, .confirm {
-    transform-origin: 50% 10%;
-    animation: pop-in 200ms ease;
-  }
-  .prompt-wrapper.removed .prompt,
-  .confirm-wrapper.removed .confirm {
-    transform: scale(0.95);
-    opacity: 0;
-    transition: all 200ms ease;
-  }
-}
-
-/* RIPPLE */
-.ripple {
-  position: relative !important;
-  overflow: hidden;
-}
-
-.ripple-circle {
-  position: absolute;
-  background: var(--ripple-color);
-  width: var(--size) !important; height: var(--size) !important;
-  border-radius: 50%;
-  translate: -50% -50%;
-  scale: 0;
-  animation: ripple-scale calc(var(--time) + 100ms) linear;
-  touch-action: none;
-  pointer-events: none;
-}
-
-@keyframes ripple-scale {
-  80% {
-    scale: 1;
-    opacity: 0.2;
-  }
-  100% {
-    scale: 1;
-    opacity: 0;
-  }
+label.select-input select {
+	padding: 0 12px;
+	height: 32px;
+	border-radius: 8px;
+	background-color: transparent;
+	border: 1px solid var(--border-mute);
+	font: var(--font--chip);
+} label.select-input select:hover {
+	border: 1px solid var(--border);
 }

@@ -1,0 +1,127 @@
+@import url("/fonts/lpmq-isep-misbah/font.css");
+@import url("/fonts/cascadia-mono/font.css");
+
+.markdown-document .heading-content {
+	font-family: 'Isep Misbah', var(--font-family--heading), sans-serif;
+}
+.markdown-document :is(p, ul, ol, table) {
+	font-family: 'Isep Misbah', var(--font-family--body), sans-serif;
+}
+
+/** LIST */
+.markdown-document :is(ul, ol) {
+	padding-left: 2em;
+}
+
+/** IMAGE */
+.markdown-document img {
+	max-width: 100%;
+}
+
+/** TABLE */
+.markdown-document table {
+	border-collapse: collapse;
+	overflow-x: auto;
+}
+
+.markdown-document td,
+.markdown-document th {
+	border: 1px solid var(--border-mute);
+	padding: .5em 1em;
+	vertical-align: text-top;
+}
+
+.markdown-document th {
+	background: var(--border-mute);
+}
+.markdown-document th:not(:first-child) {
+	border-left: 1px solid var(--background);
+}
+.markdown-document th:not(:last-child) {
+	border-right: 1px solid var(--background);
+}
+
+/** BLOCKQUOTE */
+.markdown-document blockquote {
+	border-left: 4px solid var(--primary);
+	background-color: hsl(from var(--primary) h s l / 10%);
+	margin-inline: 0;
+	border-radius: 0 1em 1em 0;
+	padding: .5em 1em;
+}
+
+/** CODE */
+.markdown-document code {
+	font-family: 'Cascadia Mono', monospace;
+	font-weight: 300;
+}
+
+/*- CODE BLOCK */
+.markdown-document pre.code-block {
+	padding: 1em;
+	background-color: var(--background-accent);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	overflow-x: auto;
+	tab-size: 4;
+}
+
+/*- CODE SPAN */
+.markdown-document code.code-span {
+	border: 1px solid var(--border-mute);
+	padding: 0.15em 0.3em;
+	border-radius: 0.25em;
+}
+
+/** ALERTS */
+.markdown-alert {
+	border-left: 4px solid var(--color);
+	background-color: hsl(from var(--color) h s l / 10%);
+	margin-inline: 0;
+	margin-bottom: 1em;
+	border-radius: 0 1em 1em 0;
+	padding: .5em 1em;
+}
+
+.markdown-alert-note {
+	--color: var(--info);
+}
+.markdown-alert-tip {
+	--color: var(--success);
+}
+.markdown-alert-important {
+	--color: var(--important);
+}
+.markdown-alert-warning {
+	--color: var(--warning);
+}
+.markdown-alert-caution {
+	--color: var(--error);
+}
+
+.markdown-alert-title {
+	color: var(--color);
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-weight: bold;
+}
+
+.markdown-alert-title svg {
+	fill: currentColor;
+}
+
+/** LINK */
+.anchor:hover {
+	border-bottom: 1px solid var(--link);
+}
+
+/** FOOTNOTES */
+section.footnotes {
+	color: var(--text-mute);
+}
+
+/** MATH EQUATIONS */
+mjx-container * {
+	font-family: var(--font-family--body);
+}

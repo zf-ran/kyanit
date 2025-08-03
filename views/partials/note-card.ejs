@@ -1,0 +1,26 @@
+<div class="note-card">
+	<a href="/note/<%- note.id %>" class="link"></a>
+	<% if(note.thumbnail_url) { %>
+		<div class="thumbnail">
+			<img src="<%- note.thumbnail_url %>"/>
+		</div>
+	<% } %>
+	<div class="meta-data">
+		<div class="title"><%= note.title %></div>
+		<div class="author"><%= note.author_display_name %> <% if(note.is_author_verified) { %><span class="material-symbols-outlined">check</span><% } %></div>
+		<div class="details">
+			<span class="date"><%= $relativeTime(note.created_at) %></span>
+			<span class="views"><%= note.views %> views</span>
+			<% if(note.rate_count >= MIN_RATING_COUNT_TO_SHOW) { %>
+				<span class="rating"><%= note.rating %> <span class="material-symbols-outlined">star</span></span>
+			<% } %>
+		</div>
+		<% if(note.keywords.length > 0) { %>
+			<div class="keyword-container">
+				<% for(let j = 0; j < note.keywords.length; j++) { %>
+					<label class="chip keyword"><a href="/explore?keyword=<%- note.keywords[j] %>"><%= note.keywords[j] %></a></label>
+				<% } %>
+			</div>
+		<% } %>
+	</div>
+</div>

@@ -1,58 +1,60 @@
+<!DOCTYPE html>
+<html>
 <head>
-	<link rel="preload" as="image" href="/assets/header.svg"/>
-	<link rel="stylesheet" href="/css/partials/header.css"/>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-	<link rel="icon" type="image/x-icon" href="/favicon.ico">
-
-	<meta name="theme-color" content="#eeeeee"/>
-
-	<script src="/main.js"></script>
-
-	<!-- RIPPLE -->
-	<script src="/js/modules/ripple.mjs" type="module"></script>
+	<meta name="color-scheme" content="dark light"/>
+	<meta name="theme-color" content="#e4e4e7"/>
+	<script src="/js/partials/header.js" defer></script>
+	<link rel="stylesheet" href="/css/partials/header.css">
 </head>
 <body>
-	<header data-display="true">
-		<a href="/" id="logo-redirect">
-			<img src="/assets/header.svg" id="logo" alt="KYANIT">
-		</a>
-		<div id="search" class="ripple">
-			<input type="text" id="search--input" placeholder="Search by keyword, separate with space" size="1" value="<%= (typeof searchQuery === 'undefined') ? '' : searchQuery %>"/>
-			<div id="search--button"><i class="fa-solid fa-magnifying-glass"></i></div>
-		</div>
-		<div id="account" class="ripple">
-			<% if(isLoggedIn) { %>
-				<a href="/user/<%- username %>" title="Profile: @<%- username %>"><%= username[0].toUpperCase() %></a>
-			<% } else { %>
-				<a href="/login" title="Login"><i class="fa-solid fa-user-plus" style="font-size: 16px;"></i></a>
-			<% } %>
-		</div>
+	<header>
+		<ul id="top-navigation" data-search="false">
+			<li class="action" id="open-sidebar" tabindex="0"><span class="material-symbols-outlined">menu</span></li>
+			<li id="logo"><a href="/"><img src="/assets/header.svg" alt="KYANIT" height="24"></a></li>
+			<li id="search-wrapper">
+				<span class="material-symbols-outlined">search</span>
+				<input type="text" name="search" id="search-input" placeholder="Search" size="1"/>
+				<span class="material-symbols-outlined" id="search-cancel">close</span>
+				<span class="material-symbols-outlined" id="search-submit">search</span>
+			</li>
+			<li class="action" id="search-button"><span class="material-symbols-outlined">search</span></li>
+			<a href="<%- (isLoggedIn) ? `/user/${username}` : '/login' %>" class="profile">
+				<li class="action">
+					<button class="icon large secondary">
+						<% if(isLoggedIn) { %>
+							<%= username[0].toUpperCase() %>
+						<% } else { %>
+							<span class="material-symbols-outlined">login</span>
+						<% } %>
+					</button>
+				</li>
+			</a>
+		</ul>
 	</header>
+	<aside id="sidebar">
+		<div id="close-sidebar"><span class="material-symbols-outlined">arrow_back</span> BACK</div>
+		<ul class="sidebar-navigation">
+			<li class="sidebar-item"><a href="/"><span class="material-symbols-outlined">home</span> <span class="label">Home</span></a></li>
+			<li class="sidebar-item"><a href="/explore"><span class="material-symbols-outlined">explore</span> <span class="label">Explore</span></a>
+				<ul class="sidebar-navigation">
+					<li class="sidebar-item"><a href="/explore"><span class="material-symbols-outlined">trending_up</span> <span class="label">Trending</span></a>
+						<li class="sidebar-item"><a href="/explore"><span class="material-symbols-outlined">shift</span> <span class="label">Top</span></a>
+					<li class="sidebar-item"><a href="/explore"><span class="material-symbols-outlined">schedule</span> <span class="label">New</span></a>
+					</ul>
+			</li>
+			<hr>
+			<li class="sidebar-item"><a href="/user"><span class="material-symbols-outlined">account_box</span> <span class="label">Profile</span></a></li>
+			<li class="sidebar-item"><a href="/create"><span class="material-symbols-outlined">add_notes</span> <span class="label">Start Writing</span></a></li>
+			<hr>
+			<li class="sidebar-item"><a href="/docs"><span class="material-symbols-outlined">help</span> <span class="label">Help</span></a></li>
+			<li class="sidebar-item"><a href="/settings"><span class="material-symbols-outlined">settings</span> <span class="label">Settings</span></a></li>
+			<hr>
+			<li class="sidebar-item redirect"><a href="https://github.com/zf-ran/kyanit"><span class="material-symbols-outlined">network_node</span> <span class="label">Version Control</span> <span class="material-symbols-outlined open-in-new">open_in_new</span></a></li>
+			<li class="sidebar-item redirect"><a href="https://github.com/zf-ran/kyanit/issues"><span class="material-symbols-outlined">bug_report</span> <span class="label">Report Bug</span> <span class="material-symbols-outlined open-in-new">open_in_new</span></a></li>
+		</ul>
+		<div class="sidebar-footer">
+			<div class="name"><%= version %></div>
+		</div>
+	</aside>
 </body>
-<script>
-	const searchBox = $('#search');
-	const searchInput = $('#search--input');
-	const searchButton = $('#search--button');
-
-	searchButton.onclick = search;
-	searchBox.onkeydown = event => {
-		if(event.key === 'Enter') {
-			search(event);
-		}
-	}
-	
-	function search(event) {
-		location.replace(
-			(searchInput.value)
-			? `/?search=${searchInput.value.replace(/ +/g, '+')}`
-			: '/'
-		);
-	}
-
-	document.onkeydown = event => {
-		if(event.code === 'KeyQ' && event.ctrlKey) {
-			$('header').dataset.display = !JSON.parse($('header').dataset.display);
-		}
-	};
-</script>
+</html>

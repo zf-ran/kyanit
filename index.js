@@ -5,17 +5,32 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
-const marked = require('marked');
+const { marked } = require('marked');
 const DOMPurify = require('isomorphic-dompurify');
 
 const { markedRenderer, purifyOptions } = require('./config');
 
-marked.use({ renderer: markedRenderer });
+const markedAlert = require('marked-alert');
+const markedFootnote = require('marked-footnote');
+const markedMoreLists = require('marked-more-lists');
+marked.use(
+	markedAlert(),
+	markedFootnote({
+		refMarkers: true,
+		footnoteDivider: true
+	}),
+	markedMoreLists(),
+	{ renderer: markedRenderer }
+);
 
 const Kyanit = require('./modules/Kyanit');
 const { isUUID } = Kyanit;
 
 const { validateToken } = require('./modules/token');
+
+const { average } = require('./modules/utils');
+
+const { version } = require('./package.json');
 
 //* Database
 const { neon } = require('@neondatabase/serverless');
@@ -46,7 +61,7 @@ app.use(async (_req, res, next) => {
 
 	res.locals.$relativeTime = date => {
 		const now = new Date().getTime();
-		const options = { style: 'long', numeric: 'always' };
+		const options = { style: 'short', numeric: 'always' };
 		let args = [];
 		let timeDifference = date - now;
 
@@ -65,17 +80,65 @@ app.use(async (_req, res, next) => {
 		return new Intl.RelativeTimeFormat('en-us', options).format(...args);
 	}
 
+	res.locals.version = version;
+
 	next();
 });
 
-app.get('/', async (req, res) => {
-	/** @type {Kyanit.Note[]} */
-	let notes;
+const MIN_RATING_COUNT_TO_SHOW = 3;
 
-	if(req.query.search) {
-		const searchQueries = req.query.search.toLowerCase().split(/ +/g);
+app.get('/', validateToken, async (req, res) => {
 
-		notes = await sql`
+	const trendingNotes = await sql`
+		select
+			n.id,
+			u.display_name as author_display_name,
+			u.is_verified as is_author_verified,
+			n.title,
+			n.keywords,
+			n.thumbnail_url,
+			n.views,
+			ROUND(AVG(r.value), 1) as rating,
+			COUNT(r.value) as rate_count,
+			n.created_at
+		from notes n
+		join users u
+			on n.author_name = u.name
+		left join note_ratings r
+			on n.id = r.note_id
+		where n.unlisted = false
+		group by n.id, u.display_name, u.is_verified
+		order by n.views/((EXTRACT(epoch FROM now()-n.created_at)+1)/86400)^5 desc
+		limit 3;
+	`;
+
+	const newNotes = await sql`
+		select
+			n.id,
+			u.display_name as author_display_name,
+			u.is_verified as is_author_verified,
+			n.title,
+			n.keywords,
+			n.thumbnail_url,
+			n.views,
+			ROUND(AVG(r.value), 1) as rating,
+			COUNT(r.value) as rate_count,
+			n.created_at
+		from notes n
+		join users u
+			on n.author_name = u.name
+		left join note_ratings r
+			on n.id = r.note_id
+		where n.unlisted = false
+		group by n.id, u.display_name, u.is_verified
+		order by n.created_at desc
+		limit 3;
+	`;
+
+	let userNotes = [];
+
+	if(res.locals.isLoggedIn) {
+		userNotes = await sql`
 			select
 				n.id,
 				u.display_name as author_display_name,
@@ -84,42 +147,26 @@ app.get('/', async (req, res) => {
 				n.keywords,
 				n.thumbnail_url,
 				n.views,
-				n.created_at,
-				n.updated_at
-			from notes n join users u
+				ROUND(AVG(r.value), 1) as rating,
+				COUNT(r.value) as rate_count,
+				n.created_at
+			from notes n
+			join users u
 				on n.author_name = u.name
-			where unlisted = false and keywords && ${searchQueries}::text[]
-			order by n.views/((EXTRACT(epoch FROM now()-n.created_at)+1)/86400)^5 desc;
-		`;
-	} else {
-		notes = await sql`
-			select
-				n.id,
-				u.display_name as author_display_name,
-				u.is_verified as is_author_verified,
-				n.title,
-				n.keywords,
-				n.thumbnail_url,
-				n.views,
-				n.created_at,
-				n.updated_at
-			from notes n join users u
-				on n.author_name = u.name
-			where unlisted = false
-			order by n.views/((EXTRACT(epoch FROM now()-n.created_at)+1)/86400)^5 desc;
+			left join note_ratings r
+				on n.id = r.note_id
+			where n.author_name = ${res.locals.username}
+			group by n.id, u.display_name, u.is_verified
+			order by n.created_at desc
+			limit 3;
 		`;
 	}
 
-	// Pin the tutorial note.
-	const tutorial = notes.find(note => note.id === '00000000-0000-0000-0000-000000000000');
-	if(tutorial) {
-		notes = notes.filter(note => note.id !== tutorial.id);
-		notes.unshift(tutorial);
-	}
+	res.render('index', { trendingNotes, newNotes, userNotes, MIN_RATING_COUNT_TO_SHOW });
+});
 
-	res.render('index', {
-		notes, searchQuery: req.query.search
-	});
+app.get('/explore', async (req, res) => {
+	res.render('explore', { MIN_RATING_COUNT_TO_SHOW });
 });
 
 app.get('/note/:noteId', async (req, res) => {
@@ -139,6 +186,17 @@ app.get('/note/:noteId', async (req, res) => {
 		where id = ${noteId};
 	`;
 
+	const ratings = await sql`
+		select
+			rater_name,
+			value
+		from note_ratings
+		where note_id = ${noteId}
+		order by value desc;
+	`;
+
+	const rating = average(ratings.map(rating => rating.value));
+
 	if(notes.length === 0) {
 		return res.status(404).send(`Note with id ${noteId} not found.`);
 	}
@@ -146,12 +204,12 @@ app.get('/note/:noteId', async (req, res) => {
 	const commentCount = (await sql`select count(*) from comments where note_id = ${noteId}`)[0].count;
 
 	const note = notes[0];
-	const backslash = /\\(?![*_$~`])/g;
-	const htmlContent = DOMPurify.sanitize(marked.parse(note.content.replace(backslash, "\\\\")), purifyOptions);
+
+	const htmlContent = DOMPurify.sanitize(marked.parse(note.content), purifyOptions);
 
 	delete note.content;
 
-	res.render('note', { note, commentCount, htmlContent });
+	res.render('note', { note, rating, ratings, commentCount, htmlContent, MIN_RATING_COUNT_TO_SHOW });
 });
 
 app.get('/create', async (req, res) => {
@@ -229,8 +287,7 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 
 	const page = req.params.page || 'about';
 
-	const backslash = /\\(?![*_$~`])/g;
-	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(user.about.replace(backslash, "\\\\")), purifyOptions);
+	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(user.about), purifyOptions);
 
 	res.render('dashboard', {
 		user, notes, about: aboutHTMLContent, page
@@ -245,7 +302,7 @@ app.get('/login', (_req, res) => {
 	res.render('login');
 });
 
-//* Minified
+//* Minified 
 const minifiedRoutes = require('./routes/minified');
 app.use(
 	'/min', 
@@ -256,6 +313,64 @@ app.use(
 	},
 	minifiedRoutes
 );
+
+//* Docs 
+const yaml = require('yaml');
+const fs = require('fs');
+
+const DOCS_DIR = path.join(__dirname, 'docs');
+
+app.get('/docs', async (req, res) => {
+	const files = fs.readdirSync(DOCS_DIR)
+		.filter(file =>
+			file.endsWith('.md') && !file.startsWith('.')
+		);
+
+	const docs = files
+	.map(file => {
+		const content = fs.readFileSync(path.join(DOCS_DIR, file), 'utf-8');
+		return { ...extractMetadata(content).metadata, docname: file.slice(0, -3) };
+	})
+	.sort((a, b) =>
+		new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+	);
+
+	// res.json(docs);
+
+	res.render('docs', { docs });
+});
+
+app.get('/docs/:docname', async (req, res) => {
+	const docname = req.params.docname;
+	let doc;
+
+	try {
+		doc = fs.readFileSync(path.join(DOCS_DIR, `${docname}.md`), 'utf-8');
+	} catch(error) {
+		if(error.code === 'ENOENT') {
+			return res.status(404).send(`Docs with docname <code>${docname}</code> not found`)
+		}
+	}
+
+	const { metadata, raw } = extractMetadata(doc);
+
+	// Remove metadata
+	doc = doc.replace(raw, '');
+
+	const htmlContent = DOMPurify.sanitize(marked.parse(doc), purifyOptions);
+
+	res.render('doc', { metadata, htmlContent });
+});
+
+function extractMetadata(content) {
+	const metadataRegExp = /^---([\S\s]*?)---/;
+	const metadataString = content.match(metadataRegExp)[1];
+
+	return {
+		metadata: yaml.parse(metadataString),
+		raw: content.match(metadataRegExp)[0]
+	};
+}
 
 //* APIs 
 const userRoutes = require('./routes/users');

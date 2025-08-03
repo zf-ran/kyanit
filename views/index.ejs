@@ -3,33 +3,56 @@
 <head>
 	<title>Kyanit</title>
 	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+	<!-- MATERIAL SYMBOLS -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
 	<link rel="stylesheet" href="/main.css">
-	<link rel="stylesheet" href="/css/index.css">
+	<link rel="stylesheet" href="/css/partials/note-card.css">
 </head>
 <body>
-	<%- include('partials/header.ejs') %>
+	<%- include('partials/header') %>
+
 	<main>
-		<% for(let i = 0; i < notes.length; i++) { %>
-			<div class="note ripple"<% if(notes[i].thumbnail_url) { %> style="--thumbnail: url(<%- notes[i].thumbnail_url %>);"<% } %>>
-				<a href="/note/<%- notes[i].id %>"></a>
-				<div class="note--title"><%= notes[i].title %></div>
-				<div class="note--information">
-					<span class="note--information--author"><%= notes[i].author_display_name %> <% if(notes[i].is_author_verified) { %><i class="fa-solid fa-check" title="Verified"></i><% } %></span>
-					<span class="note--information--views"><i class="fa-regular fa-eye"></i> <%= notes[i].views.toLocaleString() %></span>
-					<% if(notes[i].created_at.getTime() === notes[i].updated_at.getTime()) { %>
-						<span class="note--information--created"><i class="fa-solid fa-arrow-up-from-bracket"></i> <%= $relativeTime(notes[i].created_at) %></span>
-					<% } else { %>
-						<span class="note--information--created"><i class="fa-regular fa-pen-to-square"></i> <%= $relativeTime(notes[i].updated_at) %></span>
-					<% } %>
-				</div>
-				<div class="note--keywords">
-					<% for(let j = 0; j < notes[i].keywords.length; j++) { %>
-						<a href="/?search=<%- notes[i].keywords[j] %>"><%= notes[i].keywords[j] %></a>
-					<% } %>
-				</div>
+		<h1><span class="material-symbols-outlined">local_fire_department</span> Trending Notes</h1>
+
+		<div class="note-card-small-container">
+			<% for(let i = 0; i < trendingNotes.length; i++) { %>
+				<% const note = trendingNotes[i]; %>
+				<%- include('partials/note-card-small', { note }) %>
+			<% } %>
+		</div>
+
+		<div style="text-align: center;">
+			<a href="/explore">
+				<button class="large secondary"><span class="material-symbols-outlined">local_fire_department</span> Explore Trending</button>
+			</a>
+		</div>
+
+		<h1><span class="material-symbols-outlined">schedule</span> Newly Published</h1>
+
+		<div class="note-card-small-container">
+			<% for(let i = 0; i < newNotes.length; i++) { %>
+				<% const note = newNotes[i]; %>
+				<%- include('partials/note-card-small', { note }) %>
+			<% } %>
+		</div>
+
+		<div style="text-align: center;">
+			<a href="/explore">
+				<button class="large secondary"><span class="material-symbols-outlined">schedule</span> Explore New</button>
+			</a>
+		</div>
+
+		<% if(isLoggedIn) { %>
+			<h1><span class="material-symbols-outlined">docs</span> Your Notes</h1>
+
+			<div class="note-card-small-container">
+				<% for(let i = 0; i < userNotes.length; i++) { %>
+					<% const note = userNotes[i]; %>
+					<%- include('partials/note-card-small', { note }) %>
+				<% } %>
 			</div>
 		<% } %>
 	</main>

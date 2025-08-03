@@ -14,7 +14,7 @@ export function absoluteTime(date) {
 export function relativeTime(date) {
 	const now = new Date().getTime();
 
-	let option = { style: 'long', numeric: 'always' };
+	let option = { style: 'short', numeric: 'always' };
 	let args = [];
 	let timeDifference = date - now;
 

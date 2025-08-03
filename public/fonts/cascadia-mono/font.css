@@ -1,0 +1,10 @@
+@font-face {
+  font-family: "Cascadia Mono";
+  font-style: normal;
+  src: url("/fonts/cascadia-mono/normal.woff2") format('woff2');
+}
+@font-face {
+  font-family: "Cascadia Mono";
+  font-style: italic;
+  src: url("/fonts/cascadia-mono/italic.woff2") format('woff2');
+}

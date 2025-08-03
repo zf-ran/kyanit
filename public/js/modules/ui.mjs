@@ -1,5 +1,4 @@
 import JSH from '/js/modules/jsh.mjs';
-import { addRipple } from '/js/modules/ripple.mjs';
 
 const ui = {
 	alert({ title, content, timeMs }) {

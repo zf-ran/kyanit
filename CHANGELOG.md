@@ -1,5 +1,16 @@
 # Version Changelogs
 
+## 1.0.0-beta.6
+
+feat: new ui
+
+- **SCRAPED** the entire UI.
+- Created `doc.ejs` for documentation and blog.
+- Created `docs.ejs` for listing all documentations and blogs.
+- Created `explore.ejs` for exploring notes with sorting and filtering options.
+- Added `codemirror.ejs` for testing CodeMirror editor integration.
+- Enhanced styles and scripts for better user experience across all new views.
+
 ## 1.0.0-beta.5.1
 
 -	Renamed `module/validateBody.js` to `module/bodyValidator.js`.

@@ -1,0 +1,15 @@
+@font-face {
+	font-family: 'HD Colton';
+	font-stretch: extra-condensed;
+	font-weight: 500;
+	font-style: normal;
+	src: url('/fonts/hd-colton/500.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'HD Colton';
+	font-stretch: extra-condensed;
+	font-weight: 500;
+	font-style: italic;
+	src: url('/fonts/hd-colton/500italic.woff') format('woff');
+}

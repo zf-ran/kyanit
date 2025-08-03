@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Explore | Kyanit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- MATERIAL SYMBOLS -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+	<link rel="stylesheet" href="/main.css">
+	<link rel="stylesheet" href="/css/explore.css">
+	<link rel="stylesheet" href="/css/partials/note-card.css">
+</head>
+<body>
+	<%- include('partials/header') %>
+
+	<main>
+		<section class="options">
+			<div class="container sort-container">
+				<div class="title-bar sort-options">
+					<div class="open-button" id="open-sort"><span class="material-symbols-outlined">keyboard_arrow_up</span></div>
+					<div class="title"><span class="material-symbols-outlined">sort</span> Sort</div>
+				</div>
+				<div class="settings" id="sort-container">
+					<label class="select-input">
+						<span class="label">Sort by</span>
+						<select name="sort-by" id="sort-by-input">
+							<option value="views">Views</option>
+							<option value="rating">Rating</option>
+							<option value="trending">Trending</option>
+							<option value="updated_at">Updated at</option>
+							<option value="created_at">Published at</option>
+						</select>
+					</label>
+					<label class="select-input">
+						<span class="label">Sort direction</span>
+						<select name="sort-direction" id="sort-direction-input">
+							<option value="descending">Descending</option>
+							<option value="ascending">Ascending</option>
+						</select>
+					</label>
+				</div>
+			</div>
+			<div class="container filter-container">
+				<div class="title-bar filter-options">
+					<div class="open-button" id="open-filter"><span class="material-symbols-outlined">keyboard_arrow_up</span></div>
+					<div class="title"><span class="material-symbols-outlined">filter_alt</span> Tags</div>
+					<div class="filter-clear"><button class="small secondary" id="clear-filter"><span class="material-symbols-outlined">filter_alt_off</span> Clear</button></div>
+				</div>
+				<div class="settings open" id="keyword-container"></div>
+			</div>
+		</section>
+		<div class="note-card-container" id="note-card-container"></div>
+	</main>
+</body>
+<script type="module">
+	import JSH from '/js/modules/jsh.mjs';
+	import { relativeTime } from '/js/modules/date-utils.mjs';
+
+	const keywordContainer = document.getElementById('keyword-container');
+	const noteCardContainer = document.getElementById('note-card-container');
+
+	const openFilter = document.getElementById('open-filter');
+	const clearFilter = document.getElementById('clear-filter');
+
+	const MIN_RATING_COUNT_TO_SHOW = parseInt('<%- MIN_RATING_COUNT_TO_SHOW %>');
+
+	let notes = [];
+	let keywordCount = new Map();
+	let keywordFilter = [];
+
+	const sortByInput = document.getElementById('sort-by-input');
+	const sortDirectionInput = document.getElementById('sort-direction-input');
+	let sortNotesBy = 'views';
+	let sortNotesAscending = false;
+
+	openFilter.addEventListener('click', () => {
+		if(keywordContainer.classList.contains('open')) keywordContainer.classList.remove('open');
+		else keywordContainer.classList.add('open');
+	});
+
+	clearFilter.addEventListener('click', () => {
+		const filterChips = document.getElementsByClassName('keyword-filter-input');
+
+		for(const filterChip of filterChips) {
+			filterChip.checked = false;
+		}
+
+		keywordFilter = [];
+
+		loadNotes();
+	});
+
+	const sortContainer = document.getElementById('sort-container');
+	const openSort = document.getElementById('open-sort');
+
+	openSort.addEventListener('click', () => {
+		if(sortContainer.classList.contains('open')) sortContainer.classList.remove('open');
+		else sortContainer.classList.add('open');
+	});
+
+	await fetchNotes();
+	loadNotes();
+
+	async function loadNotes() {
+		noteCardContainer.innerHTML = '';
+
+		let filteredNotes = notes;
+
+		if(keywordFilter.length > 0) {
+			filteredNotes = notes.filter(note => checkSubset(keywordFilter, note.keywords));
+		}
+
+		for(let i = 0; i < filteredNotes.length; i++) {
+			const note = filteredNotes[i];
+			loadNote(note);
+		}
+	}
+
+	sortByInput.addEventListener('input', sortNotes);
+	sortDirectionInput.addEventListener('input', sortNotes);
+	function sortNotes() {
+		sortNotesBy = sortByInput.value;
+		sortNotesAscending = (sortDirectionInput.value === 'ascending');
+
+		console.table(sortNotesBy, sortNotesAscending);
+
+		let sortFunction = () => {};
+
+		switch (sortNotesBy) {
+			case 'views':
+			case 'rating':
+				sortFunction = (a, b) => a[sortNotesBy] - b[sortNotesBy];
+				break;
+			case 'created_at':
+			case 'updated_at':
+				sortFunction = (a, b) => new Date(a[sortNotesBy]).getTime() - new Date(b[sortNotesBy]).getTime();
+				break;
+			case 'trending':
+				sortFunction = (a, b) => {
+					a = a.views / ((Date.now() - a.created_at) + 1)/(86400**5);
+					b = b.views / ((Date.now() - b.created_at) + 1)/(86400**5);
+					return a - b;
+				}
+		}
+
+		notes.sort(sortFunction);
+
+		if (!sortNotesAscending) notes.reverse();
+
+		console.table(notes.map(note => ({ title: note.title, updated_at: new Date(note.updated_at).getTime() })));
+
+		loadNotes();
+	}
+
+	function checkIntersection(arr1, arr2) {
+		return arr1.some(item => arr2.includes(item));
+	}
+
+	/** Check if `arr1` is a subset of `arr2`.
+	 * @param {array} arr1 - The superset
+	 * @param {array} arr2 - The subset
+	 */
+	function checkSubset(arr1, arr2) {
+		return arr1.every(item => arr2.includes(item));
+	}
+
+	function addKeyword(keyword, count) {
+		const keywordWrapper = new JSH('label', null, { class: 'chip keyword-filter' })
+			.appendTo(keywordContainer);
+
+		const checkbox = new JSH('input', null, { type: 'checkbox', hidden: true, value: keyword, class: 'keyword-filter-input' })
+			.appendTo(keywordWrapper);
+
+		checkbox.addEventListener('change', () => {
+			console.log(checkbox.value, checkbox.checked);
+
+			if(checkbox.checked) {
+				keywordFilter.push(checkbox.value);
+			} else {
+				keywordFilter.splice(keywordFilter.indexOf(checkbox.value), 1)
+			}
+
+			loadNotes();
+		});
+
+		new JSH('span', keyword)
+			.appendTo(keywordWrapper);
+
+		new JSH('span', count, { class: 'keyword-count' })
+			.appendTo(keywordWrapper);
+	}
+
+	async function loadNote(note) {
+		const containerType = (window.innerWidth > 1000) ? 'note-card' : 'note-card-small';
+		const noteCard = new JSH('div', null, { class: containerType })
+			.appendTo(noteCardContainer);
+
+		new JSH('a', null, {
+			href: `/note/${note.id}`,
+			class: 'link'
+		}).appendTo(noteCard);
+
+		if(note.thumbnail_url) {
+			new JSH('div', `<img src="${note.thumbnail_url}" />`, { class: 'thumbnail' })
+				.appendTo(noteCard);
+		}
+
+		const metadata = new JSH('div', null, { class: 'meta-data' })
+			.appendTo(noteCard);
+
+		new JSH('div', note.title, { class: 'title' })
+			.appendTo(metadata);
+		new JSH('div', note.author_display_name, { class: 'author' })
+			.appendTo(metadata);
+
+		const details = new JSH('div', null, { class: 'details' })
+			.appendTo(metadata);
+
+		new JSH('span', relativeTime(new Date(note.created_at)), { class: 'date' })
+			.appendTo(details);
+		new JSH('span', `${note.views} views`, { class: 'views' })
+			.appendTo(details);
+
+		if(note.rate_count >= MIN_RATING_COUNT_TO_SHOW) {
+			new JSH('span', `${note.views} <span class="material-symbols-outlined">star</span>`, { class: 'rating' })
+				.appendTo(details);
+		}
+
+		if(note.keywords.length > 0) {
+			const keywordContainer = new JSH('div', null, { class: 'keyword-container' })
+				.appendTo(metadata);
+
+			for(let i = 0; i < note.keywords.length; i++) {
+				new JSH('label', `<a href="${note.keywords[i]}">${note.keywords[i]}</a>`, { class: 'chip keyword' }).appendTo(keywordContainer);
+			}
+		}
+	}
+
+	async function fetchNotes() {
+		try {
+			const response = await fetch('/api/notes');
+
+			const json = await response.json();
+
+			if(!response.ok) {
+				console.log(json.error);
+				return;
+			}
+
+			notes = json.data;
+		} catch (error) {
+			console.error(error);
+		}
+
+		for(let i = 0; i < notes.length; i++) {
+			const note = notes[i];
+
+			for(let j = 0; j < note.keywords.length; j++) {
+				const keyword = note.keywords[j];
+
+				if(keywordCount.get(keyword)) {
+					const count = keywordCount.get(keyword);
+					keywordCount.set(keyword, count + 1);
+				} else {
+					keywordCount.set(keyword, 1)
+				}
+			}
+		}
+
+		// Sort keys alphabetically.
+		keywordCount = new Map([...keywordCount].sort((a, b) => {
+			if(a[0] > b[0]) return 1;
+			else if(a[0] < b[0]) return -1;
+			return 0;
+		}));
+
+		keywordCount.forEach((value, key) => addKeyword(key, value));
+	}
+</script>
+</html>

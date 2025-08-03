@@ -1,23 +1,37 @@
+const Marked = require('marked');
+
 const markedRenderer = {
-	heading(text, level) {
+	heading({ text, depth, tokens }) {
 		const headingIdRegex = /(?: +|^)\{#(\d|[a-z]|[\w-]*)\}(?: +|$)/i;
 		const matches = text.match(headingIdRegex);
-
 		let id;
-		if(!matches) return `<h${level} class="heading"><span class="heading-content" data-header="${level}">${text.replace(headingIdRegex, '')}</span></h${level}>`;
+
+		for(let i = 0; i < tokens.length; i++) {
+			const token = tokens[i];
+			token.text = token.text.replace(headingIdRegex, '');
+		}
+
+		if(!matches) return `<h${depth} class="heading"><span class="heading-content" data-header="${depth}">${Marked.Parser.parseInline(tokens)}</span></h${depth}>`;
 		else id = matches[1];
 
-		return `<h${level} class="heading" id="section-${id}"><span class="heading-content" data-header="${level}">${text.replace(headingIdRegex, '')}</span><a href="#section-${id}" class="header-redirect">§</a></h${level}>`;
+		text = text.replace(headingIdRegex, '');
+
+		return `<h${depth} class="heading has-link" id="section-${id}"><span class="heading-content" data-header="${depth}">${Marked.Parser.parseInline(tokens)}</span> <a href="#section-${id}" class="link"><span class="material-symbols-outlined">link</span></a></h${depth}>`;
 	},
-	code(code, infostring) {
-		return `<pre class="code-block"><code class="language-${infostring}">` + code + '</code></pre>';
+	code({ text, lang, raw }) {
+		if(lang) return `<pre class="code-block"><code class="language-${lang}">${escapeHTML(text)}</code></pre>`;
+		return `<pre class="code-block"><code>${escapeHTML(text)}</code></pre>`;
 	},
-	image(href, title, text) {
-		if(title) return `<img class="simple-image" loading="lazy" alt="${text}" title="${title}" src="${href}">`;
-		else return `<img class="simple-image" loading="lazy" alt="${text}" src="${href}">`;
+	image({ href, title, text }) {
+		if(title) return `<img loading="lazy" alt="${text}" title="${title}" src="${href}">`;
+		return `<img loading="lazy" alt="${text}" src="${href}">`;
 	},
-	codespan(text) {
-		return `<code>${text}</code>`;
+	codespan({ text }) {
+		return `<code class="code-span">${escapeHTML(text)}</code>`;
+	},
+	link({ href, title, text }) {
+		if(title) return `<a class="anchor" title="${title}" href="${href}">${text}</a>`;
+		return `<a class="anchor" href="${href}">${text}</a>`;
 	}
 };
 
@@ -55,6 +69,17 @@ const dataConstraints = {
 };
 
 Object.freeze(dataConstraints);
+
+/**
+ * @param {string} string
+ * @returns string
+ */
+function escapeHTML(string) {
+	return string.replace(
+			/[^0-9A-Za-z ]/g,
+			char => "&#" + char.charCodeAt(0) + ";"
+	);
+}
 
 module.exports = {
 	markedRenderer,

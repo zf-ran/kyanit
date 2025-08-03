@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Documentations | Kyanit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- MATERIAL SYMBOLS -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+	<link rel="stylesheet" href="/main.css">
+	<link rel="stylesheet" href="/css/partials/note-card.css">
+</head>
+<body>
+	<%- include('partials/header') %>
+
+	<main>
+		<h1><span class="material-symbols-outlined">article</span> Documentations</h1>
+
+		<div class="note-card-small-container">
+			<% for(let i = 0; i < docs.length; i++) { %>
+				<% const note = docs[i]; %>
+				<div class="note-card-small">
+					<a href="/docs/<%- note.docname %>" class="link"></a>
+					<% if(note.thumbnail_url) { %>
+						<div class="thumbnail">
+							<img src="<%- note.thumbnail_url %>"/>
+						</div>
+					<% } %>
+					<div class="meta-data">
+						<div class="title"><%= note.title %></div>
+						<div class="author">Kyanit</div>
+						<div class="details">
+							<span class="date"><%= $relativeTime(new Date(note.created_at)) %></span>
+						</div>
+					</div>
+				</div>
+			<% } %>
+		</div>
+	</main>
+</body>
+</html>
