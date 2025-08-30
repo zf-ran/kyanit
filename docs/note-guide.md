@@ -4,13 +4,6 @@ created_at: '2023-07-27T18:43:29.505Z'
 updated_at: '2025-07-12T20:50:00Z'
 ---
 
-- List 1
-	- List 2
-	- List 3
-		- List 4
-	- List 5
-- List
-
 # 1—Writing a Note {#creating}
 
 To write a note, you must be logged in. Open the side menu **≡** > **Start Writing**.

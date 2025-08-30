@@ -88,34 +88,56 @@
 	margin-bottom: 1em;
 	border-radius: 0 .5em .5em 0;
 	padding: .5em 1em;
+
+	--todo: ;
+	
 }
 
 .markdown-alert :last-child {
 	margin-bottom: 0;
 }
 
-.markdown-alert-note {
+.markdown-alert-note,
+.markdown-alert-info {
 	--color: var(--info);
 }
-.markdown-alert-tip {
+.markdown-alert-tip,
+.markdown-alert-success {
 	--color: var(--success);
 }
-.markdown-alert-important {
+.markdown-alert-abstract,
+.markdown-alert-todo {
+	--color: hsl(from var(--info) h calc(s + 20) calc(l + 20));
+}
+.markdown-alert-important,
+.markdown-alert-example {
 	--color: var(--important);
 }
-.markdown-alert-warning {
+.markdown-alert-warning,
+.markdown-alert-question {
 	--color: var(--warning);
 }
+.markdown-alert-failure,
+.markdown-alert-danger,
+.markdown-alert-bug,
 .markdown-alert-caution {
 	--color: var(--error);
+}
+.markdown-alert-quote {
+	--color: var(--text);
 }
 
 .markdown-alert-title {
 	color: var(--color);
 	display: flex;
-	align-items: center;
+	align-items: baseline;
 	gap: 8px;
 	font-weight: bold;
+	margin-bottom: .5em;
+}
+
+.markdown-alert-icon span.material-symbols-outlined {
+	vertical-align: text-bottom;
 }
 
 .markdown-alert-title svg {

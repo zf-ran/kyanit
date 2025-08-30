@@ -10,7 +10,7 @@ const DOMPurify = require('isomorphic-dompurify');
 
 const { markedRenderer, purifyOptions } = require('./config');
 
-const markedAlert = require('marked-alert');
+const markedAlert = require('./modules/markdown-alert/index');
 const markedFootnote = require('marked-footnote');
 const markedMoreLists = require('marked-more-lists');
 marked.use(

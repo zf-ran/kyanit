@@ -12,5 +12,44 @@ Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quos minima expedita s
 
 ## Heading 2
 
+>	[!NOTE]
+>	Nice feature.
+
+>	[!ABSTRACT]
+>	Nice feature.
+
+>	[!INFO]
+>	Nice feature.
+
+>	[!TODO]
+>	Nice feature.
+
+>	[!TIP]
+>	Nice feature.
+
+>	[!SUCCESS]
+>	Nice feature.
+
+>	[!QUESTION]
+>	Nice feature.
+
+>	[!WARNING]
+>	Nice feature.
+
+>	[!FAILURE]
+>	Nice feature.
+
+>	[!DANGER]
+>	Nice feature.
+
+>	[!BUG]
+>	Nice feature.
+
 >	[!IMPORTANT]
->	Semoga selesai sebelum masuk sekolah.
+>	Nice feature.
+
+>	[!EXAMPLE]
+>	Nice feature.
+
+>	[!QUOTE]
+>	Nice feature.
