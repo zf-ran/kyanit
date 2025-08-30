@@ -1,8 +1,13 @@
 @import url("/fonts/lpmq-isep-misbah/font.css");
 @import url("/fonts/cascadia-mono/font.css");
 
+.markdown-document {
+	line-height: 150%;
+}
+
 .markdown-document .heading-content {
 	font-family: 'Isep Misbah', var(--font-family--heading), sans-serif;
+	line-height: 100%;
 }
 .markdown-document :is(p, ul, ol, table) {
 	font-family: 'Isep Misbah', var(--font-family--body), sans-serif;
@@ -32,13 +37,7 @@
 }
 
 .markdown-document th {
-	background: var(--border-mute);
-}
-.markdown-document th:not(:first-child) {
-	border-left: 1px solid var(--background);
-}
-.markdown-document th:not(:last-child) {
-	border-right: 1px solid var(--background);
+	background: hsl(from var(--border-mute) h s l / 20%);
 }
 
 /** BLOCKQUOTE */
@@ -46,8 +45,16 @@
 	border-left: 4px solid var(--primary);
 	background-color: hsl(from var(--primary) h s l / 10%);
 	margin-inline: 0;
-	border-radius: 0 1em 1em 0;
-	padding: .5em 1em;
+	border-radius: 0 .5em .5em 0;
+	padding-inline: 1em;
+	padding-block: .5em;
+}
+
+.markdown-document blockquote :first-child {
+	margin-top: 0;
+}
+.markdown-document blockquote :last-child {
+	margin-bottom: 0;
 }
 
 /** CODE */
@@ -79,8 +86,12 @@
 	background-color: hsl(from var(--color) h s l / 10%);
 	margin-inline: 0;
 	margin-bottom: 1em;
-	border-radius: 0 1em 1em 0;
+	border-radius: 0 .5em .5em 0;
 	padding: .5em 1em;
+}
+
+.markdown-alert :last-child {
+	margin-bottom: 0;
 }
 
 .markdown-alert-note {
@@ -103,7 +114,7 @@
 	color: var(--color);
 	display: flex;
 	align-items: center;
-	gap: 4px;
+	gap: 8px;
 	font-weight: bold;
 }
 
@@ -124,4 +135,22 @@ section.footnotes {
 /** MATH EQUATIONS */
 mjx-container * {
 	font-family: var(--font-family--body);
+}
+
+@media print {
+	body {
+		print-color-adjust: exact;
+	}
+
+	header {
+		display: none;
+	}
+
+	aside {
+		display: none;
+	}
+
+	main {
+		max-width: unset;
+	}
 }
