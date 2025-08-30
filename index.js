@@ -213,6 +213,10 @@ app.get('/note/:noteId', async (req, res) => {
 });
 
 app.get('/create', async (req, res) => {
+	res.render('coming-soon');
+	return;
+
+	// TODO
 	if(!res.locals.isLoggedIn) return res.redirect('back');
 
 	const startingNote = {
@@ -227,6 +231,10 @@ app.get('/create', async (req, res) => {
 });
 
 app.get('/edit/:noteId', async (req, res) => {
+	res.render('coming-soon');
+	return;
+
+	// TODO
 	if(!res.locals.isLoggedIn) return res.redirect('back');
 
 	const noteId = req.params.noteId;
@@ -250,7 +258,17 @@ app.get('/edit/:noteId', async (req, res) => {
 	res.render('create', { note, mode: 'edit' });
 });
 
+app.get('/user', async (req, res) => {
+	// TODO: Remove
+	res.render('coming-soon');
+	return;
+})
+
 app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
+	res.render('coming-soon');
+	return;
+
+	// TODO
 	const users = await sql`
 		select
 			name, display_name, about, created_at, is_verified
@@ -295,12 +313,25 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 });
 
 app.get('/signup', (_req, res) => {
+	res.render('coming-soon');
+	return;
+
+	// TODO
 	res.render('signup');
 });
 
 app.get('/login', (_req, res) => {
+	res.render('coming-soon');
+	return;
+
+	// TODO
 	res.render('login');
 });
+
+app.get('/settings', (req, res) => {
+	// TODO
+	res.render('coming-soon');
+})
 
 //* Minified 
 const minifiedRoutes = require('./routes/minified');
