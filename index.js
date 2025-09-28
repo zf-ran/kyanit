@@ -24,7 +24,7 @@ marked.use(
 );
 
 const Kyanit = require('./modules/Kyanit');
-const { isUUID } = Kyanit;
+const { isUUID, parseBackslashes } = Kyanit;
 
 const { validateToken } = require('./modules/token');
 
@@ -205,7 +205,7 @@ app.get('/note/:noteId', async (req, res) => {
 
 	const note = notes[0];
 
-	const htmlContent = DOMPurify.sanitize(marked.parse(note.content), purifyOptions);
+	const htmlContent = DOMPurify.sanitize(marked.parse(parseBackslashes(note.content)), purifyOptions);
 
 	delete note.content;
 
@@ -305,7 +305,7 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 
 	const page = req.params.page || 'about';
 
-	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(user.about), purifyOptions);
+	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(parseBackslashes(user.about)), purifyOptions);
 
 	res.render('dashboard', {
 		user, notes, about: aboutHTMLContent, page

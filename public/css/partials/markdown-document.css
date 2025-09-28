@@ -27,6 +27,7 @@
 .markdown-document table {
 	border-collapse: collapse;
 	overflow-x: auto;
+	margin-block: 1em;
 }
 
 .markdown-document td,
@@ -37,6 +38,7 @@
 }
 
 .markdown-document th {
+	text-align: left;
 	background: hsl(from var(--border-mute) h s l / 20%);
 }
 
