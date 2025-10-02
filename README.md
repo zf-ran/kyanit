@@ -7,6 +7,27 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 
 # TODOs
 
+## Remake
+
+- [ ] Generic dialogue pop up.
+	- [ ] Prompt.
+		- [ ] Text.
+		- [ ] Number.
+		- [ ] Date.
+	- [ ] Confirmation.
+	- [ ] Toasts.
+	- [ ] Snackbar.
+- [ ] Log in page.
+- [ ] Account page.
+- [ ] Note page.
+	| Feature           | Display | Input  |
+	| ----------------- | ------- | ------ |
+	| ~~Read~~          | ✓       | *None* |
+	| Table of contents |         | *None* |
+	| Comments          |         |        |
+	| —Comment votes    |         |        |
+	| Rating            | ✓       |        |
+
 ## Refactors
 
 - [ ] Fix the code.
@@ -22,5 +43,5 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 	- Rating system (1–5) or voting system (up, down) ... I can’t decide.
 - [ ] Log out.
 - [ ] Delete account.
-- [ ] Make better homepage, explaining the website better.
-- [ ] Make an explore page, having filters and stuff.
+- [ ] *On progress* Make better homepage, explaining the website better.
+- [ ] *On progress* Make an explore page, having filters and stuff.
