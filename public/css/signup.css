@@ -1,0 +1,11 @@
+form {
+	margin-top: 4em;
+}
+
+.form-message {
+	color: var(--error);
+}
+
+.form-message:has(#message:empty) {
+	visibility: hidden;
+}

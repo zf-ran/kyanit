@@ -313,19 +313,11 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 });
 
 app.get('/signup', (_req, res) => {
-	res.render('coming-soon');
-	return;
-
-	// TODO
-	res.render('signup');
+	res.render('signup', { mode: 'signup' });
 });
 
 app.get('/login', (_req, res) => {
-	res.render('coming-soon');
-	return;
-
-	// TODO
-	res.render('login');
+	res.render('signup', { mode: 'login' });
 });
 
 app.get('/settings', (req, res) => {

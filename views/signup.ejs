@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Coming Soon! | Kyanit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- MATERIAL SYMBOLS -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+	<link rel="stylesheet" href="/main.css">
+	<link rel="stylesheet" href="/css/signup.css">
+</head>
+<body>
+	<%- include('partials/header') %>
+
+	<main>
+		<% if (mode === 'signup') { %>
+			<form action="/auth/signup" method="post" id="signup-form" aria-labelledby="form-title">
+				<div class="form-heading">
+					<h2 class="form-title" id="form-title"><span class="material-symbols-outlined">person_add</span> Sign Up</h2>
+					<p class="form-subtitle">Register an account. Already have an account? <a href="/login">Login</a> instead.</p>
+					<p class="form-subtitle">Choose your username wisely, since <strong><ins>usernames cannot be changed!</ins></strong> You can change your display name later.</p>
+				</div>
+				<div class="form-inputs">
+					<div class="input-wrapper">
+						<span class="material-symbols-outlined input-icon">alternate_email</span>
+						<label for="username">
+							<span class="input-label">Username</span>
+							<input type="text" placeholder="" id="username" required/>
+						</label>
+					</div>
+					<div class="input-wrapper">
+						<span class="material-symbols-outlined input-icon">password</span>
+						<label for="password">
+							<span class="input-label">Password</span>
+							<input type="password" id="password" placeholder="" required/>
+						</label>
+					</div>
+				</div>
+				<h5 class="form-message" aria-live="polite"><span class="material-symbols-outlined">error</span> <span id="message"></span></h5>
+				<menu>
+					<button type="submit" id="signup-submit">
+						<span class="material-symbols-outlined">person_add</span>
+						Sign up
+					</button>
+				</menu>
+			</form>
+		<% } else { %>
+			<form action="/auth/login" method="post" id="signup-form" aria-labelledby="form-title">
+				<div class="form-heading">
+					<h2 class="form-title" id="form-title"><span class="material-symbols-outlined">login</span> Login</h2>
+					<p class="form-subtitle">Welcome back! Don’t have an account yet? <a href="/signup">Sign up</a> instead.</p>
+				</div>
+				<div class="form-inputs">
+					<div class="input-wrapper">
+						<span class="material-symbols-outlined input-icon">alternate_email</span>
+						<label for="username">
+							<span class="input-label">Username</span>
+							<input type="text" placeholder="" id="username" required/>
+						</label>
+					</div>
+					<div class="input-wrapper">
+						<span class="material-symbols-outlined input-icon">password</span>
+						<label for="password">
+							<span class="input-label">Password</span>
+							<input type="password" id="password" placeholder="" required autocomplete="current-password"/>
+						</label>
+					</div>
+				</div>
+				<h5 class="form-message" aria-live="polite"><span class="material-symbols-outlined">error</span> <span id="message"></span></h5>
+				<menu>
+					<button type="submit" id="signup-submit">
+						<span class="material-symbols-outlined">Login</span>
+						Login
+					</button>
+				</menu>
+			</form>
+		<% } %>
+	</main>
+</body>
+<script>
+	const form = document.getElementById('signup-form');
+	const messageSpan = document.getElementById('message');
+	const usernameInput = document.getElementById('username');
+	const passwordInput = document.getElementById('password');
+	const submitButton = document.getElementById('signup-submit');
+
+	form.addEventListener('submit', submit)
+
+	async function submit(event) {
+		event.preventDefault();
+
+		messageSpan.innerText = '';
+		input('disabled');
+
+		const inputs = {
+			username: usernameInput.value,
+			password: passwordInput.value
+		};
+
+		const response = await fetch('/auth/<%- mode %>', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(inputs)
+		});
+
+		if(!response.ok) {
+			// Handle invalid requests.
+			const json = await response.json();
+
+			messageSpan.innerText = titleCase(json.error);
+			input('enabled');
+		} else {
+			// Success.
+			/* <% if (mode === 'signup') { %> */
+				document.getElementById('form-title').innerHTML = '<span class="material-symbols-outlined">check</span> Signed in!';
+			/* <% } else { %> */
+				document.getElementById('form-title').innerHTML = '<span class="material-symbols-outlined">check</span> Logged in!';
+			/* <% } %> */
+
+			location.assign(`/user/${inputs.username}`);
+		}
+	}
+
+	/**
+	 * @param {'enabled'|'disabled'} mode
+	 */
+	function input(mode) {
+		let isEnabled;
+		switch(mode) {
+			case 'enabled':
+				isEnabled = true;
+				break;
+			case 'disabled':
+				isEnabled = false;
+				break;
+		}
+
+		usernameInput.disabled = !isEnabled;
+		passwordInput.disabled = !isEnabled;
+		submitButton.disabled = !isEnabled;
+	}
+
+	/**
+	 * @param {string} string - The string to make as title case
+	 * @returns {string}
+	 */
+	function titleCase(string) {
+		return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+</script>
+</html>

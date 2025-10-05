@@ -11,6 +11,7 @@
 	--font--chip: 0.875em var(--font-family--body);
 
 	--transition-duration: 50ms;
+	--dialog-transition-duration: 75ms;
 }
 
 :root {
@@ -62,6 +63,10 @@
 
 * {
 	scroll-margin-top: calc(var(--top-navigation-height) + 1em);
+}
+
+html {
+	scroll-behavior: smooth;
 }
 
 body {
@@ -178,7 +183,8 @@ button {
 	gap: 4px;
 	border-radius: 8px;
 	cursor: pointer;
-	transition: scale var(--transition-duration);
+	transition-property: scale, rotate;
+	transition-duration: var(--transition-duration);
 
 	/* MEDIUM */
 	font: var(--font--button--m);
@@ -211,8 +217,9 @@ button span.material-symbols-outlined { font-size: 22px; }
 button.small span.material-symbols-outlined { font-size: 19px; }
 button.large span.material-symbols-outlined { font-size: 25px; }
 
-button:hover { scale: 102%; }
-button:active { scale: 98%; }
+button:enabled:focus-visible { rotate: 2deg; scale: 98%; outline: none !important; }
+button:enabled:hover { scale: 102%; }
+button:enabled:active { scale: 98%; }
 
 button.icon {
 	justify-content: center;
@@ -220,6 +227,11 @@ button.icon {
 }
 button.icon.small { width: 32px; }
 button.icon.large { width: 48px; }
+
+button:disabled {
+	filter: saturate(20%);
+	cursor: not-allowed;
+}
 
 /** CHIPS */
 label.chip {
@@ -269,4 +281,72 @@ label.select-input select {
 	font: var(--font--chip);
 } label.select-input select:hover {
 	border: 1px solid var(--border);
+}
+
+/** INPUTS */
+div.input-wrapper {
+	display: flex;
+	gap: .5em;
+	align-items: center;
+	border: 1px solid var(--border-mute);
+	padding: .5em 1em;
+	border-radius: 6px;
+	position: relative;
+}
+
+div.input-wrapper:has(.input-icon) {
+	padding-left: 10px;
+}
+
+div.input-wrapper:has(input:focus),
+div.input-wrapper:has(input:not(:placeholder-shown)) {
+	background-color: var(--background-accent);
+	border: 1px solid transparent;
+	border-left: 1px solid var(--primary);
+	border-radius: 0 6px 6px 0;
+}
+
+div.input-wrapper .input-icon,
+div.input-wrapper .input-label {
+	color: var(--text-mute);
+}
+
+div.input-wrapper label {
+	display: flex;
+	align-items: center;
+	flex: 1 1 auto;
+	user-select: none;
+}
+
+div.input-wrapper .input-label {
+	position: absolute;
+	transition-property: transform;
+	transition-duration: 100ms;
+	transform-origin: 0 50%;
+}
+
+div.input-wrapper label:has(input:required) .input-label::after {
+	content: '*';
+	color: var(--error);
+}
+
+div.input-wrapper label:has(input:focus) .input-label,
+div.input-wrapper label:has(input:not(:placeholder-shown)) .input-label {
+	transform: translateY(-18px) scale(80%);
+}
+
+div.input-wrapper input {
+	width: 100%;
+}
+
+div.input-wrapper:has(input:disabled) * {
+	cursor: not-allowed;
+	opacity: 80%;
+}
+
+input {
+	background-color: transparent;
+	outline: none !important;
+	border: none;
+	padding: 0;
 }

@@ -28,6 +28,9 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 	| —Comment votes    |         |        |
 	| Rating            | ✓       |        |
 
+- [ ] Table overflow.
+- [ ] Blockquote overflow.
+
 ## Refactors
 
 - [ ] Fix the code.

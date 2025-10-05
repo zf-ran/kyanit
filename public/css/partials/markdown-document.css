@@ -26,6 +26,7 @@
 /** TABLE */
 .markdown-document table {
 	border-collapse: collapse;
+	display: block;
 	overflow-x: auto;
 	margin-block: 1em;
 }
@@ -90,9 +91,7 @@
 	margin-bottom: 1em;
 	border-radius: 0 .5em .5em 0;
 	padding: .5em 1em;
-
-	--todo: ;
-	
+	overflow-x: auto;
 }
 
 .markdown-alert :last-child {
@@ -157,6 +156,10 @@ section.footnotes {
 }
 
 /** MATH EQUATIONS */
+mjx-container {
+	overflow-x: auto;
+}
+
 mjx-container * {
 	font-family: var(--font-family--body);
 }

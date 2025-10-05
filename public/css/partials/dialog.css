@@ -1,0 +1,81 @@
+dialog {
+	animation-duration: var(--dialog-transition-duration);
+	animation-timing-function: ease-in-out;
+	border: 1px solid var(--border-mute);
+	box-shadow: 1px 1px 5px 0 var(--border-mute);
+	background-color: var(--background);
+	border-radius: 12px;
+	padding: 1.5em;
+	width: calc(100% - 2em); max-width: 500px;
+	box-sizing: border-box;
+}
+
+dialog.opening {
+	animation-name: dialog-open;
+}
+
+dialog.closing {
+	animation-name: dialog-close;
+}
+
+dialog .dialog-title {
+	margin-bottom: 8px;
+}
+
+dialog .dialog-subtitle {
+	color: var(--text-mute);
+}
+
+dialog .dialog-inputs,
+form .form-inputs {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+dialog menu,
+form menu {
+	padding: 0;
+	margin-bottom: 0;
+	text-align: right;
+}
+
+dialog::backdrop {
+	backdrop-filter: blur(2px);
+	animation-duration: var(--dialog-transition-duration);
+	animation-timing-function: ease;
+}
+
+dialog.opening::backdrop {
+	animation-name: dialog-open;
+}
+
+dialog.closing::backdrop {
+	animation-name: dialog-close;
+}
+
+@keyframes dialog-open {
+	from {
+		transform: scale(98%);
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes dialog-close {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+		transform: scale(98%);
+	}
+}
+
+@media (hover: none) {
+	dialog {
+		margin-top: 8em;
+	}
+}
