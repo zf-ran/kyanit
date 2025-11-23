@@ -407,7 +407,7 @@
 	};
 
 	/* <% if(username !== note.author_name) { %> */
-		setInterval(async () => {
+		setTimeout(async () => {
 			try {
 				await fetch(`/api/notes/${noteId}/views`, {
 					method: 'POST',
