@@ -171,22 +171,22 @@ alternatively, you can use `+` and `*` instead of `-`; to get:
 
 Type:
 ```
--	This is unordered
-	1.	That have an ordered list
-		+	That have another one
-		+	Like this.
-	2.	This is the second list
--	More
-	*	And this too
+- This is unordered
+	1. That have an ordered list
+		* That have another one
+		* Like this.
+	2. This is the second list
+- More
+	* And this too
 ```
 to get:
 
--	This is unordered
-	1.	That have an ordered list
-		+	That have another one
-		+	Like this.
-	2.	This is the second list
--	More
+- This is unordered
+	1. That have an ordered list
+		* That have another one
+		* Like this.
+	2. This is the second list
+- More
 	*	And this too
 
 ## 1.7—Blockquotes {#1-7-blockquotes}

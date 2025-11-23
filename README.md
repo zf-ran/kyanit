@@ -17,7 +17,7 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 	- [ ] Confirmation.
 	- [ ] Toasts.
 	- [ ] Snackbar.
-- [ ] Log in page.
+- [x] Log in page.
 - [ ] Account page.
 - [ ] Note page.
 	| Feature           | Display | Input  |
@@ -27,9 +27,6 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 	| Comments          |         |        |
 	| —Comment votes    |         |        |
 	| Rating            | ✓       |        |
-
-- [ ] Table overflow.
-- [ ] Blockquote overflow.
 
 ## Refactors
 
@@ -41,9 +38,8 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 
 ## New stuff
 
-- [ ] Make official documents in separate section.
-- [ ] Vote system for note.
-	- Rating system (1–5) or voting system (up, down) ... I can’t decide.
+- [x] Make official documents in separate section.
+- [ ] Rating system for note.
 - [ ] Log out.
 - [ ] Delete account.
 - [ ] *On progress* Make better homepage, explaining the website better.

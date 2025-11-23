@@ -4,6 +4,8 @@
 	<title><%- note.title %> | Kyanit</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="author" content="<%- note.author_display_name %> @<%- note.author_name %>">
+	<meta name="keywords" content="<%- note.keywords.join(', ') %>">
 
 	<!-- MATERIAL SYMBOLS -->
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -33,7 +35,8 @@
 			<div class="title"><%= note.title %></div>
 			<div class="details">
 				<div class="author-date">
-					<span class="author">by <%= note.author_display_name %></span>
+					<span class="author-display">by <%= note.author_display_name %></span>
+					<span class="author-username"><a class="anchor" href="/user/<%- note.author_name %>">@<%= note.author_name %></a></span>
 					<span class="date">
 						<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
 							Published at <%= absoluteDate(note.created_at) %>
@@ -70,7 +73,7 @@
 					headers: { 'x-note-id': '<%- note.id %>' }
 				});
 			} catch (error) {
-				// ui.alert({ title: 'Unexpected Error', message: 'Unexpected error when incrementing note view.' });
+				// TODO: ui.alert({ title: 'Unexpected Error', message: 'Unexpected error when incrementing note view.' });
 				console.error(error);
 			}
 		}, 30_000); // 30 seconds
