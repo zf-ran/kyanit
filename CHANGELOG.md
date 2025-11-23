@@ -1,8 +1,13 @@
 # Version Changelogs
 
-## 1.0.0-beta.6
+## 1.0.0-beta.6.1
 
-feat: new ui
+- Added view increment feature.
+- Changed font weight in note title from bold to normal.
+- Created new style for checkboxes in task list.
+- Changed table cell margin.
+
+## 1.0.0-beta.6
 
 - **SCRAPED** the entire UI.
 - Created `doc.ejs` for documentation and blog.

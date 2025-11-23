@@ -60,4 +60,20 @@
 		<div class="content markdown-document"><%- htmlContent %></div>
 	</main>
 </body>
+<script>
+	/* <% if(username !== note.author_name) { %> */
+		setTimeout(async () => {
+			console.log("5 sec");
+			try {
+				await fetch(`/api/notes/<%- note.id %>/views`, {
+					method: 'POST',
+					headers: { 'x-note-id': '<%- note.id %>' }
+				});
+			} catch (error) {
+				// ui.alert({ title: 'Unexpected Error', message: 'Unexpected error when incrementing note view.' });
+				console.error(error);
+			}
+		}, 30_000); // 30 seconds
+	/* <% } %> */
+</script>
 </html>

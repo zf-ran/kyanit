@@ -7,10 +7,8 @@
 
 .meta-data .title {
 	font-family: var(--font-family--heading);
-	font-weight: 600;
 	font-stretch: extra-condensed;
 	font-size: 3.05em;
-	letter-spacing: -1px;
 }
 
 .meta-data .details {

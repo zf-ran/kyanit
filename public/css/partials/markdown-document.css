@@ -18,6 +18,42 @@
 	padding-left: 2em;
 }
 
+/*- CHECKBOX LIST */
+.markdown-document li:has(> input[type="checkbox"]) {
+	list-style: none;
+}
+
+.markdown-document li > input[type="checkbox"] {
+	appearance: none;
+	position: absolute;
+}
+
+.markdown-document li > input[type="checkbox"]::after {
+	--checkbox-size: 16px;
+	content: "";
+	position: absolute;
+	display: grid;
+	place-items: center;
+	width: var(--checkbox-size);
+	height: var(--checkbox-size);
+	margin-left: calc(-1.5 * var(--checkbox-size));
+	border: 1px solid var(--border-mute);
+	border-radius: 4px;
+	box-sizing: border-box;
+	top: 6px;
+	aspect-ratio: 1;
+}
+
+.markdown-document li > input[type="checkbox"]:checked::after {
+	content: "check";
+	font-family: "Material Symbols Outlined";
+	font-weight: bold;
+	font-size: 0.9em;
+	color: var(--background);
+	background-color: var(--primary);
+	border: none;
+}
+
 /** IMAGE */
 .markdown-document img {
 	max-width: 100%;
@@ -34,7 +70,7 @@
 .markdown-document td,
 .markdown-document th {
 	border: 1px solid var(--border-mute);
-	padding: .5em 1em;
+	padding: .25em .75em;
 	vertical-align: text-top;
 }
 
@@ -68,19 +104,19 @@
 
 /*- CODE BLOCK */
 .markdown-document pre.code-block {
-	padding: 1em;
-	background-color: var(--background-accent);
-	border: 1px solid var(--border);
-	border-radius: 8px;
+	padding: 0.5em 1em;
+	background-color: transparent;
+	border: 1px solid var(--border-mute);
+	border-radius: 4px;
 	overflow-x: auto;
 	tab-size: 4;
 }
 
 /*- CODE SPAN */
 .markdown-document code.code-span {
-	border: 1px solid var(--border-mute);
-	padding: 0.15em 0.3em;
+	padding: 0.15em 0.2em;
 	border-radius: 0.25em;
+	background-color: var(--background-accent);
 }
 
 /** ALERTS */
