@@ -187,8 +187,34 @@
 }
 
 /** FOOTNOTES */
-section.footnotes {
-	color: var(--text-mute);
+.markdown-document hr[data-footnotes] {
+  max-width: 2in;
+}
+
+.markdown-document #footnote-label {
+	display: none;
+	visibility: hidden;
+}
+
+section.footnotes > ol {
+	font-size: 0.83em;
+	list-style-type: none;
+	counter-reset: footnote;
+}
+
+section.footnotes > ol > li {
+	position: relative;
+}
+
+section.footnotes > ol > li::before {
+	content: counter(footnote);
+	counter-increment: footnote;
+	font-size: 0.75em;
+	vertical-align: super;
+	position: absolute;
+	transform: translateX(-100%);
+	margin-left: -.5em;
+	top: -4px;
 }
 
 /** MATH EQUATIONS */
