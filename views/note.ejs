@@ -38,11 +38,20 @@
 					<span class="author-display">by <%= note.author_display_name %></span>
 					<span class="author-username"><a class="anchor" href="/user/<%- note.author_name %>">@<%= note.author_name %></a></span>
 					<span class="date">
-						<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
-							Published at <%= absoluteDate(note.created_at) %>
-						<% } else { %>
-							Updated at <%= absoluteDate(note.updated_at) %>
-						<% } %>
+						<span class="date-full">
+							<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
+								<%= new Date(note.created_at).toLocaleString() %>
+							<% } else { %>
+								<%= new Date(note.updated_at).toLocaleString() %>
+							<% } %>
+						</span>
+						<span class="date-short">
+							<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
+								Published at <%= absoluteDate(note.created_at) %>
+							<% } else { %>
+								Updated at <%= absoluteDate(note.updated_at) %>
+							<% } %>
+						</span>
 					</span>
 				</div>
 				<div class="statistic">

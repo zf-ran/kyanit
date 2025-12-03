@@ -33,6 +33,11 @@
 	color: var(--text-mute);
 }
 
+.meta-data .date .date-full { display: none; }
+
+.meta-data .date:hover .date-full { display: inline; }
+.meta-data .date:hover .date-short { display: none; }
+
 .meta-data .author-date > :not(:first-child)::before {
 	content: '· ';
 }
