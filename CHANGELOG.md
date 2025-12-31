@@ -1,5 +1,11 @@
 # Version Changelogs
 
+## 1.0.0-beta.7
+
+- Added dialog and toast (before it was `ui.mjs`).
+- Changed `JSH` (JavaScriptHTML) to `ElementBuilder`.
+- Changed account indicator from first letter of the username to person icon.
+
 ## 1.0.0-beta.6.1
 
 - Added view increment feature.

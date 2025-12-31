@@ -55,7 +55,7 @@
 	</main>
 </body>
 <script type="module">
-	import JSH from '/js/modules/jsh.mjs';
+	import ElementBuilder from '/js/modules/element-builder.mjs';
 	import { relativeTime } from '/js/modules/date-utils.mjs';
 
 	const keywordContainer = document.getElementById('keyword-container');
@@ -167,10 +167,17 @@
 	}
 
 	function addKeyword(keyword, count) {
-		const keywordWrapper = new JSH('label', null, { class: 'chip keyword-filter' })
+		const keywordWrapper = new ElementBuilder('label')
+			.classes([ 'chip', 'keyword-filter' ])
 			.appendTo(keywordContainer);
 
-		const checkbox = new JSH('input', null, { type: 'checkbox', hidden: true, value: keyword, class: 'keyword-filter-input' })
+		const checkbox = new ElementBuilder('input')
+			.classes([ 'keyword-filter-input' ])
+			.attributes({
+				type: 'checkbox',
+				hidden: true,
+				value: keyword
+			})
 			.appendTo(keywordWrapper);
 
 		checkbox.addEventListener('change', () => {
@@ -185,55 +192,81 @@
 			loadNotes();
 		});
 
-		new JSH('span', keyword)
+		new ElementBuilder('span')
+			.text(keyword)
 			.appendTo(keywordWrapper);
 
-		new JSH('span', count, { class: 'keyword-count' })
+		new ElementBuilder('span')
+			.text(count)
+			.classes([ 'keyword-count' ])
 			.appendTo(keywordWrapper);
 	}
 
 	async function loadNote(note) {
 		const containerType = (window.innerWidth > 1000) ? 'note-card' : 'note-card-small';
-		const noteCard = new JSH('div', null, { class: containerType })
+		const noteCard = new ElementBuilder('div')
+			.classes([ containerType ])
 			.appendTo(noteCardContainer);
 
-		new JSH('a', null, {
-			href: `/note/${note.id}`,
-			class: 'link'
-		}).appendTo(noteCard);
+		new ElementBuilder('a')
+			.classes([ 'link' ])
+			.attributes({
+				href: `/note/${note.id}`
+			})
+			.appendTo(noteCard);
 
 		if(note.thumbnail_url) {
-			new JSH('div', `<img src="${note.thumbnail_url}" />`, { class: 'thumbnail' })
+			new ElementBuilder('div')
+				.innerHTML(`<img src="${note.thumbnail_url}" />`)
+				.classes([ 'thumbnail' ])
 				.appendTo(noteCard);
 		}
 
-		const metadata = new JSH('div', null, { class: 'meta-data' })
+		const metadata = new ElementBuilder('div')
+			.classes([ 'meta-data' ])
 			.appendTo(noteCard);
 
-		new JSH('div', note.title, { class: 'title' })
-			.appendTo(metadata);
-		new JSH('div', note.author_display_name, { class: 'author' })
-			.appendTo(metadata);
-
-		const details = new JSH('div', null, { class: 'details' })
+		new ElementBuilder('div')
+			.text(note.title)
+			.classes([ 'title' ])
 			.appendTo(metadata);
 
-		new JSH('span', relativeTime(new Date(note.created_at)), { class: 'date' })
+		new ElementBuilder('div')
+			.text(note.author_display_name)
+			.classes([ 'author' ])
+			.appendTo(metadata);
+
+		const details = new ElementBuilder('div')
+			.classes([ 'details' ])
+			.appendTo(metadata);
+
+		new ElementBuilder('span')
+			.text(relativeTime(new Date(note.created_at)))
+			.classes([ 'date' ])
 			.appendTo(details);
-		new JSH('span', `${note.views} views`, { class: 'views' })
+
+		new ElementBuilder('span')
+			.text(`${note.views} views`)
+			.classes([ 'views' ])
 			.appendTo(details);
 
 		if(note.rate_count >= MIN_RATING_COUNT_TO_SHOW) {
-			new JSH('span', `${note.views} <span class="material-symbols-outlined">star</span>`, { class: 'rating' })
+			new ElementBuilder('span')
+				.innerHTML(`${note.views} <span class="material-symbols-outlined">star</span>`)
+				.classes([ 'rating' ])
 				.appendTo(details);
 		}
 
 		if(note.keywords.length > 0) {
-			const keywordContainer = new JSH('div', null, { class: 'keyword-container' })
+			const keywordContainer = new ElementBuilder('div')
+				.classes([ 'keyword-container' ])
 				.appendTo(metadata);
 
 			for(let i = 0; i < note.keywords.length; i++) {
-				new JSH('label', `<a href="${note.keywords[i]}">${note.keywords[i]}</a>`, { class: 'chip keyword' }).appendTo(keywordContainer);
+				new ElementBuilder('label')
+					.innerHTML(`<a href="${note.keywords[i]}">${note.keywords[i]}</a>`)
+					.classes([ 'chip', 'keyword' ])
+					.appendTo(keywordContainer);
 			}
 		}
 	}

@@ -2,12 +2,17 @@ dialog {
 	animation-duration: var(--dialog-transition-duration);
 	animation-timing-function: ease-in-out;
 	border: 1px solid var(--border-mute);
-	box-shadow: 1px 1px 5px 0 var(--border-mute);
 	background-color: var(--background);
 	border-radius: 12px;
 	padding: 1.5em;
 	width: calc(100% - 2em); max-width: 500px;
 	box-sizing: border-box;
+}
+
+dialog.destructive {
+	border: 1px solid hsla(from var(--error) h s l / 50%);
+	background-color: color-mix(in srgb, var(--background) 85%, var(--error) 15%);
+	--primary: var(--error);
 }
 
 dialog.opening {
@@ -22,8 +27,12 @@ dialog .dialog-title {
 	margin-bottom: 8px;
 }
 
-dialog .dialog-subtitle {
-	color: var(--text-mute);
+dialog.destructive .dialog-title {
+	color: var(--error);
+}
+
+dialog .dialog-message {
+	color: var(--text);
 }
 
 dialog .dialog-inputs,
@@ -37,7 +46,9 @@ dialog menu,
 form menu {
 	padding: 0;
 	margin-bottom: 0;
-	text-align: right;
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
 }
 
 dialog::backdrop {

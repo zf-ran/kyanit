@@ -5,7 +5,6 @@
 	<meta name="theme-color" content="#e4e4e7"/>
 	<script src="/js/partials/header.js" defer></script>
 	<link rel="stylesheet" href="/css/partials/header.css">
-	<link rel="stylesheet" href="/css/partials/dialog.css">
 </head>
 <body>
 	<header>
@@ -23,7 +22,7 @@
 				<li class="action">
 					<button class="icon large secondary">
 						<% if(isLoggedIn) { %>
-							<%= username[0].toUpperCase() %>
+							<span class="material-symbols-outlined">person</span>
 						<% } else { %>
 							<span class="material-symbols-outlined">login</span>
 						<% } %>

@@ -49,7 +49,7 @@
 		--link: var(--primary);
 
 		--success: hsl(116, 84%, 60%);
-		--error: hsl(0, 77%, 51%);
+		--error: hsl(0, 77%, 55%);
 
 		--info: hsl(224, 85%, 68%);
 		--important: hsl(266, 66%, 58%);
@@ -185,6 +185,7 @@ button {
 	cursor: pointer;
 	transition-property: scale, rotate;
 	transition-duration: var(--transition-duration);
+	border: 1px solid var(--primary);
 
 	/* MEDIUM */
 	font: var(--font--button--m);
@@ -199,7 +200,6 @@ button {
 button.secondary {
 	background: transparent;
 	color: var(--primary);
-	border: 1px solid var(--primary);
 }
 
 button.small {
@@ -217,7 +217,10 @@ button span.material-symbols-outlined { font-size: 22px; }
 button.small span.material-symbols-outlined { font-size: 19px; }
 button.large span.material-symbols-outlined { font-size: 25px; }
 
-button:enabled:focus-visible { rotate: 2deg; scale: 98%; outline: none !important; }
+button:enabled:focus-visible {
+	outline: 2px dashed var(--primary) !important;
+	border: 1px solid transparent;
+}
 button:enabled:hover { scale: 102%; }
 button:enabled:active { scale: 98%; }
 
@@ -292,6 +295,8 @@ div.input-wrapper {
 	padding: .5em 1em;
 	border-radius: 6px;
 	position: relative;
+
+	--error-message: "";
 }
 
 div.input-wrapper:has(.input-icon) {
@@ -344,9 +349,27 @@ div.input-wrapper:has(input:disabled) * {
 	opacity: 80%;
 }
 
+div.input-wrapper::after {
+	content: attr(data-error-message);
+	color: var(--error);
+	font-size: 0.8em;
+	position: absolute;
+	left: 0;
+	bottom: -50%;
+}
+
+div.input-wrapper[data-error-message]:not([data-error-message=""]) {
+	margin-bottom: 1.5em;
+}
+
 input {
 	background-color: transparent;
 	outline: none !important;
 	border: none;
 	padding: 0;
+}
+
+input::placeholder {
+	color: transparent;
+	opacity: 0;
 }

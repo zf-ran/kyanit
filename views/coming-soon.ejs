@@ -16,80 +16,127 @@
 	<main>
 		<h1><span class="material-symbols-outlined">upcoming</span> Coming Soon!</h1>
 
-		<p>This page is coming soon! Hopefully this will be up as soon as possible. <em>Let me cook 🔥</em></p>
+		<p>This page is coming soon! Hopefully this will be up as soon as possible. <em>Let me cook 🔥</em>. Meanwhile you wait, you could play with these buttons 😁.</p>
 
-		<button onclick="javascript:openDialog()">Test dialogue</button>
+		<p><button id="test-alert"><span class="material-symbols-outlined">add_alert</span> Alert</button></p>
+		<p>
+			<button id="test-confirm"><span class="material-symbols-outlined">approval_delegation</span> Confirm</button>
+			<button id="test-destructive-confirm" style="--primary: var(--error)"><span class="material-symbols-outlined">explosion</span> Destructive confirm</button>
+		</p>
+		<p><button id="test-form"><span class="material-symbols-outlined">forms_add_on</span> Form</button></p>
+		<p><button id="test-toast" class="secondary"><span class="material-symbols-outlined">toast</span> Toast</button></p>
 	</main>
-
-	<!-- DIALOG POP UP -->
-	<dialog id="dialog-id" aria-labelledby="dialog-title">
-		<form method="dialog">
-			<div class="dialog-heading">
-				<h3 class="dialog-title" id="dialog-title">This is a dialog</h3>
-				<p class="dialog-subtitle">Do you want to continue?</p>
-			</div>
-			<div class="dialog-inputs">
-				<div class="input-wrapper">
-					<span class="material-symbols-outlined input-icon">person_add</span>
-					<label>
-						<span class="input-label">First Name</span>
-						<input type="text" placeholder="" id="first-name"/>
-					</label>
-				</div>
-				<div class="input-wrapper">
-					<label>
-						<span class="input-label">Last Name</span>
-						<input type="text" id="last-name" placeholder="" required/>
-					</label>
-				</div>
-				<div class="input-wrapper">
-					<span class="material-symbols-outlined input-icon">star</span>
-					<label>
-						<span class="input-label">Rating</span>
-						<input type="password" id="password" placeholder=""/>
-					</label>
-				</div>
-			</div>
-			<menu>
-				<button type="button" class="small secondary" onclick="javascript:closeDialog()">
-					<span class="material-symbols-outlined">close</span>
-					Cancel
-				</button>
-				<button type="button" class="small" onclick="javascript:closeDialog()">
-					<span class="material-symbols-outlined">check</span>
-					Continue
-				</button>
-			</menu>
-		</form>
-	</dialog>
 </body>
-<script>
-	const dialog = document.getElementById('dialog-id');
+<script type="module">
+	import dialog from '/js/modules/dialog.mjs';
+	import toast from '/js/modules/toast.mjs';
 
-	dialog.addEventListener('animationend', () => {
-		if (dialog.classList.contains('opening')) {
-			dialog.classList.remove('opening');
-		}
+	const alertTestButton = document.getElementById('test-alert');
+	const confirmTestButton = document.getElementById('test-confirm');
+	const destructiveConfirmTestButton = document.getElementById('test-destructive-confirm');
+	const formTestButton = document.getElementById('test-form');
+	const toastTestButton = document.getElementById('test-toast');
 
-		if (dialog.classList.contains('closing')) {
-			dialog.classList.remove('closing');
-			dialog.close();
-		}
-	});
+	alertTestButton.addEventListener('click', testAlert);
+	confirmTestButton.addEventListener('click', testConfirm);
+	destructiveConfirmTestButton.addEventListener('click', testDestructiveConfirm);
+	formTestButton.addEventListener('click', testForm);
+	toastTestButton.addEventListener('click', testToast);
 
-	function openDialog() {
-		dialog.showModal();
-		dialog.classList.add('opening');
+	function testAlert() {
+		dialog.alert({
+			title: 'Hello!',
+			message: 'Just testing the new alert system…',
+			dismissText: 'Alright',
+			dismissIcon: 'thumb_up'
+		});
 	}
 
-	function closeDialog() {
-		dialog.classList.add('closing');
+	async function testConfirm() {
+		const value = await dialog.confirm({
+			title: 'This is a confirmation dialog',
+			message: 'You can cancel or confirm',
+			cancelIcon: 'close',
+			cancelText: 'Cancel',
+			confirmIcon: 'check',
+			confirmText: 'Continue'
+		});
+
+		console.log(value);
 	}
 
-	dialog.addEventListener('keydown', event => {
-		if (event.key === 'Escape') {
-			event.preventDefault();
-		}
-	});
+	async function testDestructiveConfirm() {
+		const value = await dialog.confirm({
+			title: 'This is a destructive dialog',
+			message: 'Usually for deleting content. Colored red because it represents <em>danger</em>',
+			cancelIcon: 'close',
+			cancelText: 'Cancel',
+			confirmIcon: 'delete',
+			confirmText: 'Close forever',
+			destructive: true
+		});
+
+		console.log(value);
+	}
+
+	async function testForm() {
+		const data = await dialog.form({
+			title: 'This is a form dialog',
+			message: 'Used for prompting small informations. Below is an example for account register',
+			cancelIcon: 'close',
+			cancelText: 'Cancel',
+			confirmIcon: 'person_add',
+			confirmText: 'Register',
+			fields: [
+				{
+					name: 'firstName',
+					label: 'First Name',
+					type: 'text'
+				},
+				{
+					name: 'lastName',
+					label: 'Last Name',
+					required: true,
+					type: 'text'
+				},
+				{
+					name: 'email',
+					label: 'Email',
+					required: true,
+					type: 'text',
+					defaultValue: 'example@example.com'
+				},
+				{
+					name: 'age',
+					label: 'Age',
+					type: 'number',
+					icon: 'calendar_today'
+				},
+				{
+					name: 'password',
+					label: 'Password',
+					type: 'password',
+					required: true,
+					icon: 'password'
+				},
+				{
+					name: 'confirmPassword',
+					label: 'Confirm Password',
+					type: 'password',
+					required: true,
+					icon: 'password'
+				}
+			]
+		});
+
+		console.log(data);
+	}
+
+	function testToast() {
+		toast({
+			title: 'Toast test',
+			message: 'This is informational'
+		});
+	}
 </script>
 </html>
