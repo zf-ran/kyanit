@@ -46,18 +46,20 @@ function toast({ title, message, timeMs }) {
 
 	toastElement.classList.add('opening');
 
-	const toastTimeout = setTimeout(closeToast, timeMs);
+	const toastTimeout = setTimeout(() => {
+		closeToast();
+	}, timeMs);
 
 	toastElement.addEventListener('click', () => {
 		closeToast();
-	})
+	});
 
 	toastElement.addEventListener('animationend', () => {
 		if (toastElement.classList.contains('opening'))
 			toastElement.classList.remove('opening');
 
 		if (toastElement.classList.contains('closing'))
-			toastElement.remove();
+				toastElement.remove();
 	});
 
 	function closeToast() {

@@ -34,6 +34,10 @@
 
 	cursor: pointer;
 	--time: 5000ms;
+
+
+
+	overflow: hidden;
 }
 
 .toast:hover {
@@ -60,7 +64,7 @@
 	bottom: 0; left: 0;
 	opacity: 50%;
 	background-color: var(--primary);
-	animation: close-time var(--time) linear forwards;
+	animation: close-time calc(var(--time) - 100ms) linear forwards;
 }
 
 @keyframes close-time {
@@ -96,9 +100,11 @@ h4.toast-title {
 	from {
 		opacity: 1;
 		transform: translateX(0);
+		max-height: 100vh;
 	}
 	to {
 		opacity: 0;
 		transform: translateX(50%);
+		max-height: 0;
 	}
 }
