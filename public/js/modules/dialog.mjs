@@ -128,7 +128,8 @@ const dialog = {
 		const {
 			id: dialogId,
 			element: dialogElement,
-			menu: menuElement
+			menu: menuElement,
+			form: formElement
 		} = createDialog({ title, message });
 
 		cancelText ??= 'Cancel';
@@ -144,19 +145,12 @@ const dialog = {
 			text: confirmText,
 			type: 'primary' }).appendTo(menuElement);
 
-		const formElement = new ElementBuilder('form')
-			.id(`dialog-${dialogId}-form`)
-			.attributes({
-				method: 'dialog'
-			})
-			.element;
-
-		menuElement.before(formElement);
-
 		// Fields
 		const fieldsContainer = new ElementBuilder('div')
 			.classes([ 'dialog-inputs' ])
-			.appendTo(formElement);
+			.element;
+
+		menuElement.before(fieldsContainer);
 
 		for (const field of fields) {
 			const fieldId = generateUUID();
@@ -268,9 +262,18 @@ function createDialog({
 		})
 		.appendTo(document.body);
 
+	// Form
+	const formElement = new ElementBuilder('form')
+		.id(`dialog-${dialogId}-form`)
+		.attributes({
+			method: 'dialog'
+		})
+		.appendTo(dialogElement);
+
+	// Heading
 	const headingElement = new ElementBuilder('div')
 		.classes([ 'dialog-heading' ])
-		.appendTo(dialogElement);
+		.appendTo(formElement);
 
 	// Title
 	new ElementBuilder('h2')
@@ -289,7 +292,7 @@ function createDialog({
 
 	// Buttons
 	const menuElement = new ElementBuilder('menu')
-		.appendTo(dialogElement);
+		.appendTo(formElement);
 
 	dialogElement.addEventListener('keydown', event => {
 		if (event.key === 'Escape')
@@ -314,7 +317,12 @@ function createDialog({
 
 	// Closing is handled by each type of dialog
 
-	return { id: dialogId, element: dialogElement, menu: menuElement };
+	return {
+		id: dialogId,
+		element: dialogElement,
+		menu: menuElement,
+		form: formElement
+	};
 }
 
 /**

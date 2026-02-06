@@ -1,16 +1,20 @@
 @import url("/fonts/lpmq-isep-misbah/font.css");
-@import url("/fonts/cascadia-mono/font.css");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wdth@75&display=swap");
+
+:root {
+	--font-family--monospace: "Noto Sans Mono", monospace;
+}
 
 .markdown-document {
 	line-height: 150%;
 }
 
 .markdown-document .heading-content {
-	font-family: 'Isep Misbah', var(--font-family--heading), sans-serif;
+	font-family: var(--font-family--heading);
 	line-height: 100%;
 }
 .markdown-document :is(p, ul, ol, table) {
-	font-family: 'Isep Misbah', var(--font-family--body), sans-serif;
+	font-family: var(--font-family--body);
 }
 
 /** LIST */
@@ -98,7 +102,7 @@
 
 /** CODE */
 .markdown-document code {
-	font-family: 'Cascadia Mono', monospace;
+	font-family: var(--font-family--monospace);
 	font-weight: 300;
 }
 

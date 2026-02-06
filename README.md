@@ -35,6 +35,7 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 	- [ ] Refactor front-end.
 		- [ ] Remove unnecessary try-catch blocks.
 - [ ] Document APIs.
+- [ ] Remove the use of Cascadia Mono.
 
 ## New stuff
 

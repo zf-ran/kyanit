@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>[TODO] DisplayName | Kyanit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="/main.css">
+	<link rel="stylesheet" href="/css/profile.css">
+</head>
+<body>
+	<%- include('partials/header') %>
+
+	<main>
+		<section class="profile-header">
+			<div class="identity">
+				<h1 class="display-name"><%= user.displayName %></h1>
+				<p class="username">@<%= user.name %></p>
+			</div>
+			<ul class="stats">
+				<li><span class="material-symbols-outlined">article</span> 74 notes</li>
+				<li><span class="material-symbols-outlined">star_rate</span> 4.3/5 average rating</li>
+				<li><span class="material-symbols-outlined">visibility</span> 5k total views</li>
+			</ul>
+		</section>
+	</main>
+</body>
+</html>

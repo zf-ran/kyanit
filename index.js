@@ -271,7 +271,11 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 	// TODO
 	const users = await sql`
 		select
-			name, display_name, about, created_at, is_verified
+			name,
+			display_name as "displayName",
+			about,
+			created_at as "createdAt",
+			is_verified as "isVerified"
 		from users
 		where name = ${req.params.username};
 	`;
@@ -307,7 +311,7 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 
 	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(parseBackslashes(user.about)), purifyOptions);
 
-	res.render('dashboard', {
+	res.render('profile', {
 		user, notes, about: aboutHTMLContent, page
 	});
 });

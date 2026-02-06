@@ -1,0 +1,17 @@
+.profile-header .stats {
+	display: flex;
+	flex-direction: row;
+	list-style-type: none;
+	padding: 0;
+}
+
+.profile-header .stats li {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.profile-header .stats li:not(:last-child)::after {
+	content: '·';
+	margin-inline: .5em;
+}

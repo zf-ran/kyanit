@@ -3,8 +3,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap");
 
 :root {
-	--font-family--heading: "HD Colton";
-	--font-family--body: "Noto Sans";
+	--font-family--locale--arabic: "Isep Misbah";
+	--font-family--heading: var(--font-family--locale--arabic), "HD Colton", sans-serif;
+	--font-family--body: var(--font-family--locale--arabic), "Noto Sans", sans-serif;
 	--font--button--s: 600 0.875em var(--font-family--body);
 	--font--button--m: 600 1em var(--font-family--body);
 	--font--button--l: 600 1.125em var(--font-family--body);
@@ -70,7 +71,7 @@ html {
 }
 
 body {
-	font-family: "Noto Sans", sans-serif;
+	font-family: var(--font-family--body);
 	background: var(--background);
 	color: var(--text);
 	height: 100%;

@@ -1,5 +1,10 @@
 # Version Changelogs
 
+## 1.0.0-beta.7.1
+
+- Changed monospace font from Cascadia Mono to Noto Sans Mono.
+- Refactored `dialog.mjs`.
+
 ## 1.0.0-beta.7
 
 - Added dialog and toast (before it was `ui.mjs`).
