@@ -1,5 +1,23 @@
 # Version Changelogs
 
+## 1.0.0-beta.8
+
+- Added error page with icon, title, and message paragraph for consistent design.
+- Added test pages that needs maintenance access.
+	- Currently used for note creation at `/test/create`.
+- Added FAB (Floating Action Button) component styles.
+- Changed column name casing from snake case to camel case for consistency with JavaScript.
+- Created `error.ejs` for consistent error page rendering.
+- Created `create.ejs` for note creation interface.
+- Fixed maintenance logic.
+- Fixed relative time calculation for years (millisecond precision).
+- Moved `<code>` styles from `markdown-document.css` to `main.css`.
+- Removed deprecated test files (`public/test.png`, `views/test/codemirror.ejs`).
+- Updated input wrapper styles to support `<select>` elements.
+- Upgraded MathJax from 3.2 to 4.0.
+	- Changed from SVG to CHTML rendering.
+	- Changed from New Computer Modern to Fira Math.
+
 ## 1.0.0-beta.7.1
 
 - Changed monospace font from Cascadia Mono to Noto Sans Mono.

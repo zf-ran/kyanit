@@ -39,10 +39,10 @@ const mathjaxOptions = {
 	format: [ 'TeX' ],
 	singleDollars: true,
 	MathJax: {
-		loader: { load: [ 'input/tex', 'output/svg', '[tex]/ams' ] },
+		loader: { load: ['input/tex', 'output/svg', '[tex]/ams', '[tex]/mathtools'] },
 		tex: {
 			inlineMath: [['$', '$'], ['\\(', '\\)']],
-			packages: { '[+]': ['ams'] }
+			packages: { '[+]': ['ams', 'mathtools'] }
 		},
 		options: {
 			ignoreHtmlClass: 'code-text',

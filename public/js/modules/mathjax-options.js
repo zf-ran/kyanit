@@ -1,23 +1,17 @@
 MathJax = {
 	loader: {
-		load: [
-			'output/svg',
-			'[tex]/mathtools'
-		]
+		load: ['[tex]/ams', '[tex]/mathtools']
 	},
 	tex: {
 		inlineMath: [['$', '$'], ['\\(', '\\)']],
 		packages: {
-			'[+]': ['mathtools']
+			'[+]': ['ams', 'mathtools']
 		}
 	},
 	options: {
 		ignoreHtmlClass: 'code-text',
-		renderActions: {
-			addMenu: []
-		}
+		enableMenu: false
 	},
-	chtml: { mtextInheritFont: true },
-	svg: { mtextInheritFont: true },
-	showMathMenu: false
+	output: { font: 'mathjax-fira' },
+	chtml: { mtextInheritFont: true }
 }

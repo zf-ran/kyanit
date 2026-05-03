@@ -7,7 +7,7 @@
 
 	<!-- MATHJAX -->
 	<script src="/js/modules/mathjax-options.js"></script>
-	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"></script>
 
 	<!-- PRISM.JS -->
 	<style>
@@ -32,17 +32,17 @@
 				<div class="author-date">
 					<span class="author">by Kyanit</span>
 					<span class="date">
-						<% if(metadata.created_at === metadata.updated_at) { %>
-							Published at <%= absoluteDate(new Date(metadata.created_at)) %>
+						<% if(metadata.createdAt === metadata.updatedAt) { %>
+							Published at <%= absoluteDate(new Date(metadata.cratedAt)) %>
 						<% } else { %>
-							Updated at <%= absoluteDate(new Date(metadata.updated_at)) %>
+							Updated at <%= absoluteDate(new Date(metadata.updatedAt)) %>
 						<% } %>
 					</span>
 				</div>
 			</div>
-			<% if(metadata.thumbnail_url) { %>
+			<% if(metadata.thumbnailURL) { %>
 				<div class="thumbnail">
-					<img src="<%- metadata.thumbnail_url %>"/>
+					<img src="<%- metadata.thumbnailURL %>"/>
 				</div>
 			<% } %>
 		</div>

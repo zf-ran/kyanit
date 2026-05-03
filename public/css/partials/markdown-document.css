@@ -1,9 +1,4 @@
 @import url("/fonts/lpmq-isep-misbah/font.css");
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wdth@75&display=swap");
-
-:root {
-	--font-family--monospace: "Noto Sans Mono", monospace;
-}
 
 .markdown-document {
 	line-height: 150%;
@@ -98,29 +93,6 @@
 }
 .markdown-document blockquote :last-child {
 	margin-bottom: 0;
-}
-
-/** CODE */
-.markdown-document code {
-	font-family: var(--font-family--monospace);
-	font-weight: 300;
-}
-
-/*- CODE BLOCK */
-.markdown-document pre.code-block {
-	padding: 0.5em 1em;
-	background-color: transparent;
-	border: 1px solid var(--border-mute);
-	border-radius: 4px;
-	overflow-x: auto;
-	tab-size: 4;
-}
-
-/*- CODE SPAN */
-.markdown-document code.code-span {
-	padding: 0.15em 0.2em;
-	border-radius: 0.25em;
-	background-color: var(--background-accent);
 }
 
 /** ALERTS */
@@ -224,13 +196,21 @@ section.footnotes > ol > li::before {
 /** MATH EQUATIONS */
 mjx-container {
 	overflow-x: auto;
-}
-
-mjx-container * {
-	font-family: var(--font-family--body);
+	overflow-y: hidden;
 }
 
 @media print {
+	:root {
+		--text: black;
+		--text-mute: hsl(0, 0%, 30%);
+
+		--border: hsl(0, 0%, 30%);
+		--border-mute: hsl(0, 0%, 60%);
+
+		--background: white;
+		--background-accent: hsl(0, 0%, 80%);
+	}
+
 	body {
 		print-color-adjust: exact;
 	}
@@ -245,5 +225,9 @@ mjx-container * {
 
 	main {
 		max-width: unset;
+	}
+
+	hr {
+		border-color: var(--text);
 	}
 }

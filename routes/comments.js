@@ -5,20 +5,7 @@ const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
 const { validateBody, Rule } = require('../modules/bodyValidator');
 const { dataConstraints } = require('../config');
-
-// Sums all the elements in an array.
-// If the array is empty, returns 0.
-// If one of the element is NaN, throw a TypeError.
-Array.prototype.sum = function() {
-	let sum = 0;
-
-	for(let i = 0; i < this.length; i++) {
-		if(isNaN(this[i])) throw TypeError(`Element at index ${i} (${this[i]}) is not a number (NaN)`);
-		sum += this[i];
-	}
-
-	return sum;
-};
+const { sum } = require('../modules/utils');
 
 //* [ROUTE] /api
 
@@ -38,28 +25,32 @@ router.get('/notes/:noteId/comments', async (req, res) => {
 	const noteComments = await req.sql`
 		SELECT
 			c.id,
-			c.commenter_name,
-			c.parent_comment_id,
-			u.display_name as commenter_display_name,
+			c.commenter_name AS "commenterName",
+			c.parent_comment_id AS "parentCommentId",
+			u.display_name AS "commenterDisplayName",
 			c.content,
-			c.created_at
+			c.created_at AS "createdAt"
 		FROM comments c
-		LEFT JOIN users u ON u.name = c.commenter_name
+		LEFT JOIN users u
+			ON u.name = c.commenter_name
 		WHERE c.note_id = ${noteId};
 	`;
 
 	const noteCommentVotes = await req.sql`
 		SELECT
-			comment_id, voter_name, value
+			comment_id AS "commentId",
+			voter_name AS "voterName",
+			value
 		FROM comment_votes
 		WHERE note_id = ${noteId}
 	`;
 
 	for(const comment of noteComments) {
-		comment.vote_count = noteCommentVotes
-			.filter(vote => vote.comment_id === comment.id)
-			.map(vote => vote.value)
-			.sum();
+		comment.vote_count = sum(
+			noteCommentVotes
+				.filter(vote => vote.comment_id === comment.id)
+				.map(vote => vote.value)
+		);
 
 		comment.votes = noteCommentVotes
 			.filter(vote => vote.comment_id === comment.id)
@@ -104,13 +95,27 @@ router.post('/notes/:noteId/comments',
 				comments = await req.sql`
 					INSERT INTO comments (note_id, parent_comment_id, commenter_name, content)
 					VALUES (${noteId}, ${parentId}, ${commenterName}, ${content})
-					RETURNING *, (SELECT display_name FROM users WHERE name = ${commenterName}) as commenter_display_name
+					RETURNING
+						id,
+						note_id AS "noteId",
+						parent_comment_id AS "parentCommentId",
+						commenter_name AS "commenterName",
+						content,
+						created_at AS "createdAt",
+						(SELECT display_name FROM users WHERE name = ${commenterName}) AS "commenterDisplayName"
 				`;
 			} else {
 				comments = await req.sql`
 					INSERT INTO comments (note_id, commenter_name, content)
 					VALUES (${noteId}, ${commenterName}, ${content})
-					RETURNING *, (SELECT display_name FROM users WHERE name = ${commenterName}) as commenter_display_name
+					RETURNING
+						id,
+						note_id AS "noteId",
+						parent_comment_id AS "parentCommentId",
+						commenter_name AS "commenterName",
+						content,
+						created_at AS "createdAt",
+						(SELECT display_name FROM users WHERE name = ${commenterName}) AS "commenterDisplayName"
 				`;
 			}
 		} catch (error) {

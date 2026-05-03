@@ -1,7 +1,7 @@
 ---
 title: 'Basic Guide to Write a Note'
-created_at: '2023-07-27T18:43:29.505Z'
-updated_at: '2025-07-12T20:50:00Z'
+createdAt: '2023-07-27T18:43:29.505Z'
+updatedAt: '2025-07-12T20:50:00Z'
 ---
 
 # 1—Writing a Note {#creating}

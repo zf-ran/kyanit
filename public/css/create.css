@@ -1,0 +1,227 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wdth,wght@75,400;75,700&display=swap");
+
+html {
+	height: 100%;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+main {
+	display: flex;
+	flex-direction: column;
+
+	flex-grow: 1;
+	padding: 0;
+	margin: 0;
+	max-width: unset;
+	overflow: auto;
+}
+
+/** TOOLBAR */
+.toolbar {
+	display: flex;
+	gap: 4px;
+	flex: 2em;
+	flex-shrink: 0;
+
+	padding: 4px;
+	padding-left: calc(4em - 10px);
+	border-bottom: 1px solid var(--border-mute);
+	overflow: auto;
+}
+
+.toolbar button {
+	height: 2em;
+	aspect-ratio: 1;
+	padding: 0;
+	display: grid;
+	place-items: center;
+	background-color: transparent;
+	color: var(--text-color);
+	border: none !important;
+	border-radius: 4px;
+}
+
+.toolbar button:hover {
+	background-color: var(--background-accent);
+	border: none !important;
+	scale: 1;
+}
+
+.toolbar hr.toolbar-separator {
+	height: 100%;
+	flex-basis: 1px;
+	flex-shrink: 0;
+	margin: 0;
+	border: none;
+	background-color: var(--border-mute);
+}
+
+/** CODEMIRROR */
+#editor {
+	height: 100%;
+	overflow: auto;
+	flex-grow: 1;
+
+	--font-family--monospace: "Noto Sans Mono", monospace;
+}
+
+#editor .cm-editor {
+	height: 100%;
+	font-family: var(--font-family--monospace);
+	background-color: transparent;
+	color: var(--text-color);
+}
+
+#editor .cm-gutters {
+	font-family: var(--font-family--monospace);
+	background-color: var(--background);
+	color: var(--text-mute);
+	border-color: var(--border-mute);
+}
+
+#editor .cm-content {
+	font-family: var(--font-family--monospace);
+	caret-color: var(--text-color);
+}
+
+/*- CURSOR */
+#editor .cm-cursor,
+#editor .cm-dropCursor {
+	border-color: var(--text-color);
+}
+
+/*- SELECTION */
+#editor .cm-selectionBackground, ::selection {
+	background-color: var(--secondary);
+}
+
+#editor .cm-selectionMatch,
+#editor .cm-searchMatch {
+	background-color: hsl(from var(--success) h s l / 25%);
+}
+
+/*- LINE */
+#editor .cm-activeLine,
+#editor .cm-activeLineGutter {
+	background-color: hsl(from var(--secondary) h s l / 25%);
+}
+
+/*- PANELS */
+#editor .cm-tooltip {
+  background-color: var(--background);
+	border-color: var(--border-mute);
+}
+
+#editor .cm-tooltip .cm-completionMatchedText {
+	text-decoration: none;
+	color: var(--primary);
+	font-weight: bold;
+}
+
+#editor .cm-tooltip li[aria-selected] {
+  background-color: var(--primary);
+	color: var(--background);
+}
+
+#editor .cm-tooltip li[aria-selected] .cm-completionMatchedText {
+	color: var(--secondary);
+}
+
+/*- FOLDS */
+#editor .cm-foldPlaceholder {
+	background-color: transparent;
+	border-color: var(--border-mute)
+}
+
+/** META SIDEBAR */
+.meta-sidebar {
+	position: fixed;
+	right: 0;
+	top: 0;
+	bottom: 0;
+
+	box-sizing: border-box;
+
+	width: calc(100% - 1em);
+	max-width: 400px;
+	border: 0 solid var(--border-mute);
+	border-left-width: 1px;
+	padding: 1em;
+
+	background: var(--background);
+	transform: translateX(100%);
+
+	transition-property: transform;
+	transition-duration: 250ms;
+	transition-timing-function: ease;
+
+	overflow: auto;
+
+	z-index: 200;
+}
+
+.meta-sidebar.open {
+	transform: translateX(0);
+}
+
+.meta-sidebar .input-tip {
+	color: var(--text-mute);
+	line-height: 120%;
+	font-size: .875em;
+	margin-block-start: .5em;
+	margin-block-end: 2em;
+}
+
+#publish {
+	float: right;
+}
+
+#toggle-meta-sidebar {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: 1fr;
+	place-items: center;
+	right: 1em;
+	bottom: 1em;
+	transition-property: scale, right;
+	transition-duration: 250ms;
+	z-index: 201;
+}
+body:has(.meta-sidebar.open) #toggle-meta-sidebar {
+	right: 372px;
+}
+
+#toggle-meta-sidebar span.material-symbols-outlined {
+	transition-property: opacity, rotate;
+	transition-duration: 250ms;
+	grid-column: 1;
+	grid-row: 1;
+}
+
+#toggle-meta-sidebar .toggle-close {
+	opacity: 0%;
+	rotate: -90deg;
+}
+#toggle-meta-sidebar .toggle-open {
+	opacity: 100%;
+	rotate: 0deg;
+}
+body:has(.meta-sidebar.open) #toggle-meta-sidebar .toggle-close {
+	opacity: 100%;
+	rotate: 0deg;
+}
+body:has(.meta-sidebar.open) #toggle-meta-sidebar .toggle-open {
+	opacity: 0%;
+	rotate: 90deg;
+}
+
+@media screen and (max-width: 700px) {
+	body:has(.meta-sidebar.open) #toggle-meta-sidebar {
+		right: 1em;
+	}
+}

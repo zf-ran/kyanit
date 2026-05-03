@@ -1,11 +1,12 @@
 @import url("/reset.css");
 @import url("/fonts/hd-colton/font.css");
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Noto+Sans+Mono:wdth@75&display=swap");
 
 :root {
 	--font-family--locale--arabic: "Isep Misbah";
 	--font-family--heading: var(--font-family--locale--arabic), "HD Colton", sans-serif;
 	--font-family--body: var(--font-family--locale--arabic), "Noto Sans", sans-serif;
+	--font-family--monospace: "Noto Sans Mono", monospace;
 	--font--button--s: 600 0.875em var(--font-family--body);
 	--font--button--m: 600 1em var(--font-family--body);
 	--font--button--l: 600 1.125em var(--font-family--body);
@@ -175,6 +176,29 @@ hr {
   margin: 1em 0;
 }
 
+/** CODE */
+code {
+	font-family: var(--font-family--monospace);
+	font-weight: 300;
+}
+
+/*- CODE BLOCK */
+pre.code-block {
+	padding: 0.5em 1em;
+	background-color: transparent;
+	border: 1px solid var(--border-mute);
+	border-radius: 4px;
+	overflow-x: auto;
+	tab-size: 4;
+}
+
+/*- CODE SPAN */
+code.code-span {
+	padding: 0.15em 0.2em;
+	border-radius: 0.25em;
+	background-color: var(--background-accent);
+}
+
 /** BUTTONS */
 button {
 	display: inline-flex;
@@ -235,6 +259,21 @@ button.icon.large { width: 48px; }
 button:disabled {
 	filter: saturate(20%);
 	cursor: not-allowed;
+}
+
+/*- FABS */
+button.fab {
+	position: absolute;
+	width: 3.5em;
+	height: 3.5em;
+	border-radius: 1em;
+	padding: 1em;
+	box-shadow: 1px 0 8px 0 hsl(from var(--text) h s l / 20%);
+	border-width: 0;
+}
+
+button.fab span.material-symbols-outlined {
+	font-size: 1.5em;
 }
 
 /** CHIPS */
@@ -305,7 +344,8 @@ div.input-wrapper:has(.input-icon) {
 }
 
 div.input-wrapper:has(input:focus),
-div.input-wrapper:has(input:not(:placeholder-shown)) {
+div.input-wrapper:has(input:not(:placeholder-shown)),
+div.input-wrapper:has(select) {
 	background-color: var(--background-accent);
 	border: 1px solid transparent;
 	border-left: 1px solid var(--primary);
@@ -331,13 +371,14 @@ div.input-wrapper .input-label {
 	transform-origin: 0 50%;
 }
 
-div.input-wrapper label:has(input:required) .input-label::after {
+div.input-wrapper label:has(:required) .input-label::after {
 	content: '*';
 	color: var(--error);
 }
 
 div.input-wrapper label:has(input:focus) .input-label,
-div.input-wrapper label:has(input:not(:placeholder-shown)) .input-label {
+div.input-wrapper label:has(input:not(:placeholder-shown)) .input-label,
+div.input-wrapper label:has(select) .input-label {
 	transform: translateY(-18px) scale(80%);
 }
 
@@ -373,4 +414,12 @@ input {
 input::placeholder {
 	color: transparent;
 	opacity: 0;
+}
+
+select {
+	background-color: transparent;
+	border: none;
+	width: 100%;
+	padding: 0;
+	outline: none !important;
 }

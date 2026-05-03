@@ -26,7 +26,10 @@ router.patch('/users',
 		const { displayName, about, password } = req.body;
 
 		const users = await req.sql`
-			SELECT display_name, about, password
+			SELECT
+				display_name AS "displayName",
+				about,
+				password
 			FROM users
 			WHERE name = ${username};
 		`;

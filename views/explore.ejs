@@ -26,8 +26,8 @@
 							<option value="views">Views</option>
 							<option value="rating">Rating</option>
 							<option value="trending">Trending</option>
-							<option value="updated_at">Updated at</option>
-							<option value="created_at">Published at</option>
+							<option value="updated-at">Updated at</option>
+							<option value="created-at">Published at</option>
 						</select>
 					</label>
 					<label class="select-input">
@@ -117,6 +117,7 @@
 
 	sortByInput.addEventListener('input', sortNotes);
 	sortDirectionInput.addEventListener('input', sortNotes);
+
 	function sortNotes() {
 		sortNotesBy = sortByInput.value;
 		sortNotesAscending = (sortDirectionInput.value === 'ascending');
@@ -130,14 +131,14 @@
 			case 'rating':
 				sortFunction = (a, b) => a[sortNotesBy] - b[sortNotesBy];
 				break;
-			case 'created_at':
-			case 'updated_at':
+			case 'created-at':
+			case 'updated-at':
 				sortFunction = (a, b) => new Date(a[sortNotesBy]).getTime() - new Date(b[sortNotesBy]).getTime();
 				break;
 			case 'trending':
 				sortFunction = (a, b) => {
-					a = a.views / ((Date.now() - a.created_at) + 1)/(86400**5);
-					b = b.views / ((Date.now() - b.created_at) + 1)/(86400**5);
+					a = a.views / ((Date.now() - a.createdAt) + 1) / (86400**5);
+					b = b.views / ((Date.now() - b.createdAt) + 1) / (86400**5);
 					return a - b;
 				}
 		}
@@ -146,7 +147,7 @@
 
 		if (!sortNotesAscending) notes.reverse();
 
-		console.table(notes.map(note => ({ title: note.title, updated_at: new Date(note.updated_at).getTime() })));
+		console.table(notes.map(note => ({ title: note.title, updatedAt: new Date(note.updatedAt).getTime() })));
 
 		loadNotes();
 	}
@@ -155,12 +156,14 @@
 		return arr1.some(item => arr2.includes(item));
 	}
 
-	/** Check if `arr1` is a subset of `arr2`.
-	 * @param {array} arr1 - The superset
-	 * @param {array} arr2 - The subset
+	/**
+	 * Check if an array is a subset of another array.
+	 *
+	 * @param {array} superset - The superset
+	 * @param {array} subset - The subset
 	 */
-	function checkSubset(arr1, arr2) {
-		return arr1.every(item => arr2.includes(item));
+	function checkSubset(superset, subset) {
+		return superset.every(item => subset.includes(item));
 	}
 
 	function addKeyword(keyword, count) {
@@ -212,9 +215,9 @@
 			})
 			.appendTo(noteCard);
 
-		if(note.thumbnail_url) {
+		if(note.thumbnailURL) {
 			new ElementBuilder('div')
-				.innerHTML(`<img src="${note.thumbnail_url}" />`)
+				.innerHTML(`<img src="${note.thumbnailURL}" />`)
 				.classes([ 'thumbnail' ])
 				.appendTo(noteCard);
 		}
@@ -229,7 +232,7 @@
 			.appendTo(metadata);
 
 		new ElementBuilder('div')
-			.text(note.author_display_name)
+			.text(note.authorDisplayName)
 			.classes([ 'author' ])
 			.appendTo(metadata);
 
@@ -238,7 +241,7 @@
 			.appendTo(metadata);
 
 		new ElementBuilder('span')
-			.text(relativeTime(new Date(note.created_at)))
+			.text(relativeTime(new Date(note.createdAt)))
 			.classes([ 'date' ])
 			.appendTo(details);
 
@@ -247,7 +250,7 @@
 			.classes([ 'views' ])
 			.appendTo(details);
 
-		if(note.rate_count >= MIN_RATING_COUNT_TO_SHOW) {
+		if(note.rateCount >= MIN_RATING_COUNT_TO_SHOW) {
 			new ElementBuilder('span')
 				.innerHTML(`${note.views} <span class="material-symbols-outlined">star</span>`)
 				.classes([ 'rating' ])

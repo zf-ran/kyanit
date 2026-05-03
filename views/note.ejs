@@ -4,12 +4,12 @@
 	<title><%- note.title %> | Kyanit</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="author" content="<%- note.author_display_name %> @<%- note.author_name %>">
+	<meta name="author" content="<%- note.authorDisplayName %> @<%- note.authorName %>">
 	<meta name="keywords" content="<%- note.keywords.join(', ') %>">
 
 	<!-- MATHJAX -->
 	<script src="/js/modules/mathjax-options.js"></script>
-	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2/es5/tex-svg.js"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 
 	<!-- PRISM.JS -->
 	<style>
@@ -32,21 +32,21 @@
 			<div class="title"><%= note.title %></div>
 			<div class="details">
 				<div class="author-date">
-					<span class="author-display">by <%= note.author_display_name %></span>
-					<span class="author-username"><a class="anchor" href="/user/<%- note.author_name %>">@<%= note.author_name %></a></span>
+					<span class="author-display">by <%= note.authorDisplayName %></span>
+					<span class="author-username"><a class="anchor" href="/user/<%- note.authorName %>">@<%= note.authorName %></a></span>
 					<span class="date">
 						<span class="date-full">
-							<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
-								<%= new Date(note.created_at).toLocaleString() %>
+							<% if(note.createdAt.getTime() === note.updatedAt.getTime()) { %>
+								<%= new Date(note.createdAt).toLocaleString() %>
 							<% } else { %>
-								<%= new Date(note.updated_at).toLocaleString() %>
+								<%= new Date(note.updatedAt).toLocaleString() %>
 							<% } %>
 						</span>
 						<span class="date-short">
-							<% if(note.created_at.getTime() === note.updated_at.getTime()) { %>
-								Published at <%= absoluteDate(note.created_at) %>
+							<% if(note.createdAt.getTime() === note.updatedAt.getTime()) { %>
+								Published at <%= absoluteDate(note.createdAt) %>
 							<% } else { %>
-								Updated at <%= absoluteDate(note.updated_at) %>
+								Updated at <%= absoluteDate(note.updatedAt) %>
 							<% } %>
 						</span>
 					</span>
@@ -59,9 +59,9 @@
 					<% } %>
 				</div>
 			</div>
-			<% if(note.thumbnail_url) { %>
+			<% if(note.thumbnailURL) { %>
 				<div class="thumbnail">
-					<img src="<%- note.thumbnail_url %>"/>
+					<img src="<%- note.thumbnailURL %>"/>
 				</div>
 			<% } %>
 		</div>
@@ -70,7 +70,7 @@
 	</main>
 </body>
 <script>
-	/* <% if(username !== note.author_name) { %> */
+	/* <% if(username !== note.authorName) { %> */
 		setTimeout(async () => {
 			console.log("5 sec");
 			try {

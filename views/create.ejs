@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Create | Kyanit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="/main.css">
+	<link rel="stylesheet" href="/css/create.css">
+</head>
+<body>
+	<%- include('partials/header') %>
+
+	<main>
+		<div class="toolbar">
+			<button id="tool-h1"><span class="material-symbols-outlined">format_h1</span></button>
+			<button id="tool-h2"><span class="material-symbols-outlined">format_h2</span></button>
+			<button id="tool-h3"><span class="material-symbols-outlined">format_h3</span></button>
+			<button id="tool-h4"><span class="material-symbols-outlined">format_h4</span></button>
+			<button id="tool-h5"><span class="material-symbols-outlined">format_h5</span></button>
+			<button id="tool-h6"><span class="material-symbols-outlined">format_h6</span></button>
+
+			<hr class="toolbar-separator"/>
+
+			<button id="tool-bold"><span class="material-symbols-outlined">format_bold</span></button>
+			<button id="tool-italic"><span class="material-symbols-outlined">format_italic</span></button>
+			<button id="tool-strikethrough"><span class="material-symbols-outlined">strikethrough_s</span></button>
+			<button id="tool-codespan"><span class="material-symbols-outlined">code</span></button>
+			<button id="tool-link"><span class="material-symbols-outlined">link</span></button>
+			<button id="tool-inline-math"><span class="material-symbols-outlined">function</span></button>
+
+			<hr class="toolbar-separator"/>
+
+			<button id="tool-codeblock"><span class="material-symbols-outlined">code_blocks</span></button>
+			<button id="tool-blockquote"><span class="material-symbols-outlined">format_quote</span></button>
+			<button id="tool-unordered-list"><span class="material-symbols-outlined">format_list_bulleted</span></button>
+			<button id="tool-ordered-list"><span class="material-symbols-outlined">format_list_numbered</span></button>
+
+			<hr class="toolbar-separator"/>
+
+			<button id="tool-image"><span class="material-symbols-outlined">image</span></button>
+			<button id="tool-display-math"><span class="material-symbols-outlined">functions</span></button>
+		</div>
+
+		<div id="editor"></div>
+	</main>
+
+	<button class="fab" id="toggle-meta-sidebar"><span class="material-symbols-outlined toggle-close">arrow_forward</span><span class="material-symbols-outlined toggle-open">cloud_upload</span></button>
+
+	<div class="meta-sidebar" id="meta-sidebar">
+		<h3>Note Information</h3>
+		<p class="input-tip">Before publishing, enter some information first!</p>
+
+		<div class="input-wrapper">
+			<span class="material-symbols-outlined input-icon">title</span>
+			<label for="title">
+				<span class="input-label">Title</span>
+				<input type="text" placeholder="Untitled" id="title" required/>
+			</label>
+		</div>
+		<p class="input-tip">Title will be displayed on the page and card.</p>
+
+		<div class="input-wrapper">
+			<span class="material-symbols-outlined input-icon">tag</span>
+			<label for="keywords">
+				<span class="input-label">Keywords</span>
+				<input type="text" placeholder="" id="keywords"/>
+			</label>
+		</div>
+		<p class="input-tip">Your note will be searchable by its keywords. Separate keywords by a space.</p>
+
+		<div class="input-wrapper">
+			<span class="material-symbols-outlined input-icon">visibility</span>
+			<label for="visibility">
+				<span class="input-label">Visibility</span>
+				<select name="visibility" id="visibility" required>
+					<option value="public" selected>Public</option>
+					<option value="unlisted">Unlisted</option>
+				</select>
+			</label>
+		</div>
+		<p class="input-tip">Public means your note is searchable, unlisted means your note can only be accessed by a link.</p>
+
+		<button id="publish"><span class="material-symbols-outlined">cloud_upload</span>Publish</button>
+	</div>
+</body>
+<script type="module">
+	import { EditorView, basicSetup } from 'https://esm.sh/codemirror';
+	import { tags } from 'https://esm.sh/@codemirror/highlight';
+
+	import { EditorState, EditorSelection } from 'https://esm.sh/@codemirror/state';
+
+	import {
+		keymap,
+		highlightSpecialChars,
+		highlightActiveLine,
+		highlightActiveLineGutter,
+		drawSelection,
+		rectangularSelection,
+		dropCursor,
+		lineNumbers
+	} from 'https://esm.sh/@codemirror/view';
+
+	import {
+		HighlightStyle,
+		indentUnit,
+		syntaxHighlighting,
+		indentOnInput,
+		bracketMatching,
+    foldGutter,
+		foldKeymap
+	} from 'https://esm.sh/@codemirror/language';
+
+	import {
+		defaultKeymap,
+		history,
+		historyKeymap,
+		indentWithTab
+	} from 'https://esm.sh/@codemirror/commands';
+
+	import {
+		searchKeymap,
+		highlightSelectionMatches
+	} from 'https://esm.sh/@codemirror/search';
+
+	import {
+		autocompletion,
+		completionKeymap,
+		closeBrackets,
+		closeBracketsKeymap
+	} from 'https://esm.sh/@codemirror/autocomplete';
+
+	import { markdown, markdownLanguage } from 'https://esm.sh/@codemirror/lang-markdown';
+	import { languages } from 'https://esm.sh/@codemirror/language-data';
+
+	const customFoldGutter = foldGutter({
+		markerDOM(open) {
+			const element = document.createElement("span");
+
+			element.textContent = open ? "▾" : "▸";
+			element.classList.add("fold-marker");
+
+			return element;
+		}
+	});
+
+	const markdownColorScheme = HighlightStyle.define([
+		// Headings
+		{ tag: tags.heading,
+			color: 'var(--primary)',
+			fontWeight: 'bold' },
+
+		// Metadata, such as `*` for italic, `#` for headings, etc.
+		{ tag: tags.meta, color: 'var(--text-mute)' },
+
+		// Language type in codeblock, footnotes, etc.
+		{ tag: tags.name, color: 'var(--success)' },
+
+		// Text styles
+		{ tag: tags.emphasis, fontStyle: 'italic' },
+		{ tag: tags.strong, fontWeight: 'bold' },
+		{ tag: tags.url, color: 'var(--link)' },
+		{ tag: tags.strikethrough, textDecoration: 'line-through' },
+
+		// Horizontal rules
+		{ tag: tags.contentSeparator, color: 'var(--text-mute)' },
+
+		// Comments
+		{ tag: tags.comment, color: 'var(--text-mute)' }
+	]);
+
+	window.createEditor = (element, initialValue = '') => {
+		element.innerHTML = '';
+
+		const editor = new EditorView({
+			doc: initialValue,
+			extensions: [
+				// Basic Setups
+				lineNumbers(),
+				highlightActiveLineGutter(),
+				highlightSpecialChars(),
+				highlightActiveLine(),
+				highlightSelectionMatches(),
+				history(),
+				drawSelection(),
+				rectangularSelection(),
+				dropCursor(),
+				EditorState.allowMultipleSelections.of(true),
+				indentOnInput(),
+				bracketMatching(),
+				closeBrackets(),
+				autocompletion(),
+
+				// Customs
+				EditorView.lineWrapping,
+				indentUnit.of('\t'),
+				keymap.of([
+					...closeBracketsKeymap,
+					...defaultKeymap,
+					...searchKeymap,
+					...historyKeymap,
+					...foldKeymap,
+					...completionKeymap,
+					indentWithTab
+				]),
+				customFoldGutter,
+
+				markdown({ base: markdownLanguage }),
+				markdownLanguage.data.of({
+					closeBrackets: {
+						brackets: ['(', '[', '{', '\'', '"', '`', '*', '_', '<']
+					}
+				}),
+
+				syntaxHighlighting(markdownColorScheme)
+			],
+			parent: element
+		});
+
+		window.editorInstance = editor;
+		return editor;
+	};
+
+	const editor = document.getElementById('editor');
+
+	createEditor(editor, editor.textContent);
+
+	const tools = document.querySelectorAll('.toolbar button');
+
+	const textStylePairs = {
+		bold: [ '**', '**' ],
+		italic: [ '*', '*' ],
+		strikethrough: [ '~~', '~~' ],
+		codespan: [ '`', '`' ],
+		link: [ '[](', ')' ],
+		'inline-math': [ '$', '$' ],
+		codeblock: [ '```\n', '\n```' ],
+		'display-math': [ '$$ ', ' $$' ],
+		image: [ '![](', ')' ]
+	}
+
+	for (const tool of tools) {
+		const type = tool.id.replace('tool-', '');
+
+		switch (type) {
+		case 'h1':
+		case 'h2':
+		case 'h3':
+		case 'h4':
+		case 'h5':
+		case 'h6':
+			tool.addEventListener('click', () => {
+				prefixLine('#'.repeat(parseInt(type[1])) + ' ');
+			});
+			break;
+		case 'bold':
+		case 'italic':
+		case 'strikethrough':
+		case 'codespan':
+		case 'link':
+		case 'inline-math':
+		case 'codeblock':
+		case 'display-math':
+		case 'image':
+			tool.addEventListener('click', () => {
+				wrapSelection(textStylePairs[type][0], textStylePairs[type][1]);
+			});
+			break;
+		case 'unordered-list':
+			tool.addEventListener('click', () => {
+				prefixLine('- ');
+			});
+			break;
+		case 'ordered-list':
+			tool.addEventListener('click', () => {
+				prefixLine('1. ');
+			});
+			break;
+		case 'blockquote':
+			tool.addEventListener('click', () => {
+				prefixLine('> ');
+			});
+			break;
+		}
+	}
+
+	const toggleMetaSidebar = document.getElementById('toggle-meta-sidebar');
+	const metaSidebar = document.getElementById('meta-sidebar');
+
+	toggleMetaSidebar.addEventListener('click', () => {
+		if (metaSidebar.classList.contains('open'))
+			metaSidebar.classList.remove('open');
+		else
+			metaSidebar.classList.add('open');
+	});
+
+	window.addEventListener('keydown', event => {
+		if (event.key == 's' && event.ctrlKey) {
+			event.preventDefault();
+
+			metaSidebar.classList.add('open');
+		}
+	})
+
+	function prefixLine(prefix) {
+		editorInstance.dispatch(
+			editorInstance.state.changeByRange(range => {
+				const changes = [];
+
+				const lineStart = editorInstance.state.doc.lineAt(range.from).number;
+				const lineEnd = editorInstance.state.doc.lineAt(range.to).number;
+
+				let firstLineChange = 0;
+				let totalChange = 0;
+
+				for (let i = lineStart; i <= lineEnd; i++) {
+					const line = editorInstance.state.doc.line(i);
+
+					if (line.text.startsWith(prefix)) {
+						changes.push({ from: line.from, to: line.from + prefix.length, insert: '' });
+						totalChange -= prefix.length;
+						if (i === lineStart) firstLineChange = -prefix.length;
+					} else {
+						changes.push({ from: line.from, insert: prefix });
+						totalChange += prefix.length;
+						if (i === lineStart) firstLineChange = prefix.length;
+					}
+				}
+
+				const newRange = EditorSelection.range(
+					Math.max(range.from + firstLineChange, editorInstance.state.doc.line(lineStart).from),
+					Math.max(range.to + totalChange, editorInstance.state.doc.line(lineStart).from)
+				);
+
+				return { changes, range: newRange };
+			})
+		);
+
+		editorInstance.focus();
+	}
+
+	function wrapSelection(begin, end) {
+		editorInstance.dispatch(
+			editorInstance.state.changeByRange(range => {
+				const changes = [
+					{ from: range.from, insert: begin },
+					{ from: range.to, insert: end }
+				];
+
+				const newRange = EditorSelection.range(
+					range.from + begin.length,
+					range.to + begin.length
+				);
+
+				return { changes, range: newRange };
+			})
+		);
+
+		editorInstance.focus();
+	}
+</script>
+</html>

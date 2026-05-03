@@ -19,16 +19,16 @@
 				<% const note = docs[i]; %>
 				<div class="note-card-small">
 					<a href="/docs/<%- note.docname %>" class="link"></a>
-					<% if(note.thumbnail_url) { %>
+					<% if(note.thumbnailURL) { %>
 						<div class="thumbnail">
-							<img src="<%- note.thumbnail_url %>"/>
+							<img src="<%- note.thumbnailURL %>"/>
 						</div>
 					<% } %>
 					<div class="meta-data">
 						<div class="title"><%= note.title %></div>
 						<div class="author">Kyanit</div>
 						<div class="details">
-							<span class="date"><%= $relativeTime(new Date(note.created_at)) %></span>
+							<span class="date"><%= $relativeTime(new Date(note.createdAt)) %></span>
 						</div>
 					</div>
 				</div>

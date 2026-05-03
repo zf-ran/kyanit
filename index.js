@@ -50,23 +50,14 @@ const maintenanceUsers = process.env.MAINTENANCE_USERS.split('\n');
 
 app.use(validateToken);
 app.use(async (_req, res, next) => {
-	if(MAINTENANCE && res.locals.isLoggedIn) {
-		// Check if the user has access to maintenance.
-		const hasMaintenanceAccess = maintenanceUsers.includes(res.locals.username);
-		if(!hasMaintenanceAccess) {
-			res.send('<center><h1>Maintenance!</h1></center><hr>');
-			return;
-		}
-	}
-
 	res.locals.$relativeTime = date => {
 		const now = new Date().getTime();
 		const options = { style: 'short', numeric: 'always' };
 		let args = [];
 		let timeDifference = date - now;
 
-		if(Math.abs(timeDifference) > 3.154e+10)
-			args = [Math.floor(timeDifference / 3.154e+9)/10, 'year'];
+		if(Math.abs(timeDifference) > 3.154e+11)
+			args = [Math.floor(timeDifference / 3.154e+11), 'year'];
 		else if(Math.abs(timeDifference) > 2.628e+9)
 			args = [Math.floor(timeDifference / 2.628e+9), 'month'];
 		else if(Math.abs(timeDifference) > 8.64e+7)
@@ -75,12 +66,34 @@ app.use(async (_req, res, next) => {
 			args = [Math.floor(timeDifference / 3.6e+6), 'hour'];
 		else if(Math.abs(timeDifference) > 6e+4)
 			args = [Math.floor(timeDifference / 6e+4), 'minute'];
-		else args = [Math.floor(timeDifference / 100)/10, 'second'];
+		else
+			args = [Math.floor(timeDifference / 1000), 'second'];
 
 		return new Intl.RelativeTimeFormat('en-us', options).format(...args);
 	}
 
 	res.locals.version = version;
+
+	if(MAINTENANCE) {
+		const hasMaintenanceAccess =
+			res.locals.isLoggedIn
+			? maintenanceUsers.includes(res.locals.username)
+			: false;
+
+		if (!hasMaintenanceAccess) {
+			if (res.locals.isLoggedIn)
+			res.status(403);
+			else
+				res.status(401);
+
+			res.render('error', {
+				icon: 'build',
+				title: 'Maintenance',
+				message: 'Kyanit is currently on maintenance. I’m sorry for the inconvenience.'
+			});
+			return;
+		}
+	}
 
 	next();
 });
@@ -88,77 +101,76 @@ app.use(async (_req, res, next) => {
 const MIN_RATING_COUNT_TO_SHOW = 3;
 
 app.get('/', validateToken, async (req, res) => {
-
 	const trendingNotes = await sql`
-		select
+		SELECT
 			n.id,
-			u.display_name as author_display_name,
-			u.is_verified as is_author_verified,
+			u.display_name AS "authorDisplayName",
+			u.is_verified AS "isAuthorVerified",
 			n.title,
 			n.keywords,
-			n.thumbnail_url,
+			n.thumbnail_url AS "thumbnailURL",
 			n.views,
-			ROUND(AVG(r.value), 1) as rating,
-			COUNT(r.value) as rate_count,
-			n.created_at
-		from notes n
-		join users u
-			on n.author_name = u.name
-		left join note_ratings r
-			on n.id = r.note_id
-		where n.unlisted = false
-		group by n.id, u.display_name, u.is_verified
-		order by n.views/((EXTRACT(epoch FROM now()-n.created_at)+1)/86400)^5 desc
-		limit 3;
+			ROUND(AVG(r.value), 1) AS rating,
+			COUNT(r.value) AS "rateCount",
+			n.created_at AS "createdAt"
+		FROM notes n
+		JOIN users u
+			ON n.author_name = u.name
+		LEFT JOIN note_ratings r
+			ON n.id = r.note_id
+		WHERE n.unlisted = false
+		GROUP BY n.id, u.display_name, u.is_verified
+		ORDER BY n.views/((EXTRACT(epoch FROM now() - n.created_at) + 1) / 86400)^5 DESC
+		LIMIT 3;
 	`;
 
 	const newNotes = await sql`
-		select
+		SELECT
 			n.id,
-			u.display_name as author_display_name,
-			u.is_verified as is_author_verified,
+			u.display_name AS "authorDisplayName",
+			u.is_verified AS "isAuthorVerified",
 			n.title,
 			n.keywords,
-			n.thumbnail_url,
+			n.thumbnail_url AS "thumbnailURL",
 			n.views,
-			ROUND(AVG(r.value), 1) as rating,
-			COUNT(r.value) as rate_count,
-			n.created_at
-		from notes n
-		join users u
-			on n.author_name = u.name
-		left join note_ratings r
-			on n.id = r.note_id
-		where n.unlisted = false
-		group by n.id, u.display_name, u.is_verified
-		order by n.created_at desc
-		limit 3;
+			ROUND(AVG(r.value), 1) AS rating,
+			COUNT(r.value) AS "rateCount",
+			n.created_at AS "createdAt"
+		FROM notes n
+		JOIN users u
+			ON n.author_name = u.name
+		LEFT JOIN note_ratings r
+			ON n.id = r.note_id
+		WHERE n.unlisted = false
+		GROUP BY n.id, u.display_name, u.is_verified
+		ORDER BY n.created_at DESC
+		LIMIT 3;
 	`;
 
 	let userNotes = [];
 
 	if(res.locals.isLoggedIn) {
 		userNotes = await sql`
-			select
+			SELECT
 				n.id,
-				u.display_name as author_display_name,
-				u.is_verified as is_author_verified,
+				u.display_name AS "authorDisplayName",
+				u.is_verified AS "isAuthorVerified",
 				n.title,
 				n.keywords,
-				n.thumbnail_url,
+				n.thumbnail_url AS "thumbnailURL",
 				n.views,
-				ROUND(AVG(r.value), 1) as rating,
-				COUNT(r.value) as rate_count,
-				n.created_at
-			from notes n
-			join users u
-				on n.author_name = u.name
-			left join note_ratings r
-				on n.id = r.note_id
-			where n.author_name = ${res.locals.username}
-			group by n.id, u.display_name, u.is_verified
-			order by n.created_at desc
-			limit 3;
+				ROUND(AVG(r.value), 1) AS rating,
+				COUNT(r.value) AS "rateCount",
+				n.created_at AS "createdAt"
+			FROM notes n
+			JOIN users u
+				ON n.author_name = u.name
+			LEFT JOIN note_ratings r
+				ON n.id = r.note_id
+			WHERE n.author_name = ${res.locals.username}
+			GROUP BY n.id, u.display_name, u.is_verified
+			ORDER BY n.created_at DESC
+			LIMIT 3;
 		`;
 	}
 
@@ -173,32 +185,52 @@ app.get('/note/:noteId', async (req, res) => {
 	const noteId = req.params.noteId;
 
 	if(!isUUID(noteId)) {
-		return res.status(400).send(`Invalid UUID: <code>${noteId}</code>.`);
+		res.status(400).render('error', {
+			icon: 'error',
+			title: 'Invalid UUID',
+			message: `<code class="code-span">${noteId}</code> is not a valid UUID.`
+		});
+		return;
 	}
 
 	const notes = await sql`
-		select
-			n.*,
-			u.display_name as author_display_name,
-			u.is_verified as is_author_verified
-		from notes n join users u
-			on n.author_name = u.name
-		where id = ${noteId};
+		SELECT
+			n.id,
+			n.title,
+			n.content,
+			n.keywords,
+			n.thumbnail_url AS "thumbnailURL",
+			n.views,
+			n.created_at AS "createdAt",
+			n.updated_at AS "updatedAt",
+			n.unlisted,
+			n.author_name AS "authorName",
+			u.display_name AS "authorDisplayName",
+			u.is_verified AS "isAuthorVerified"
+		FROM notes n
+		JOIN users u
+			ON n.author_name = u.name
+		WHERE id = ${noteId};
 	`;
 
 	const ratings = await sql`
-		select
-			rater_name,
+		SELECT
+			rater_name AS "raterName",
 			value
-		from note_ratings
-		where note_id = ${noteId}
-		order by value desc;
+		FROM note_ratings
+		WHERE note_id = ${noteId}
+		ORDER BY value DESC;
 	`;
 
 	const rating = average(ratings.map(rating => rating.value));
 
 	if(notes.length === 0) {
-		return res.status(404).send(`Note with id ${noteId} not found.`);
+		res.status(404).render('error', {
+			icon: 'error',
+			title: 'Note Not Found',
+			message: `Note with id <code class="code-span">${noteId}</code> not found. The note might be deleted by the author. Check for typos.`
+		});
+		return;
 	}
 
 	const commentCount = (await sql`select count(*) from comments where note_id = ${noteId}`)[0].count;
@@ -245,10 +277,15 @@ app.get('/edit/:noteId', async (req, res) => {
 	}
 
 	const notes = await sql`
-		select
-			id, title, content, keywords, unlisted, thumbnail_url
-		from notes
-		where id = ${noteId} and author_name = ${res.locals.username};
+		SELECT
+			id,
+			title,
+			content,
+			keywords,
+			unlisted,
+			thumbnail_url AS "thumbnailURL"
+		FROM notes
+		WHERE id = ${noteId} AND author_name = ${res.locals.username};
 	`;
 
 	const note = notes[0];
@@ -270,14 +307,14 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 
 	// TODO
 	const users = await sql`
-		select
+		SELECT
 			name,
 			display_name as "displayName",
 			about,
 			created_at as "createdAt",
 			is_verified as "isVerified"
-		from users
-		where name = ${req.params.username};
+		FROM users
+		WHERE name = ${req.params.username};
 	`;
 
 	const user = users[0];
@@ -290,20 +327,33 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 	if(res.locals.username === user.name) {
 		// If the user is viewing their own profile, show unlisted notes.
 		notes = await sql`
-			select
-				id, title, keywords, thumbnail_url, views, created_at, updated_at, unlisted
-			from notes
-			where author_name = ${user.name}
-			order by created_at;
+			SELECT
+				id,
+				title,
+				keywords,
+				thumbnail_url AS "thumbnailURL",
+				views,
+				created_at AS "createdAt",
+				updated_at AS "updatedAt",
+				unlisted
+			FROM notes
+			WHERE author_name = ${user.name}
+			ORDER BY created_at;
 		`;
 	} else {
 		// Otherwise, only show listed notes.
 		notes = await sql`
-			select
-				id, title, keywords, thumbnail_url, views, created_at, updated_at
-			from notes
-			where author_name = ${user.name} and unlisted = false
-			order by created_at;
+			SELECT
+				id,
+				title,
+				keywords,
+				thumbnail_url AS "thumbnailURL",
+				views,
+				created_at AS "createdAt",
+				updated_at AS "updatedAt"
+			FROM notes
+			WHERE author_name = ${user.name} AND unlisted = false
+			ORDER BY created_at;
 		`;
 	}
 
@@ -327,12 +377,12 @@ app.get('/login', (_req, res) => {
 app.get('/settings', (req, res) => {
 	// TODO
 	res.render('coming-soon');
-})
+});
 
 //* Minified 
 const minifiedRoutes = require('./routes/minified');
 app.use(
-	'/min', 
+	'/min',
 	(req, _res, next) => {
 		// Inject database.
 		req.sql = sql;
@@ -341,7 +391,7 @@ app.use(
 	minifiedRoutes
 );
 
-//* Docs 
+//* Docs
 const yaml = require('yaml');
 const fs = require('fs');
 
@@ -354,15 +404,13 @@ app.get('/docs', async (req, res) => {
 		);
 
 	const docs = files
-	.map(file => {
-		const content = fs.readFileSync(path.join(DOCS_DIR, file), 'utf-8');
-		return { ...extractMetadata(content).metadata, docname: file.slice(0, -3) };
-	})
-	.sort((a, b) =>
-		new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-	);
-
-	// res.json(docs);
+		.map(file => {
+			const content = fs.readFileSync(path.join(DOCS_DIR, file), 'utf-8');
+			return { ...extractMetadata(content).metadata, docname: file.slice(0, -3) };
+		})
+		.sort((a, b) =>
+			new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+		);
 
 	res.render('docs', { docs });
 });
@@ -375,7 +423,12 @@ app.get('/docs/:docname', async (req, res) => {
 		doc = fs.readFileSync(path.join(DOCS_DIR, `${docname}.md`), 'utf-8');
 	} catch(error) {
 		if(error.code === 'ENOENT') {
-			return res.status(404).send(`Docs with docname <code>${docname}</code> not found`)
+			res.status(404).render('error', {
+				icon: 'error',
+				title: 'Docs Not Found',
+				message: `Docs with docname <code class="code-span">${docname}</code> not found.`
+			});
+			return;
 		}
 	}
 
@@ -421,7 +474,7 @@ app.use(
 //* Authentication
 const authRoutes = require('./routes/auth');
 app.use(
-	'/auth', 
+	'/auth',
 	(req, _res, next) => {
 		// Inject database.
 		req.sql = sql;
@@ -429,6 +482,28 @@ app.use(
 	},
 	authRoutes
 );
+
+//* Test Pages
+app.get('/test/:page', (req, res) => {
+	const page = req.params.page;
+
+	const hasTestAccess = res.locals.isLoggedIn && maintenanceUsers.includes(res.locals.username);
+
+	if (!hasTestAccess) {
+		if (res.locals.isLoggedIn)
+			res.status(403);
+		else
+			res.status(401);
+
+		res.render('error', {
+			icon: 'block',
+			title: 'No Access',
+			message: 'Test pages can only be accessed by authorized users.'
+		});
+	}
+
+	res.render(page);
+});
 
 const PORT = process.env.PORT;
 app.listen(PORT, async () => {

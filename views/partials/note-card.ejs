@@ -1,17 +1,17 @@
 <div class="note-card">
 	<a href="/note/<%- note.id %>" class="link"></a>
-	<% if(note.thumbnail_url) { %>
+	<% if(note.thumbnailURL) { %>
 		<div class="thumbnail">
-			<img src="<%- note.thumbnail_url %>"/>
+			<img src="<%- note.thumbnailURL %>"/>
 		</div>
 	<% } %>
 	<div class="meta-data">
 		<div class="title"><%= note.title %></div>
-		<div class="author"><%= note.author_display_name %> <% if(note.is_author_verified) { %><span class="material-symbols-outlined">check</span><% } %></div>
+		<div class="author"><%= note.authorDisplayName %> <% if(note.isAuthorVerified) { %><span class="material-symbols-outlined">check</span><% } %></div>
 		<div class="details">
-			<span class="date"><%= $relativeTime(note.created_at) %></span>
+			<span class="date"><%= $relativeTime(note.createdAt) %></span>
 			<span class="views"><%= note.views %> views</span>
-			<% if(note.rate_count >= MIN_RATING_COUNT_TO_SHOW) { %>
+			<% if(note.rateCount >= MIN_RATING_COUNT_TO_SHOW) { %>
 				<span class="rating"><%= note.rating %> <span class="material-symbols-outlined">star</span></span>
 			<% } %>
 		</div>

@@ -20,15 +20,15 @@ router.get('/note/:noteId', async (req, res) => {
 	}
 
 	const notes = await req.sql`
-		select
+		SELECT
 			n.title,
 			n.content,
-			n.author_name,
-			u.display_name as author_display_name
-		from notes n
-		join users u
-			on n.author_name = u.name
-		where id = ${noteId};
+			n.author_name AS "authorName",
+			u.display_name AS "authorDisplayName"
+		FROM notes n
+		JOIN users u
+			ON n.author_name = u.name
+		WHERE id = ${noteId};
 	`;
 
 	const note = notes[0];

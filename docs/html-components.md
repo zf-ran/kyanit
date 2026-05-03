@@ -1,7 +1,7 @@
 ---
 title: 'HTML Components'
-created_at: '2025-07-12T10:12:19.904Z'
-updated_at: '2025-07-12T10:12:19.904Z'
+createdAt: '2025-07-12T10:12:19.904Z'
+updatedAt: '2025-07-12T10:12:19.904Z'
 ---
 
 # Buttons
@@ -124,16 +124,16 @@ updated_at: '2025-07-12T10:12:19.904Z'
 
 ```html
 <div class="note-card">
-	<a href="/note/{note_id}" class="link"></a>
+	<a href="/note/{noteId}" class="link"></a>
 	<div class="thumbnail">
-		<img src="{thumbnail_url}"/>
+		<img src="{thumbnailURL}"/>
 	</div>
 	<div class="meta-data">
 		<div class="title">{title}</div>
-		<div class="author">{author_name}</div>
+		<div class="author">{authorName}</div>
 		<div class="details">
-			<span class="date">{relative_time_since_created}</span>
-			<span class="views">{view_count} views</span>
+			<span class="date">{relativeTimeSinceCreation}</span>
+			<span class="views">{viewCount} views</span>
 			<span class="rating">{rating} <span class="material-symbols-outlined">star</span></span>
 		</div>
 		<div class="keyword-container">

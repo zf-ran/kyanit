@@ -31,7 +31,10 @@ router.post('/notes/:noteId/comments/:commentId/votes',
 		const { value } = req.body;
 
 		const commentVotes = await req.sql`
-			SELECT comment_id, voter_name, value
+			SELECT
+				comment_id AS "commentId",
+				voter_name AS "voterName",
+				value
 			FROM comment_votes
 			WHERE note_id = ${noteId} AND comment_id = ${commentId};
 		`;
