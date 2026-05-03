@@ -233,7 +233,7 @@ app.get('/note/:noteId', async (req, res) => {
 		return;
 	}
 
-	const commentCount = (await sql`select count(*) from comments where note_id = ${noteId}`)[0].count;
+	const commentCount = (await sql`SELECT COUNT(*) FROM comments WHERE note_id = ${noteId}`)[0].count;
 
 	const note = notes[0];
 

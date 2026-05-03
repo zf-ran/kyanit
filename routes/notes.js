@@ -110,7 +110,12 @@ router.patch('/notes/:noteId',
 		}
 
 		const notes = await req.sql`
-			SELECT title, content, keywords, thumbnail_url, unlisted
+			SELECT
+				title,
+				content,
+				keywords,
+				thumbnail_url AS "thumbnailURL",
+				unlisted
 			FROM notes
 			WHERE id = ${noteId} AND author_name = ${res.locals.username}
 		`;
@@ -128,7 +133,7 @@ router.patch('/notes/:noteId',
 		if(keywords) note.keywords = keywords;
 
 		// Undefined or null means not changed, empty string means literal empty string.
-		if(typeof thumbnailURL === 'string') note.thumbnail_url = thumbnailURL;
+		if(typeof thumbnailURL === 'string') note.thumbnailURL = thumbnailURL;
 
 		// Undefined and null are falsy, so is false, can't check with just if(unlisted)...
 		if(typeof unlisted === 'boolean') note.unlisted = unlisted;
@@ -139,7 +144,7 @@ router.patch('/notes/:noteId',
 				title = ${note.title},
 				content = ${note.content},
 				keywords = ${note.keywords},
-				thumbnail_url = ${note.thumbnail_url},
+				thumbnail_url = ${note.thumbnailURL},
 				unlisted = ${note.unlisted},
 				updated_at = NOW()
 			WHERE id = ${noteId} AND author_name = ${res.locals.username}
@@ -192,13 +197,18 @@ router.post('/notes/:noteId/views', async (req, res) => {
 		return res.status(400).json(new JSONErrorResponse('X-Note-ID header not found'));
 	}
 
-	const notes = await req.sql`select author_name from notes where id = ${noteId};`;
+	const notes = await req.sql`
+		SELECT author_name AS "authorName"
+		FROM notes
+		WHERE id = ${noteId};
+	`;
+
 	if(notes.length === 0) {
 		return res.status(404).json(new JSONErrorResponse('Note not found'));
 	}
 
 	const note = notes[0];
-	if(note.author_name === res.locals.username) {
+	if(note.authorName === res.locals.username) {
 		return res.sendStatus(204);
 	}
 

@@ -33,7 +33,10 @@ router.post('/signup',
 			return res.status(409).json(new JSONErrorResponse('Username is taken'));
 		}
 
-		await req.sql`INSERT INTO users (name, password, display_name) VALUES (${username}, ${password}, ${username})`;
+		await req.sql`
+			INSERT INTO users (name, password, display_name)
+			VALUES (${username}, ${password}, ${username})
+		`;
 
 		setAuthCookies(res, username);
 

@@ -39,7 +39,7 @@ router.post('/notes/:noteId/comments/:commentId/votes',
 			WHERE note_id = ${noteId} AND comment_id = ${commentId};
 		`;
 
-		let existingVote = commentVotes.find(vote => vote.voter_name === res.locals.username);
+		let existingVote = commentVotes.find(vote => vote.voterName === res.locals.username);
 
 		if(!existingVote) {
 			// A new vote.
@@ -49,9 +49,9 @@ router.post('/notes/:noteId/comments/:commentId/votes',
 			`;
 
 			commentVotes.push({
-				comment_id: commentId,
-				voter_name: res.locals.username,
-				value: value
+				commentId,
+				voterName: res.locals.username,
+				value
 			});
 		} else if(existingVote.value === value) {
 			// Cancel vote.

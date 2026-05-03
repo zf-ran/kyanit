@@ -16,7 +16,7 @@ router.get('/notes/:noteId/comments', async (req, res) => {
 		return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 	}
 
-	const notes = await req.sql`select exists(select 1 from notes where id = ${noteId});`;
+	const notes = await req.sql`SELECT EXISTS(SELECT 1 FROM notes WHERE id = ${noteId});`;
 
 	if(!notes[0].exists) {
 		return res.status(404).json(new JSONErrorResponse('Note not found'));
@@ -46,23 +46,23 @@ router.get('/notes/:noteId/comments', async (req, res) => {
 	`;
 
 	for(const comment of noteComments) {
-		comment.vote_count = sum(
+		comment.voteCount = sum(
 			noteCommentVotes
-				.filter(vote => vote.comment_id === comment.id)
+				.filter(vote => vote.commentId === comment.id)
 				.map(vote => vote.value)
 		);
 
 		comment.votes = noteCommentVotes
-			.filter(vote => vote.comment_id === comment.id)
+			.filter(vote => vote.commentId === comment.id)
 			.map(vote => (
 				{
-					voter_name: vote.voter_name,
+					voterName: vote.voterName,
 					value: vote.value
 				}
 			));
 	}
 
-	noteComments.sort((a, b) => b.vote_count - a.vote_count);
+	noteComments.sort((a, b) => b.voteCount - a.voteCount);
 
 	res.json(new JSONResponse(noteComments));
 });
@@ -124,7 +124,7 @@ router.post('/notes/:noteId/comments',
 
 		const comment = comments[0];
 
-		comment.vote_count = 0;
+		comment.voteCount = 0;
 		comment.votes = [];
 
 		res.json(new JSONResponse(comment));
