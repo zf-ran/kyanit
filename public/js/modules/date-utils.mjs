@@ -19,16 +19,17 @@ export function relativeTime(date) {
 	let timeDifference = date - now;
 
 	if(Math.abs(timeDifference) > 3.154e+10)
-		args = [Math.floor(timeDifference / 3.154e+9)/10, 'year'];
+		args = [Math.round(timeDifference / 3.154e+10), 'year'];
 	else if(Math.abs(timeDifference) > 2.628e+9)
-		args = [Math.floor(timeDifference / 2.628e+9), 'month'];
+		args = [Math.round(timeDifference / 2.628e+9), 'month'];
 	else if(Math.abs(timeDifference) > 8.64e+7)
-		args = [Math.floor(timeDifference / 8.64e+7), 'day'];
+		args = [Math.round(timeDifference / 8.64e+7), 'day'];
 	else if(Math.abs(timeDifference) > 3.6e+6)
-		args = [Math.floor(timeDifference / 3.6e+6), 'hour'];
+		args = [Math.round(timeDifference / 3.6e+6), 'hour'];
 	else if(Math.abs(timeDifference) > 6e+4)
-		args = [Math.floor(timeDifference / 6e+4), 'minute'];
-	else args = [Math.floor(timeDifference / 100)/10, 'second'];
+		args = [Math.round(timeDifference / 6e+4), 'minute'];
+	else
+		args = [Math.round(timeDifference / 100)/10, 'second'];
 
 	return new Intl.RelativeTimeFormat('en-us', option).format(...args);
 };

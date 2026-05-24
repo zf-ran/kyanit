@@ -13,11 +13,25 @@
 
 	<!-- PRISM.JS -->
 	<style>
-		@import url("https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css") (prefers-color-scheme: light);
-		@import url("https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-okaidia.min.css") (prefers-color-scheme: dark);
+		@import url("/css/modules/prism.min.css") (prefers-color-scheme: light);
+		@import url("/css/modules/prism-okaidia.min.css") (prefers-color-scheme: dark);
 	</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js" integrity="sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js" integrity="sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+
+	<!-- REDIRECT CONFIRMATION -->
+	<script type="module" src="/js/modules/redirect-confirmation.mjs" defer></script>
+
+	<!-- TABS -->
+	<script src="/js/modules/tabs.js" defer></script>
+
+	<!-- METADATA -->
+	<script id="metadata--is-logged-in" type="application/json"><%- JSON.stringify(isLoggedIn) %></script>
+	<script id="metadata--username" type="application/json"><%- JSON.stringify(username) %></script>
+	<script id="metadata--author-name" type="application/json"><%- JSON.stringify(note.authorName) %></script>
+	<script id="metadata--note-id" type="application/json"><%- JSON.stringify(note.id) %></script>
+
+	<script type="module" src="/js/note.mjs" defer></script>
 
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/note.css">
@@ -59,6 +73,14 @@
 					<% } %>
 				</div>
 			</div>
+			<div class="note-actions button-group" role="group">
+				<button id="rate-button"><span class="material-symbols-outlined">star</span> <span class="button-label">Rate</span></button>
+				<button class="secondary" id="copy-url-button"><span class="material-symbols-outlined">link</span> <span class="button-label">Copy URL</span></button>
+				<% if(username === note.authorName) { %>
+					<button class="secondary" id="edit-note-button"><span class="material-symbols-outlined">edit</span> <span class="button-label">Edit</span></button>
+					<button class="secondary destructive" id="delete-note-button"><span class="material-symbols-outlined">delete</span> <span class="button-label">Delete</span></button>
+				<% } %>
+			</div>
 			<% if(note.thumbnailURL) { %>
 				<div class="thumbnail">
 					<img src="<%- note.thumbnailURL %>"/>
@@ -66,11 +88,18 @@
 			<% } %>
 		</div>
 		<hr class="meta-content-separator">
-		<div class="content markdown-document"><%- htmlContent %></div>
+		<div class="tabs" id="tabs" role="tablist">
+			<button class="tab tab-active" id="note-tab" aria-selected="true" aria-controls="note-panel" role="tab" tabindex="0">Note</button>
+			<button class="tab" id="comments-tab" aria-selected="false" aria-controls="comments-panel" role="tab" tabindex="1">Comments</button>
+		</div>
+		<section class="content markdown-document panel" id="note-panel" role="tabpanel" aria-labelledby="note-tab"><%- htmlContent %></section>
+		<section class="comments panel" id="comments-panel" role="tabpanel" aria-labelledby="comments-tab" hidden>
+			<div id="comment-container" class="comment-container"></div>
+		</section>
 	</main>
 </body>
-<script>
-	/* <% if(username !== note.authorName) { %> */
+<% if (username !== note.authorName) { %>
+	<script>
 		setTimeout(async () => {
 			console.log("5 sec");
 			try {
@@ -79,10 +108,9 @@
 					headers: { 'x-note-id': '<%- note.id %>' }
 				});
 			} catch (error) {
-				// TODO: ui.alert({ title: 'Unexpected Error', message: 'Unexpected error when incrementing note view.' });
 				console.error(error);
 			}
-		}, 30_000); // 30 seconds
-	/* <% } %> */
-</script>
+		}, 30_000);
+	</script>
+<% } %>
 </html>

@@ -7,15 +7,18 @@
 
 	<!-- MATHJAX -->
 	<script src="/js/modules/mathjax-options.js"></script>
-	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 
 	<!-- PRISM.JS -->
 	<style>
-		@import url("https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css") (prefers-color-scheme: light);
-		@import url("https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-okaidia.min.css") (prefers-color-scheme: dark);
+		@import url("/css/modules/prism.min.css") (prefers-color-scheme: light);
+		@import url("/css/modules/prism-okaidia.min.css") (prefers-color-scheme: dark);
 	</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js" integrity="sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js" integrity="sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+
+	<!-- REDIRECT CONFIRMATION -->
+	<script type="module" src="/js/modules/redirect-confirmation.mjs" defer></script>
 
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/note.css">
@@ -30,13 +33,22 @@
 			<div class="title"><%= metadata.title %></div>
 			<div class="details">
 				<div class="author-date">
-					<span class="author">by Kyanit</span>
+					<span class="author-display">by Kyanit</span>
 					<span class="date">
-						<% if(metadata.createdAt === metadata.updatedAt) { %>
-							Published at <%= absoluteDate(new Date(metadata.cratedAt)) %>
-						<% } else { %>
-							Updated at <%= absoluteDate(new Date(metadata.updatedAt)) %>
-						<% } %>
+						<span class="date-full">
+							<% if(metadata.createdAt === metadata.updatedAt) { %>
+								<%= new Date(metadata.createdAt).toLocaleString() %>
+							<% } else { %>
+								<%= new Date(metadata.updatedAt).toLocaleString() %>
+							<% } %>
+						</span>
+						<span class="date-short">
+							<% if(metadata.createdAt === metadata.updatedAt) { %>
+								Published at <%= absoluteDate(new Date(metadata.createdAt)) %>
+							<% } else { %>
+								Updated at <%= absoluteDate(new Date(metadata.updatedAt)) %>
+							<% } %>
+						</span>
 					</span>
 				</div>
 			</div>
@@ -47,7 +59,7 @@
 			<% } %>
 		</div>
 		<hr class="meta-content-separator">
-		<div class="content markdown-document"><%- htmlContent %></div>
+		<section class="content markdown-document" id="note-panel"><%- htmlContent %></section>
 	</main>
 </body>
 </html>

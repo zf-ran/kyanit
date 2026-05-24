@@ -5,6 +5,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+	<!-- TABS -->
+	<script src="/js/modules/tabs.js" defer></script>
+
 	<link rel="stylesheet" href="/main.css">
 </head>
 <body>
@@ -18,10 +21,22 @@
 		<p><button id="test-alert"><span class="material-symbols-outlined">add_alert</span> Alert</button></p>
 		<p>
 			<button id="test-confirm"><span class="material-symbols-outlined">approval_delegation</span> Confirm</button>
-			<button id="test-destructive-confirm" style="--primary: var(--error)"><span class="material-symbols-outlined">explosion</span> Destructive confirm</button>
+			<button id="test-destructive-confirm" class="destructive"><span class="material-symbols-outlined">explosion</span> Destructive confirm</button>
 		</p>
 		<p><button id="test-form"><span class="material-symbols-outlined">forms_add_on</span> Form</button></p>
 		<p><button id="test-toast" class="secondary"><span class="material-symbols-outlined">toast</span> Toast</button></p>
+
+		<div class="tabs" role="tablist">
+			<button class="tab tab-active" id="first-tab" aria-selected="true" aria-controls="first-panel" role="tab" tabindex="0">First</button>
+			<button class="tab" id="second-tab" aria-selected="false" aria-controls="second-panel" role="tab" tabindex="1">Second</button>
+		</div>
+
+		<section class="panel" id="first-panel" role="tabpanel" aria-labelledby="first-tab">
+			<p>This is tab 1.</p>
+		</section>
+		<section class="panel" id="second-panel" role="tabpanel" aria-labelledby="second-tab" hidden>
+			<p>But this is tab 2.</p>
+		</section>
 	</main>
 </body>
 <script type="module">

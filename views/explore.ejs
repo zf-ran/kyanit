@@ -137,8 +137,8 @@
 				break;
 			case 'trending':
 				sortFunction = (a, b) => {
-					a = a.views / ((Date.now() - a.createdAt) + 1) / (86400**5);
-					b = b.views / ((Date.now() - b.createdAt) + 1) / (86400**5);
+					a = a.views / (((Date.now() - new Date(a.createdAt).getTime()) / 1_000 + 2) / 86_400) ** 2;
+					b = b.views / (((Date.now() - new Date(b.createdAt).getTime()) / 1_000 + 2) / 86_400) ** 2;
 					return a - b;
 				}
 		}

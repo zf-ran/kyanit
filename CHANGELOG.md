@@ -1,5 +1,27 @@
 # Version Changelogs
 
+## 1.0.0-beta.9
+
+- Added redirect confirmation dialog for external links.
+- Added detailed time in for docs.
+- Added button groups.
+- Added action button for notes.
+- Added tabs and panels.
+- Added tabs for notes and comment section.
+- Added comment section in notes.
+	- Added vote system.
+	- Added comment deletion system.
+- Added `display=block` to Material Symbols request.
+- Renamed `modules/bodyValidator.js` to `modules/body-validator.js`.
+- Changed markdown alerts from `div` to `blockquote`.
+- Changed relative time to round to the nearest integer, rather flooring it.
+- Changed relative time for `year` units to be rounded to the nearest integer, rather to the nearest tenth.
+- Changed trending score to
+	$$ \frac{\text{views}}{(\text{seconds since published} + 2)^2}. $$
+- Moved `create.ejs` scripts to `public/js/create.mjs`.
+- Removed `public/main.js`.
+- Updated Prism config and styles.
+
 ## 1.0.0-beta.8
 
 - Added error page with icon, title, and message paragraph for consistent design.
@@ -70,9 +92,7 @@ Refactored validation and error handling across routes.
 -	Changed minimum password length to 8 characters.
 -	Updated routes to utilize new validation rules.
 -	Changed note sorting by trending score instead of view count,
-	-	Trending score is calculated by
-
-		$$ \frac{\text{views}}{(\text{time since published})^5}. $$
+	-	Trending score is calculated by $$ \frac{\text{views}}{(\text{time since published})^5}. $$
 
 
 ## 1.0.0-beta.4

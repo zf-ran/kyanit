@@ -56,18 +56,18 @@ app.use(async (_req, res, next) => {
 		let args = [];
 		let timeDifference = date - now;
 
-		if(Math.abs(timeDifference) > 3.154e+11)
-			args = [Math.floor(timeDifference / 3.154e+11), 'year'];
+		if(Math.abs(timeDifference) > 3.154e+10)
+			args = [Math.round(timeDifference / 3.154e+10), 'year'];
 		else if(Math.abs(timeDifference) > 2.628e+9)
-			args = [Math.floor(timeDifference / 2.628e+9), 'month'];
+			args = [Math.round(timeDifference / 2.628e+9), 'month'];
 		else if(Math.abs(timeDifference) > 8.64e+7)
-			args = [Math.floor(timeDifference / 8.64e+7), 'day'];
+			args = [Math.round(timeDifference / 8.64e+7), 'day'];
 		else if(Math.abs(timeDifference) > 3.6e+6)
-			args = [Math.floor(timeDifference / 3.6e+6), 'hour'];
+			args = [Math.round(timeDifference / 3.6e+6), 'hour'];
 		else if(Math.abs(timeDifference) > 6e+4)
-			args = [Math.floor(timeDifference / 6e+4), 'minute'];
+			args = [Math.round(timeDifference / 6e+4), 'minute'];
 		else
-			args = [Math.floor(timeDifference / 1000), 'second'];
+			args = [Math.round(timeDifference / 1000), 'second'];
 
 		return new Intl.RelativeTimeFormat('en-us', options).format(...args);
 	}
@@ -75,8 +75,7 @@ app.use(async (_req, res, next) => {
 	res.locals.version = version;
 
 	if(MAINTENANCE) {
-		const hasMaintenanceAccess =
-			res.locals.isLoggedIn
+		const hasMaintenanceAccess = res.locals.isLoggedIn
 			? maintenanceUsers.includes(res.locals.username)
 			: false;
 
@@ -120,7 +119,7 @@ app.get('/', validateToken, async (req, res) => {
 			ON n.id = r.note_id
 		WHERE n.unlisted = false
 		GROUP BY n.id, u.display_name, u.is_verified
-		ORDER BY n.views/((EXTRACT(epoch FROM now() - n.created_at) + 1) / 86400)^5 DESC
+		ORDER BY n.views / ((EXTRACT(epoch FROM now() - n.created_at) + 2) / 86400)^2 DESC
 		LIMIT 3;
 	`;
 
@@ -253,7 +252,9 @@ app.get('/create', async (req, res) => {
 
 	const startingNote = {
 		title: 'Untitled',
-		content: '# Welcome to Kyanit editor!\n\nKyanit uses markdown with GitHub Flavoured Markdown, parsed using `marked.js`, and syntax highlighted by `prism.js`.',
+		content:
+			'# Welcome to Kyanit editor!\n\n' +
+			'Kyanit uses markdown with GitHub Flavoured Markdown, parsed using `marked.js`, and syntax highlighted by `prism.js`.',
 		keywords: [],
 		unlisted: false,
 		thumbnail_url: '',
@@ -409,7 +410,7 @@ app.get('/docs', async (req, res) => {
 			return { ...extractMetadata(content).metadata, docname: file.slice(0, -3) };
 		})
 		.sort((a, b) =>
-			new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+			new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
 		);
 
 	res.render('docs', { docs });

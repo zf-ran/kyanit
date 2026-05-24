@@ -3,7 +3,7 @@ const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse } = Kyanit;
-const { validateBody, Rule } = require('../modules/bodyValidator');
+const { validateBody, Rule } = require('../modules/body-validator');
 const { dataConstraints } = require('../config');
 
 //* [ROUTE] /api

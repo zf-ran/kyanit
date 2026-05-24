@@ -21,7 +21,7 @@ const dialog = {
 	 * @param {string | null} [options.dismissIcon] - Icon for the dismiss button.
 	 * @param {string} [options.dismissText] - Text for the dismiss button. Defaults to “Dismiss”
 	 */
-	alert({ title, message, dismissIcon, dismissText }) {
+	async alert({ title, message, dismissIcon, dismissText }) {
 		if (!title) {
 			console.error('Title is required in alerts.');
 			return;
@@ -40,8 +40,11 @@ const dialog = {
 			type: 'primary' }).appendTo(menuElement);
 
 		// Closing
-		dismissButton.addEventListener('click', () => {
-			dialogElement.classList.add('closing');
+		return new Promise(resolve => {
+			dismissButton.addEventListener('click', () => {
+				resolve();
+				dialogElement.classList.add('closing');
+			});
 		});
 	},
 	/**
@@ -100,7 +103,7 @@ const dialog = {
 				resolve(true);
 				dialogElement.classList.add('closing');
 			});
-		})
+		});
 	},
 	/**
 	 * @returns {Boolean}
@@ -238,7 +241,7 @@ const dialog = {
 
 				dialogElement.classList.add('closing');
 			});
-		})
+		});
 	}
 }
 

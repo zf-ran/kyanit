@@ -1,6 +1,6 @@
 @import url("/reset.css");
 @import url("/fonts/hd-colton/font.css");
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Noto+Sans+Mono:wdth@75&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Noto+Sans+Mono:wdth,wght@75,400;75,700&display=swap");
 
 :root {
 	--font-family--locale--arabic: "Isep Misbah";
@@ -210,6 +210,7 @@ button {
 	cursor: pointer;
 	transition-property: scale, rotate;
 	transition-duration: var(--transition-duration);
+	transform-origin: 50% 50%;
 	border: 1px solid var(--primary);
 
 	/* MEDIUM */
@@ -261,6 +262,10 @@ button:disabled {
 	cursor: not-allowed;
 }
 
+button.destructive {
+	--primary: var(--error);
+}
+
 /*- FABS */
 button.fab {
 	position: absolute;
@@ -274,6 +279,26 @@ button.fab {
 
 button.fab span.material-symbols-outlined {
 	font-size: 1.5em;
+}
+
+/** BUTTON GROUPS */
+div.button-group {
+	display: flex;
+	justify-content: flex-end;
+	gap: 2px;
+}
+
+div.button-group button {
+	border-radius: 4px;
+}
+
+div.button-group button:first-child {
+	border-top-left-radius: 8px;
+	border-bottom-left-radius: 8px;
+}
+div.button-group button:last-child {
+	border-top-right-radius: 8px;
+	border-bottom-right-radius: 8px;
 }
 
 /** CHIPS */
@@ -304,6 +329,50 @@ label.chip:has(input:checked) {
 
 label.chip:hover { scale: 102%; }
 label.chip:active { scale: 98%; }
+
+/** TABS */
+div.tabs {
+	display: flex;
+	width: 100%;
+	gap: 16px;
+	border-bottom: 1px solid var(--border);
+	margin-bottom: 1em;
+}
+
+div.tabs button.tab {
+	background-color: transparent;
+	color: var(--text);
+	border: none;
+	border-radius: 0;
+	padding: 0;
+	position: relative;
+	transition: color 100ms;
+}
+div.tabs button.tab:hover { scale: 1; }
+div.tabs button.tab:active { scale: 1; }
+div.tabs button.tab::after {
+	content: "";
+	position: absolute;
+	--height: 4px;
+	height: var(--height);
+	width: 100%;
+	bottom: 0;
+	background-color: var(--primary);
+	border-top-left-radius: var(--height);
+	border-top-right-radius: var(--height);
+	opacity: 0;
+	transform-origin: 50% 100%;
+	transform: scaleX(0);
+	transition: transform 250ms, opacity 100ms;
+}
+
+div.tabs button.tab.tab-active {
+	color: var(--primary);
+}
+div.tabs button.tab.tab-active::after {
+	opacity: 1;
+	transform: scaleX(1);
+}
 
 /** SELECT INPUT */
 label.select-input {
@@ -355,6 +424,7 @@ div.input-wrapper:has(select) {
 div.input-wrapper .input-icon,
 div.input-wrapper .input-label {
 	color: var(--text-mute);
+	cursor: text;
 }
 
 div.input-wrapper label {
@@ -422,4 +492,27 @@ select {
 	width: 100%;
 	padding: 0;
 	outline: none !important;
+}
+
+@media print {
+	:root {
+		--text: black;
+		--text-mute: hsl(0, 0%, 30%);
+
+		--border: black;
+		--border-mute: black;
+
+		--background: white;
+		--background-accent: hsl(0, 0%, 80%);
+	}
+
+	pre.code-block {
+		border-radius: 0;
+	}
+
+	code.code-span {
+		padding: 0;
+		border-radius: 0;
+		background-color: transparent;
+	}
 }

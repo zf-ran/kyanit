@@ -1,12 +1,13 @@
 ---
 title: 'Basic Guide to Write a Note'
-createdAt: '2023-07-27T18:43:29.505Z'
-updatedAt: '2025-07-12T20:50:00Z'
+createdAt: '2023-07-27T18:43:29.505+07:00'
+updatedAt: '2026-05-14T15:26:00.000+07:00'
 ---
 
 # 1—Writing a Note {#creating}
 
-To write a note, you must be logged in. Open the side menu **≡** > **Start Writing**.
+To write a note, you must be logged in. Open the side menu
+<span class="material-symbols-outlined">menu</span> > **Start Writing**.
 
 ## 1.1—Title {#1-1-title}
 
@@ -18,8 +19,11 @@ Use `#` to create headings, for example:
 
 ```markdown
 # Heading 1
+
 ## Subheading 1 to Heading 1
+
 ### Sub-sub-heading to Sub-heading 1
+
 ## Subheading 2 to Heading 1
 ```
 
@@ -30,11 +34,14 @@ You could add an ID to your heading by adding `{#some-id}` after the heading, li
 # Heading that will appear in the content list {#and-this-is-the-id}
 ```
 
-It’s recommended to use `kebab-case` for the heading ID, meaning hyphens are used for spaces, and no capital letters. For example, `this-is-a-text-written-using-kebab-case`.
+It’s recommended to use `kebab-case` for the heading ID, meaning hyphens are
+used for spaces, and no capital letters. For example,
+`this-is-a-text-written-using-kebab-case`.
 
 ### 1.2.1—Difference between Heading 1–6 {#1-2-2-header-difference}
 
-Heading 1 (H1 for short) is often referred to as the “main heading”, while H2–H6 are referred to as “subheadings” because they indicate sub-levels.
+Heading 1 (H1 for short) is often referred to as the “main heading”, while
+H2–H6 are referred to as “subheadings” because they indicate sub-levels.
 
 ## 1.3—Paragraphs {#1-3-paragraph}
 
@@ -42,26 +49,35 @@ Normal text is automatically a paragraph.
 And to separate a paragraph, add an empty line; for example:
 
 ```md
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate nostrum eaque modi molestiae officiis. Veniam magni, quam harum
-deserunt dignissimos impedit quo itaque doloribus debitis molestiae adipisci quas inventore reprehenderit. *Put an empty line after this*.
+Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate nostrum
+eaque modi molestiae officiis. Veniam magni, quam harum deserunt dignissimos
+impedit quo itaque doloribus debitis molestiae adipisci quas inventore
+reprehenderit. *Put an empty line after this*.
 
-*Put an empty line before this*. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Cumque voluptatem voluptatum ad vero nemo aliquid eligendi asperiores rerum,
-neque rem inventore temporibus velit voluptates quam quo iure? Repellat voluptate voluptates enim laboriosam asperiores sapiente,
-provident incidunt accusamus illum deleniti vero!
+*Put an empty line before this*. Lorem, ipsum dolor sit amet consectetur
+adipisicing elit. Cumque voluptatem voluptatum ad vero nemo aliquid eligendi
+asperiores rerum, neque rem inventore temporibus velit voluptates quam quo iure?
+Repellat voluptate voluptates enim laboriosam asperiores sapiente, provident
+incidunt accusamus illum deleniti vero!
 ```
 
 To get:
 
->	Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate nostrum eaque modi molestiae officiis. Veniam magni, quam harum
->	deserunt dignissimos impedit quo itaque doloribus debitis molestiae adipisci quas inventore reprehenderit. *Put an empty line after this*.
+> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate nostrum
+> eaque modi molestiae officiis. Veniam magni, quam harum deserunt dignissimos
+> impedit quo itaque doloribus debitis molestiae adipisci quas inventore
+> reprehenderit. *Put an empty line after this*.
 >
->	*Put an empty line before this*. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Cumque voluptatem voluptatum ad vero nemo aliquid eligendi asperiores rerum,
->	neque rem inventore temporibus velit voluptates quam quo iure? Repellat voluptate voluptates enim laboriosam asperiores sapiente,
->	provident incidunt accusamus illum deleniti vero!
+> *Put an empty line before this*. Lorem, ipsum dolor sit amet consectetur
+> adipisicing elit. Cumque voluptatem voluptatum ad vero nemo aliquid eligendi
+> asperiores rerum, neque rem inventore temporibus velit voluptates quam quo
+> iure? Repellat voluptate voluptates enim laboriosam asperiores sapiente,
+> provident incidunt accusamus illum deleniti vero!
 
 ### 1.3.1—Line Breaks {#1-3-1-line-break}
 
-If you want to add a new line (line break) without creating a new paragraph, add two spaces at the end of the line to add a line break, for example:
+If you want to add a new line (line break) without creating a new paragraph, add
+two spaces at the end of the line to add a line break, for example:
 
 ```markdown
 This is some text, a line of text, add two spaces after this␣␣
@@ -70,12 +86,13 @@ and this is a text after a line break.
 
 to get:
 
->	This is some text, a line of text, add two spaces after this  
->	and this is a text after a line break.
+> This is some text, a line of text, add two spaces after this  
+> and this is a text after a line break.
 
 ## 1.4—Text Styles {#1-4-styling}
 
-Kyanit uses *Github Flavoured Markdown* (GFM) to style text (by using the module `marked.js`).
+Kyanit uses *Github Flavoured Markdown* (GFM) to style text (by using the module
+`marked.js`).
 
 ### 1.4.1—Bold {#1-4-1-bold}
 
@@ -97,7 +114,8 @@ Type  ``` `code` ```  to get `code`.
 
 Type `[Link Text](https://example.com)` to get [Link Text](https://example.com).
 
-Or use `<https://example.com>` if you don’t want to add the text, <https://example.com>.
+Or use `<https://example.com>` if you don’t want to add the text,
+<https://example.com>.
 
 ### 1.4.6—Footnotes {#1-4-6-footnote}
 
@@ -112,10 +130,10 @@ This is not a part of markdown syntax, but a part of GFM[^gfm]. This will be fol
 
 to get
 
->	This is not a part of markdown syntax, but a part of GFM[^gfm]. This will be followed by another footnote.[^2]
+> This is not a part of markdown syntax, but a part of GFM[^gfm]. This will be followed by another footnote.[^2]
 >
->	[^gfm]: GitHub Flavoured Markdown.
->	[^2]: Another footnote.
+> [^gfm]: GitHub Flavoured Markdown.
+> [^2]: Another footnote.
 
 You can place the foot note definition (`[^1]: Definition`) anywhere, `marked.js` will automatically put it at the bottom.
 
@@ -136,36 +154,36 @@ Type `![Alt text](/assets/header.svg)` to get
 
 Type:
 ```
-1.	This
-2.	Is
-3.	An
-4.	Ordered
-5.	List
+1. This
+2. Is
+3. An
+4. Ordered
+5. List
 ```
 
 to get:
 
-1.	This
-2.	Is
-3.	An
-4.	Ordered
-5.	List
+1. This
+2. Is
+3. An
+4. Ordered
+5. List
 
 ### 1.6.2—Unordered
 
 Type:
 ```
--	This
--	Is
--	Unordered
--	List
+- This
+- Is
+- Unordered
+- List
 ```
 alternatively, you can use `+` and `*` instead of `-`; to get:
 
--	This
--	Is
--	Unordered
--	List
+- This
+- Is
+- Unordered
+- List
 
 ### 1.6.3—Nested
 
@@ -173,32 +191,32 @@ Type:
 ```
 - This is unordered
 	1. That have an ordered list
-		* That have another one
-		* Like this.
+		A. That have another one
+		B. Like this.
 	2. This is the second list
 - More
-	* And this too
+	i. And this too
 ```
 to get:
 
 - This is unordered
 	1. That have an ordered list
-		* That have another one
-		* Like this.
+		A. That have another one
+		B. Like this.
 	2. This is the second list
 - More
-	*	And this too
+	i. And this too
 
 ## 1.7—Blockquotes {#1-7-blockquotes}
 
 Type:
 
 ```md
->	This is a block quote.
+> This is a block quote.
 ```
 
 to get:
->	This is a block quote.
+> This is a block quote.
 
 ## 1.8—Codeblocks {#1-8-codeblocks}
 
@@ -212,14 +230,6 @@ console.log(400);
 ```
 ``````
 
-or
-
-```
-	// some code
-	const CONSTANT = 400;
-	console.log(400);
-```
-
 to get:
 
 ```js
@@ -230,20 +240,28 @@ console.log(400);
 
 ## 1.9—Horizontal Rules {#1-9-horizontal-rules}
 
-Type at least 3 hyphens to create a horizontal rule,
+Type at least 3 hyphens, asterisks, or underscores to create a horizontal rule,
 and add an empty line before the hyphens. For example:
 
 ```
-Below this text will be a horizontal rule.
+Below this text are three horizontal rules.
 
--------------------
+---
+
+***
+
+___
 ```
 
 to get:
 
->	Below this text will be a horizontal rule.
+> Below this text are three horizontal rules.
 >
->	-------------------
+> ---
+>
+> ***
+>
+> ___
 
 If you don't add an empty space, the text will be a heading 1.
 
@@ -252,18 +270,18 @@ If you don't add an empty space, the text will be a heading 1.
 Type:
 
 ```markdown
-| Heading 1			| Heading 2					|
+| Heading 1         | Heading 2                 |
 | ----------------- | ------------------------- |
-| Some table cells	| Some another table cells	|
-| Lorem ipsum		| muspi meroL				|
+| Some table cells  | Some another table cells  |
+| Lorem ipsum       | muspi meroL               |
 ```
 
 to get:
 
-| Heading 1			| Heading 2					|
+| Heading 1         | Heading 2                 |
 | ----------------- | ------------------------- |
-| Soe table cells	| Some another table cells	|
-| Lorem ipsum		| muspi meroL				|
+| Some table cells  | Some another table cells  |
+| Lorem ipsum       | muspi meroL               |
 
 ## 1.11—LaTeX Math Equations {#1-11-maths}
 
@@ -278,7 +296,7 @@ Use single dollar sign `$` for inline math.
 Type
 
 ```tex
-$ \sin(\alpha) = \frac{a}{b} = \text{sine wave} $
+$\sin(\alpha) = \frac{a}{b} = \text{sine wave}$
 ```
 
 to write $ \sin(\alpha) = \frac{a}{b} = \text{sine wave} $.
@@ -292,14 +310,121 @@ Use double dollar sign `$$` for display (block) math.
 Type
 
 ```tex
-$$ \begin{align*} \tan(\beta) = \frac{\sin}{\cos} &= \text{tangent}. \\\\ \Aboxed{f(x) &= x^2} \end{align*} $$
+$$ \begin{align*}
+	\tan(\beta) = \frac{\sin}{\cos} &= \text{tangent}. \\\\
+	\Aboxed{f(x) &= x^2}
+\end{align*} $$
 ```
 
 to write
 
-$$ \begin{align*} \tan(\beta) = \frac{\sin}{\cos} &= \text{tangent}. \\\\ \Aboxed{f(x) &= x^2} \end{align*} $$
+$$ \begin{align*}
+	\tan(\beta) = \frac{\sin}{\cos} &= \text{tangent}. \\\\
+	\Aboxed{f(x) &= x^2}
+\end{align*} $$
 
 Display math will be displayed centered and on a separate line.
+
+## 1.12—Alert
+
+There are 14 types of alert:
+
+| Type      | Color       | Icon                                                           |
+| --------- | ----------- | :------------------------------------------------------------: |
+| Note      | Blue        | <span class="material-symbols-outlined">edit</span>            |
+| Info      | Blue        | <span class="material-symbols-outlined">info</span>            |
+| Abstract  | Light Blue  | <span class="material-symbols-outlined">assignment</span>      |
+| Todo      | Light Blue  | <span class="material-symbols-outlined">check_circle</span>    |
+| Tip       | Green       | <span class="material-symbols-outlined">lightbulb</span>       |
+| Success   | Green       | <span class="material-symbols-outlined">check</span>           |
+| Question  | Orange      | <span class="material-symbols-outlined">help</span>            |
+| Warning   | Orange      | <span class="material-symbols-outlined">warning</span>         |
+| Failure   | Red         | <span class="material-symbols-outlined">close</span>           |
+| Danger    | Red         | <span class="material-symbols-outlined">dangerous</span>       |
+| Bug       | Red         | <span class="material-symbols-outlined">bug_report</span>      |
+| Important | Purple      | <span class="material-symbols-outlined">assignment_late</span> |
+| Example   | Purple      | <span class="material-symbols-outlined">list</span>            |
+| Quote     | Black/White | <span class="material-symbols-outlined">format_quote</span>    |
+
+To make them, write as follows.
+
+```markdown
+> [!type] Title (Optional)
+> Contents.
+```
+
+Where `type` is one of the 14 types (case-insensitive)[^alert-type-case], and the title is optional. When there is no
+title, the `type` will be displayed.
+
+[^alert-type-case]: Typing `[!EXAMPLE]` will result in the same output as `[!example]`, `[!Example]`, etc.
+
+For example:
+
+```markdown
+> [!example]
+> This is an **example** alert.
+```
+
+will render to
+
+> [!example]
+> This is an **example** alert.
+
+For titled example:
+
+```markdown
+> [!quote] Here is a title
+> This is a **quote** alert.
+```
+
+will render to
+
+> [!quote] Here is a title
+> This is a **quote** alert.
+
+Here is 14 of them rendered.
+
+>	[!NOTE]
+>	This is a **note** alert.
+
+>	[!INFO]
+>	This is an **info** alert.
+
+>	[!ABSTRACT]
+>	This is an **abstract** alert.
+
+>	[!TODO]
+>	This is a **todo** alert.
+
+>	[!TIP]
+>	This is a **tip** alert.
+
+>	[!SUCCESS]
+>	This is a **success** alert.
+
+>	[!QUESTION]
+>	This is a **question** alert.
+
+>	[!WARNING]
+>	This is a **warning** alert.
+
+>	[!FAILURE]
+>	This is a **failure** alert.
+
+>	[!DANGER]
+>	This is a **danger** alert.
+
+>	[!BUG]
+>	This is a **bug** alert.
+
+>	[!IMPORTANT]
+>	This is an **important** alert.
+
+>	[!EXAMPLE]
+>	This is an **example** alert.
+
+>	[!QUOTE]
+>	This is a **quote** alert.
 
 # 2—Publishing {#publishing}
 

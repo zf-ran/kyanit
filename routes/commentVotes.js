@@ -3,7 +3,8 @@ const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
-const { validateBody, Rule } = require('../modules/bodyValidator');
+const { validateBody, Rule } = require('../modules/body-validator');
+const { sum } = require('../modules/utils');
 
 //* [ROUTE] /api
 
@@ -72,9 +73,10 @@ router.post('/notes/:noteId/comments/:commentId/votes',
 			existingVote.value = value;
 		}
 
-		const currentCount = commentVotes
-			.map(commentVote => commentVote.value) // Map it to the vote value. [{...}, {...}, ...] -> [-1, 1, ...]
-			.sum();
+		const currentCount = sum(
+			commentVotes
+				.map(commentVote => commentVote.value) // Map it to the vote value. [{...}, {...}, ...] -> [-1, 1, ...]
+		);
 
 		res.json(new JSONResponse({ commentId, currentCount }));
 	}

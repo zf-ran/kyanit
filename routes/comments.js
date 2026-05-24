@@ -3,7 +3,7 @@ const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
-const { validateBody, Rule } = require('../modules/bodyValidator');
+const { validateBody, Rule } = require('../modules/body-validator');
 const { dataConstraints } = require('../config');
 const { sum } = require('../modules/utils');
 

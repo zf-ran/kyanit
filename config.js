@@ -6,31 +6,36 @@ const markedRenderer = {
 		const matches = text.match(headingIdRegex);
 		let id;
 
-		for(let i = 0; i < tokens.length; i++) {
+		for (let i = 0; i < tokens.length; i++) {
 			const token = tokens[i];
 			token.text = token.text.replace(headingIdRegex, '');
 		}
 
-		if(!matches) return `<h${depth} class="heading"><span class="heading-content" data-header="${depth}">${Marked.Parser.parseInline(tokens)}</span></h${depth}>`;
-		else id = matches[1];
+		if (!matches)
+			return `<h${depth} class="heading"><span class="heading-content" data-header="${depth}">${Marked.Parser.parseInline(tokens)}</span></h${depth}>`;
+		else
+			id = matches[1];
 
 		text = text.replace(headingIdRegex, '');
 
 		return `<h${depth} class="heading has-link" id="section-${id}"><span class="heading-content" data-header="${depth}">${Marked.Parser.parseInline(tokens)}</span> <a href="#section-${id}" class="link"><span class="material-symbols-outlined">link</span></a></h${depth}>`;
 	},
 	code({ text, lang, raw }) {
-		if(lang) return `<pre class="code-block"><code class="language-${lang}">${escapeHTML(text)}</code></pre>`;
-		return `<pre class="code-block"><code>${escapeHTML(text)}</code></pre>`;
+		if (lang)
+			return `<pre class="code-block"><code class="language-${lang}">${escapeHTML(text)}</code></pre>`;
+		return `<pre class="code-block"><code>${text}</code></pre>`;
 	},
 	image({ href, title, text }) {
-		if(title) return `<img loading="lazy" alt="${text}" title="${title}" src="${href}">`;
+		if (title)
+			return `<img loading="lazy" alt="${text}" title="${title}" src="${href}">`;
 		return `<img loading="lazy" alt="${text}" src="${href}">`;
 	},
 	codespan({ text }) {
-		return `<code class="code-span">${escapeHTML(text)}</code>`;
+		return `<code class="code-span">${text}</code>`;
 	},
 	link({ href, title, text }) {
-		if(title) return `<a class="anchor" title="${title}" href="${href}">${text}</a>`;
+		if (title)
+			return `<a class="anchor" title="${title}" href="${href}">${text}</a>`;
 		return `<a class="anchor" href="${href}">${text}</a>`;
 	}
 };

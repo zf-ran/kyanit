@@ -65,13 +65,13 @@ function markedAlert(options = {}) {
         level: 'block',
         renderer({ meta, tokens = [] }) {
           let template = '';
-					template += `<div class="${meta.className} ${meta.className}-${meta.variant}">\n`;
+					template += `<blockquote class="${meta.className} ${meta.className}-${meta.variant}">\n`;
           template += `<p class="${meta.titleClassName}">`;
           template += `<span class="markdown-alert-icon">${meta.icon}</span>`;
           template += `<span class="markdown-alert-title-text">${marked.parseInline(meta.title)}</span>`;
           template += '</p>\n';
           template += this.parser.parse(tokens);
-          template += '</div>\n';
+          template += '</blockquote>\n';
 
           return template;
         }

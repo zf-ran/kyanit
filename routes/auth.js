@@ -5,7 +5,7 @@ const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse } = Kyanit;
 
 const { generateAccessToken, generateRefreshToken } = require('../modules/token');
-const { validateBody, Rule } = require('../modules/bodyValidator');
+const { validateBody, Rule } = require('../modules/body-validator');
 const { dataConstraints } = require('../config');
 
 const accessTokenAge = parseInt(process.env.ACCESS_TOKEN_AGE);

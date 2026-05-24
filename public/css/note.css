@@ -15,6 +15,7 @@
 	display: flex;
 	align-items: start;
 	justify-content: space-between;
+	align-items: baseline;
 	flex-wrap: wrap;
 	gap: 1em;
 }
@@ -62,14 +63,127 @@
 .meta-data .thumbnail img {
 	aspect-ratio: 5/4;
 	width: 100%;
+	margin-bottom: 1em;
 	border-radius: 1em;
 	object-fit: cover;
 }
 
+#tabs {
+	margin-bottom: 2em;
+}
 
 hr.meta-content-separator {
 	margin: 2em 0;
 	border-bottom: 1px solid var(--border);
+}
+
+main:has(#tabs) hr.meta-content-separator {
+	display: none;
+	visibility: hidden;
+}
+
+/** COMMENTS */
+#comment-container {
+	display: flex;
+	flex-direction: column;
+	gap: 2em;
+	min-height: 100vh;
+}
+
+.comment {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5em;
+}
+
+.comment-metadata {
+	display: flex;
+	align-items: baseline;
+	color: var(--text-mute);
+}
+
+.comment-metadata > span::before {
+	content: "·";
+	margin-inline: 4px;
+}
+
+.comment-author-display-name {
+	color: var(--text);
+	font-weight: bold;
+}
+.comment-author-display-name:hover {
+	text-decoration: underline;
+}
+
+.comment-author-display-name.author {
+	padding: 2px 8px;
+	border-radius: 4px;
+	background-color: var(--text);
+	color: var(--background);
+}
+
+.comment-absolute-time {
+	display: none;
+	visibility: hidden;
+}
+
+.comment-time:hover .comment-relative-time {
+	display: none;
+	visibility: hidden;
+}
+.comment-time:hover .comment-absolute-time {
+	display: inline;
+	visibility: visible;
+}
+
+.comment-content > :first-child {
+	margin-top: 0;
+}
+
+.comment-content > :last-child {
+	margin-bottom: 0;
+}
+
+.comment-actions {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+}
+
+.comment-actions .vote-group {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+}
+
+.comment-actions .vote-button {
+	border-radius: 50%;
+	border: none;
+	background-color: transparent;
+	color: var(--text)
+}
+
+.comment-actions .vote-button[data-voted="true"] {
+	background-color: var(--text);
+	color: var(--background);
+}
+
+.comment-actions .vote-count {
+	font: var(--font--button--s);
+}
+
+.comment-replies {
+	display: flex;
+	flex-direction: column;
+	gap: 2em;
+	padding-top: 0.5em;
+	padding-left: 2em;
+	border-left: 4px solid var(--border-mute);
+}
+
+.comment-replies:empty {
+	display: none;
+	visibility: hidden;
 }
 
 @media only screen and (max-width: 750px) {
@@ -80,5 +194,36 @@ hr.meta-content-separator {
 
 	.meta-data .author-date > :not(:first-child)::before {
 		content: "";
+	}
+
+	.note-actions button {
+		justify-content: center;
+		width: 40px;
+	}
+
+	.note-actions .button-label {
+		display: none;
+		visibility: hidden;
+	}
+
+	.comment-replies {
+		padding-left: 1em;
+	}
+}
+
+@media print {
+	div.note-actions {
+		display: none;
+		visibility: hidden;
+	}
+
+	main:has(#tabs) hr.meta-content-separator {
+		display: block;
+		visibility: visible;
+	}
+
+	#tabs {
+		display: none;
+		visibility: hidden;
 	}
 }

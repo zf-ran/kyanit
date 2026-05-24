@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
-const { validateBody, Rule } = require('../modules/bodyValidator');
+const { validateBody, Rule } = require('../modules/body-validator');
 const { dataConstraints } = require('../config');
 
 const URL_OR_EMPTY = /(^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*$)|^$)/i;

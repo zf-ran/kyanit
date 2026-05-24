@@ -61,81 +61,15 @@ main {
 	background-color: var(--border-mute);
 }
 
-/** CODEMIRROR */
+/** EDITOR AREA */
 #editor {
 	height: 100%;
 	overflow: auto;
 	flex-grow: 1;
-
-	--font-family--monospace: "Noto Sans Mono", monospace;
 }
 
-#editor .cm-editor {
-	height: 100%;
-	font-family: var(--font-family--monospace);
-	background-color: transparent;
-	color: var(--text-color);
-}
-
-#editor .cm-gutters {
-	font-family: var(--font-family--monospace);
-	background-color: var(--background);
-	color: var(--text-mute);
-	border-color: var(--border-mute);
-}
-
-#editor .cm-content {
-	font-family: var(--font-family--monospace);
-	caret-color: var(--text-color);
-}
-
-/*- CURSOR */
-#editor .cm-cursor,
-#editor .cm-dropCursor {
-	border-color: var(--text-color);
-}
-
-/*- SELECTION */
-#editor .cm-selectionBackground, ::selection {
+::selection {
 	background-color: var(--secondary);
-}
-
-#editor .cm-selectionMatch,
-#editor .cm-searchMatch {
-	background-color: hsl(from var(--success) h s l / 25%);
-}
-
-/*- LINE */
-#editor .cm-activeLine,
-#editor .cm-activeLineGutter {
-	background-color: hsl(from var(--secondary) h s l / 25%);
-}
-
-/*- PANELS */
-#editor .cm-tooltip {
-  background-color: var(--background);
-	border-color: var(--border-mute);
-}
-
-#editor .cm-tooltip .cm-completionMatchedText {
-	text-decoration: none;
-	color: var(--primary);
-	font-weight: bold;
-}
-
-#editor .cm-tooltip li[aria-selected] {
-  background-color: var(--primary);
-	color: var(--background);
-}
-
-#editor .cm-tooltip li[aria-selected] .cm-completionMatchedText {
-	color: var(--secondary);
-}
-
-/*- FOLDS */
-#editor .cm-foldPlaceholder {
-	background-color: transparent;
-	border-color: var(--border-mute)
 }
 
 /** META SIDEBAR */
