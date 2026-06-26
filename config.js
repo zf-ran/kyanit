@@ -1,5 +1,38 @@
 const Marked = require('marked');
 
+const markedMath = {
+  name: 'math',
+  level: 'inline',
+  start(src) {
+    return src.match(/\$/)?.index;
+  },
+  tokenizer(src, tokens) {
+    // Match block math: $$math$$
+    const blockRule = /^\$\$\n?([\s\S]+?)\n?\$\$/;
+    const blockMatch = blockRule.exec(src);
+
+    if (blockMatch) {
+      return {
+        type: 'text',
+        raw: blockMatch[0],
+        text: blockMatch[0]
+      };
+    }
+
+    // Match inline math: $math$
+    const inlineRule = /^\$([^\$\n]+?)\$/;
+    const inlineMatch = inlineRule.exec(src);
+
+    if (inlineMatch) {
+      return {
+        type: 'text',
+        raw: inlineMatch[0],
+        text: inlineMatch[0]
+      };
+    }
+  }
+};
+
 const markedRenderer = {
 	heading({ text, depth, tokens }) {
 		const headingIdRegex = /(?: +|^)\{#(\d|[a-z]|[\w-]*)\}(?: +|$)/i;
@@ -88,6 +121,7 @@ function escapeHTML(string) {
 
 module.exports = {
 	markedRenderer,
+	markedMath,
 	mathjaxOptions,
 	purifyOptions,
 	dataConstraints

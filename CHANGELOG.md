@@ -1,5 +1,9 @@
 # Version Changelogs
 
+## 1.0.0-beta.9.1
+
+- Fixed backslash escape in math environment.
+
 ## 1.0.0-beta.9
 
 - Added redirect confirmation dialog for external links.

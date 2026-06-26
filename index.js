@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const { marked } = require('marked');
 const DOMPurify = require('isomorphic-dompurify');
 
-const { markedRenderer, purifyOptions } = require('./config');
+const { markedRenderer, markedMath, purifyOptions } = require('./config');
 
 const markedAlert = require('./modules/markdown-alert/index');
 const markedFootnote = require('marked-footnote');
@@ -20,11 +20,11 @@ marked.use(
 		footnoteDivider: true
 	}),
 	markedMoreLists(),
-	{ renderer: markedRenderer }
+	{ renderer: markedRenderer, extensions: [ markedMath ] }
 );
 
 const Kyanit = require('./modules/Kyanit');
-const { isUUID, parseBackslashes } = Kyanit;
+const { isUUID } = Kyanit;
 
 const { validateToken } = require('./modules/token');
 
@@ -236,7 +236,7 @@ app.get('/note/:noteId', async (req, res) => {
 
 	const note = notes[0];
 
-	const htmlContent = DOMPurify.sanitize(marked.parse(parseBackslashes(note.content)), purifyOptions);
+	const htmlContent = DOMPurify.sanitize(marked.parse(note.content), purifyOptions);
 
 	delete note.content;
 
@@ -360,7 +360,7 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 
 	const page = req.params.page || 'about';
 
-	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(parseBackslashes(user.about)), purifyOptions);
+	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(user.about), purifyOptions);
 
 	res.render('profile', {
 		user, notes, about: aboutHTMLContent, page

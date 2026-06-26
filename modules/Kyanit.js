@@ -8,12 +8,6 @@ function isUUID(string) {
 	return typeof string === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(string);
 }
 
-const KEPT_BACKSLASH = /\\(?![*_$~`])/g;
-
-function parseBackslashes(string) {
-	return string.replace(KEPT_BACKSLASH, '\\\\');
-}
-
 module.exports = {
 	Note,
 	Comment,
@@ -21,7 +15,5 @@ module.exports = {
 	User,
 	JSONResponse,
 	JSONErrorResponse,
-	isUUID,
-	parseBackslashes,
-	KEPT_BACKSLASH
+	isUUID
 };
