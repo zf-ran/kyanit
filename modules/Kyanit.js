@@ -15,5 +15,5 @@ module.exports = {
 	User,
 	JSONResponse,
 	JSONErrorResponse,
-	isUUID
+	isUUID,
 };

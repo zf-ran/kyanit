@@ -1,8 +1,27 @@
+/** PROFILE HEADER */
+.profile-header {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 1em;
+}
+
+.profile-header .identity h1.display-name {
+	margin: 0;
+}
+
+.profile-header .identity p.username {
+	font-weight: bold;
+	margin: 0;
+}
+
 .profile-header .stats {
 	display: flex;
 	flex-direction: row;
 	list-style-type: none;
+	color: var(--text-mute);
 	padding: 0;
+	margin: 0;
 }
 
 .profile-header .stats li {
@@ -13,5 +32,72 @@
 
 .profile-header .stats li:not(:last-child)::after {
 	content: '·';
-	margin-inline: .5em;
+	margin-inline: 4px;
+}
+
+/** PANELS */
+#home-panel {
+	flex-direction: column;
+	gap: 2em;
+}
+#home-panel.panel-active {
+	display: flex;
+}
+
+/*- ABOUT */
+.about {
+	border-left-width: 4px;
+	border-left-style: solid;
+	border-left-color: var(--text-mute);
+	margin-inline: 0;
+	border-radius: 0 .5em .5em 0;
+	padding: .5em 1.5em;
+}
+
+.about:has(.about-content:empty) {
+	display: none;
+}
+
+.about :first-child {
+	margin-top: 0;
+}
+.about :last-child {
+	margin-bottom: 0;
+}
+
+/*- TOP VIEWED NOTES */
+.top-viewed:has(.top-viewed-notes:empty) {
+	display: none !important;
+}
+
+.top-viewed-notes:empty {
+	border: 1px solid red;
+}
+
+/*- METADATA */
+.metadata-table {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+.metadata-table td {
+	border-top: 1px solid var(--border-mute);
+	border-bottom: 1px solid var(--border-mute);
+	padding: .5em 1em;
+	vertical-align: top;
+}
+
+.metadata-label {
+	font-family: var(--font-family--heading);
+	color: var(--text-mute);
+}
+
+@media screen and (max-width: 700px) {
+	.profile-header .stats {
+		flex-direction: column;
+	}
+
+	.profile-header .stats li:not(:last-child)::after {
+		content: "";
+	}
 }

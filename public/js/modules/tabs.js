@@ -14,6 +14,7 @@ for (const tabElement of tabElements) {
 				const activePanel = document.getElementById(activePanelId);
 
 				activePanel.setAttribute('hidden', '');
+				activePanel.classList.remove('panel-active');
 			}
 
 			event.target.classList.add('tab-active');
@@ -23,6 +24,7 @@ for (const tabElement of tabElements) {
 			const panel = document.getElementById(panelId);
 
 			panel.removeAttribute('hidden');
+			panel.classList.add('panel-active');
 		}
 	});
 }

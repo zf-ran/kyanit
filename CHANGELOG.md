@@ -1,5 +1,14 @@
 # Version Changelogs
 
+## 1.0.0-beta.10
+
+- Added user profile page.
+- Added logo-only logo for header.
+- Added login and sign up option at header.
+- Added `panel-active` property for active panel.
+- Changed licence.
+- Removed unused `console.log`.
+
 ## 1.0.0-beta.9.1
 
 - Fixed backslash escape in math environment.

@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const { marked } = require('marked');
 const DOMPurify = require('isomorphic-dompurify');
 
-const { markedRenderer, markedMath, purifyOptions } = require('./config');
+const { markedRenderer, markedMath, purifyOptions, MIN_RATING_COUNT_TO_SHOW } = require('./config');
 
 const markedAlert = require('./modules/markdown-alert/index');
 const markedFootnote = require('marked-footnote');
@@ -73,6 +73,7 @@ app.use(async (_req, res, next) => {
 	}
 
 	res.locals.version = version;
+	res.locals.MIN_RATING_COUNT_TO_SHOW = MIN_RATING_COUNT_TO_SHOW;
 
 	if(MAINTENANCE) {
 		const hasMaintenanceAccess = res.locals.isLoggedIn
@@ -96,8 +97,6 @@ app.use(async (_req, res, next) => {
 
 	next();
 });
-
-const MIN_RATING_COUNT_TO_SHOW = 3;
 
 app.get('/', validateToken, async (req, res) => {
 	const trendingNotes = await sql`
@@ -173,11 +172,11 @@ app.get('/', validateToken, async (req, res) => {
 		`;
 	}
 
-	res.render('index', { trendingNotes, newNotes, userNotes, MIN_RATING_COUNT_TO_SHOW });
+	res.render('index', { trendingNotes, newNotes, userNotes });
 });
 
 app.get('/explore', async (req, res) => {
-	res.render('explore', { MIN_RATING_COUNT_TO_SHOW });
+	res.render('explore');
 });
 
 app.get('/note/:noteId', async (req, res) => {
@@ -225,8 +224,8 @@ app.get('/note/:noteId', async (req, res) => {
 
 	if(notes.length === 0) {
 		res.status(404).render('error', {
-			icon: 'error',
-			title: 'Note Not Found',
+			icon: 'search_off',
+			title: 'Note not Found',
 			message: `Note with id <code class="code-span">${noteId}</code> not found. The note might be deleted by the author. Check for typos.`
 		});
 		return;
@@ -240,7 +239,7 @@ app.get('/note/:noteId', async (req, res) => {
 
 	delete note.content;
 
-	res.render('note', { note, rating, ratings, commentCount, htmlContent, MIN_RATING_COUNT_TO_SHOW });
+	res.render('note', { note, rating, ratings, commentCount, htmlContent });
 });
 
 app.get('/create', async (req, res) => {
@@ -296,17 +295,7 @@ app.get('/edit/:noteId', async (req, res) => {
 	res.render('create', { note, mode: 'edit' });
 });
 
-app.get('/user', async (req, res) => {
-	// TODO: Remove
-	res.render('coming-soon');
-	return;
-})
-
-app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
-	res.render('coming-soon');
-	return;
-
-	// TODO
+app.get('/user/:username', async (req, res) => {
 	const users = await sql`
 		SELECT
 			name,
@@ -321,10 +310,16 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 	const user = users[0];
 
 	if(!user) {
-		return res.status(404).send(`User with username ${req.params.username} not found.`);
+		res.status(404).render('error', {
+			icon: 'search_off',
+			title: 'User not Found',
+			message: `User with username <code class="code-span">${req.params.username}</code> not found.`
+		});
+		return;
 	}
 
 	let notes;
+
 	if(res.locals.username === user.name) {
 		// If the user is viewing their own profile, show unlisted notes.
 		notes = await sql`
@@ -358,12 +353,17 @@ app.get(['/user/:username', '/user/:username/:page'], async (req, res) => {
 		`;
 	}
 
-	const page = req.params.page || 'about';
-
 	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(user.about), purifyOptions);
 
+	const commentCount = (await sql`
+		SELECT COUNT(*)
+		FROM comments
+		WHERE commenter_name = ${user.name};
+	`)[0].count;
+
 	res.render('profile', {
-		user, notes, about: aboutHTMLContent, page
+		user, notes, about: aboutHTMLContent,
+		commentCount
 	});
 });
 
@@ -425,8 +425,8 @@ app.get('/docs/:docname', async (req, res) => {
 	} catch(error) {
 		if(error.code === 'ENOENT') {
 			res.status(404).render('error', {
-				icon: 'error',
-				title: 'Docs Not Found',
+				icon: 'search_off',
+				title: 'Docs not Found',
 				message: `Docs with docname <code class="code-span">${docname}</code> not found.`
 			});
 			return;

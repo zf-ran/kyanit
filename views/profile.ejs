@@ -1,27 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>[TODO] DisplayName | Kyanit</title>
+	<title><%- user.displayName %> | Kyanit</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+	<!-- MATHJAX -->
+	<script src="/js/modules/mathjax-options.js"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+
+	<!-- PRISM.JS -->
+	<style>
+		@import url("/css/modules/prism.min.css") (prefers-color-scheme: light);
+		@import url("/css/modules/prism-okaidia.min.css") (prefers-color-scheme: dark);
+	</style>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js" integrity="sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js" integrity="sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+
+	<!-- REDIRECT CONFIRMATION -->
+	<script type="module" src="/js/modules/redirect-confirmation.mjs" defer></script>
+
+	<!-- TABS -->
+	<script src="/js/modules/tabs.js" defer></script>
+
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/profile.css">
+	<link rel="stylesheet" href="/css/partials/markdown-document.css">
+	<link rel="stylesheet" href="/css/partials/note-card.css">
 </head>
 <body>
 	<%- include('partials/header') %>
+	<% const numberFormatter = new Intl.NumberFormat('en-US', {
+		notation: 'compact',
+		compactDisplay: 'short',
+		maximumFractionDigits: 1
+	}); %>
+	<% const totalViews = notes.reduce((acc, note) => acc + note.views, 0); %>
 
 	<main>
 		<section class="profile-header">
 			<div class="identity">
-				<h1 class="display-name"><%= user.displayName %></h1>
+				<h1 class="display-name"><%= user.displayName %><% if (user.isVerified) { %><span class="material-symbols-outlined">check</span><% } %></h1>
 				<p class="username">@<%= user.name %></p>
 			</div>
 			<ul class="stats">
-				<li><span class="material-symbols-outlined">article</span> 74 notes</li>
-				<li><span class="material-symbols-outlined">star_rate</span> 4.3/5 average rating</li>
-				<li><span class="material-symbols-outlined">visibility</span> 5k total views</li>
+				<li><span class="material-symbols-outlined">article</span> <%= notes.length %> note(s)</li>
+				<li><span class="material-symbols-outlined">visibility</span> <%= numberFormatter.format(totalViews) %> total view(s)</li>
 			</ul>
+		</section>
+
+		<div class="tabs" id="tabs" role="tablist">
+			<button class="tab tab-active" id="home-tab" aria-controls="home-panel" aria-selected="true" role="tab" tabindex="0">Home</button>
+			<button class="tab" id="notes-tab" aria-controls="notes-panel" aria-selected="false" role="tab" tabindex="1">Notes</button>
+		</div>
+
+		<section class="panel panel-active" id="home-panel" role="tabpanel" aria-labelledby="home-tab">
+			<section class="about">
+				<section class="about-content markdown-document clamped" id="about-content"><%- about %></section>
+			</section>
+
+			<section class="top-viewed">
+				<h2 class="heading tab-heading">Top Viewed Notes</h2>
+
+				<% const topViewedNotes = notes.toSorted((a, b) => b.views - a.views).slice(0, 5); %>
+				<div class="top-viewed-notes note-card-small-container"><% for(const note of topViewedNotes) { %><%- include('partials/note-card-small', { note }) %><% } %></div>
+			</section>
+
+			<section class="metadata">
+				<h2>Statistics</h2>
+
+				<% absoluteDate = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric', weekday: 'long', hourCycle: 'h23', hour: 'numeric', minute: 'numeric', second: 'numeric' }); %>
+				<table class="metadata-table">
+					<tr><td class="metadata-label">Username</td><td class="metadata-content"><%= user.name %></td></tr>
+					<tr><td class="metadata-label">Display name</td><td class="metadata-content"><%= user.displayName %></td></tr>
+					<tr><td class="metadata-label">Registered at</td><td class="metadata-content"><%= absoluteDate.format(new Date(user.createdAt)) %></td></tr>
+					<tr><td class="metadata-label">Note(s)</td><td class="metadata-content"><%= notes.length %></td></tr>
+					<tr><td class="metadata-label">Total view(s)</td><td class="metadata-content"><%= numberFormatter.format(totalViews) %></td></tr>
+					<tr><td class="metadata-label">Comment(s)</td><td class="metadata-content"><%= commentCount %></td></tr>
+				</table>
+			</section>
+		</section>
+		<section class="panel" id="notes-panel" role="tabpanel" aria-labelledby="notes-tab" hidden>
+			<div class="notes note-card-small-container">
+				<% for(const note of notes) { %>
+					<%- include('partials/note-card-small', { note }) %>
+				<% } %>
+			</div>
 		</section>
 	</main>
 </body>

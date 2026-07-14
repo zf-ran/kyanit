@@ -19,7 +19,7 @@
 	<header>
 		<ul id="top-navigation" data-search="false">
 			<li class="action" id="open-sidebar" tabindex="0"><span class="material-symbols-outlined">menu</span></li>
-			<li id="logo"><a href="/"><img src="/assets/header.svg" alt="KYANIT" height="24"></a></li>
+			<li id="logo"><a href="/"><img src="/assets/header.svg" class="logo-wordmark" alt="KYANIT" height="24"><img src="/assets/header-logo.svg" class="logo-logo" alt="K" height="24"></a></li>
 			<li id="search-wrapper">
 				<span class="material-symbols-outlined">search</span>
 				<input type="text" name="search" id="search-input" placeholder="Search" size="1"/>
@@ -27,17 +27,24 @@
 				<span class="material-symbols-outlined" id="search-submit">search</span>
 			</li>
 			<li class="action" id="search-button"><span class="material-symbols-outlined">search</span></li>
-			<a href="<%- (isLoggedIn) ? `/user/${username}` : '/login' %>" class="profile">
+			<% if (isLoggedIn) { %>
 				<li class="action">
-					<button class="icon large secondary">
-						<% if(isLoggedIn) { %>
+					<a href="/user/<%- username %>" class="profile">
+						<button class="icon large secondary">
 							<span class="material-symbols-outlined">person</span>
-						<% } else { %>
-							<span class="material-symbols-outlined">login</span>
-						<% } %>
-					</button>
+						</button>
+					</a>
 				</li>
-			</a>
+			<% } else { %>
+				<li class="action">
+					<a href="/login" class="profile">
+						<button class="small secondary">Log in</button>
+					</a>
+					<a href="/signup" class="profile">
+						<button class="small">Sign up</button>
+					</a>
+				</li>
+			<% } %>
 		</ul>
 	</header>
 	<aside id="sidebar">

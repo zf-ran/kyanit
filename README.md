@@ -47,6 +47,8 @@ A user can post a note. Here, a note is like an article, or a post; that has a t
 - [x] Make official documents in separate section.
 - [x] Link confirmation.
 - [ ] Comment and reply input.
+- [ ] Comment section skeleton loader.
+- [ ] Comment section empty marker.
 - [ ] Printing layout customization.
 - [ ] Live preview.
 - [ ] Rating system for note.

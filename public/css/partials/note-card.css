@@ -175,6 +175,9 @@ div:is(.note-card, .note-card-small) .author {
 	gap: 4px;
 	margin-top: 4px;
 }
+div:is(.note-card, .note-card-small) .author:empty {
+	display: none;
+}
 
 div:is(.note-card, .note-card-small) .details {
 	display: flex;

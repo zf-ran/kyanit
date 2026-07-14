@@ -7,7 +7,7 @@
 	<% } %>
 	<div class="meta-data">
 		<div class="title"><%= note.title %></div>
-		<div class="author"><%= note.authorDisplayName %> <% if(note.isAuthorVerified) { %><span class="material-symbols-outlined">check</span><% } %></div>
+		<div class="author"><%= note.authorDisplayName %><% if(note.isAuthorVerified) { %><span class="material-symbols-outlined">check</span><% } %></div>
 		<div class="details">
 			<span class="date"><%= $relativeTime(note.createdAt) %></span>
 			<span class="views"><%= note.views %> views</span>

@@ -101,7 +101,6 @@
 <% if (username !== note.authorName) { %>
 	<script>
 		setTimeout(async () => {
-			console.log("5 sec");
 			try {
 				await fetch(`/api/notes/<%- note.id %>/views`, {
 					method: 'POST',
