@@ -1,5 +1,9 @@
 # Version Changelogs
 
+## 1.0.0-beta.5.2
+
+- Allow `image/webp` as thumbnails.
+
 ## 1.0.0-beta.5.1
 
 -	Renamed `module/validateBody.js` to `module/bodyValidator.js`.
