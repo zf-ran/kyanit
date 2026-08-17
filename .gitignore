@@ -4,3 +4,4 @@ nondist_assets
 *.env
 .vscode
 *.bak
+*.bundle.js

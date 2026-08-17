@@ -44,6 +44,13 @@
 	<main>
 		<div class="meta-data">
 			<div class="title"><%= note.title %></div>
+			<% if(note.keywords.length > 0) { %>
+				<div class="keyword-container">
+					<% for(let j = 0; j < note.keywords.length; j++) { %>
+						<label class="chip keyword"><a href="/explore?keyword=<%- note.keywords[j] %>"><%= note.keywords[j] %></a></label>
+					<% } %>
+				</div>
+			<% } %>
 			<div class="details">
 				<div class="author-date">
 					<span class="author-display">by <%= note.authorDisplayName %></span>

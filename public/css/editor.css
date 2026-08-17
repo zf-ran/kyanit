@@ -96,7 +96,7 @@ main {
 
 	overflow: auto;
 
-	z-index: 200;
+	z-index: 300;
 }
 
 .meta-sidebar.open {
@@ -111,10 +111,6 @@ main {
 	margin-block-end: 2em;
 }
 
-#publish {
-	float: right;
-}
-
 #toggle-meta-sidebar {
 	display: grid;
 	grid-template-columns: 1fr;
@@ -124,7 +120,7 @@ main {
 	bottom: 1em;
 	transition-property: scale, right;
 	transition-duration: 250ms;
-	z-index: 201;
+	z-index: 301;
 }
 body:has(.meta-sidebar.open) #toggle-meta-sidebar {
 	right: 372px;

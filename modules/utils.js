@@ -1,6 +1,6 @@
 /**
  * @param {number[]} numberArray
- * @type {number}
+ * @returns {number}
  */
 function average(numberArray) {
 	if(numberArray.length === 0) {
@@ -14,16 +14,18 @@ function average(numberArray) {
 
 /**
  * @param {number[]} numberArray
- * @type {number}
+ * @returns {number}
  */
 function sum(numberArray) {
-	let sum = 0;
-
-	for(let i = 0; i < numberArray.length; i++) {
-		sum += numberArray[i];
-	}
-
-	return sum;
+	return numberArray.reduce((prev, cur) => prev + cur, 0);
 }
 
-module.exports = { average, sum }
+/**
+ * @param {string} text
+ * @returns {string}
+ */
+function slug(text) {
+	return text.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9\-]/g, '');
+}
+
+module.exports = { average, sum, slug };

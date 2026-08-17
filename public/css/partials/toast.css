@@ -6,7 +6,7 @@
 	padding-top: 16px;
 	top: 0; right: 0;
 	gap: 16px;
-	z-index: 100;
+	z-index: 1000;
 }
 
 #toast-container:empty {

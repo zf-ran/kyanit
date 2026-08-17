@@ -1,5 +1,24 @@
 # Version Changelogs
 
+## 1.0.0-beta.11
+
+- Added dependencies:
+	- Added CodeMirror packages (v6).
+	- Added esbuild as dev dependency.
+- Added link shortener access.
+	- New `/s/:slug` route for URL redirection.
+	- Added `short_links` database table.
+- Added keywords in note views.
+- Added unit tests.
+- Added `bugs` field to package.json.
+- Fixed total views in statistics table from short to long.
+- Fixed [#1](https://github.com/zf-ran/kyanit/issues/1).
+- Refactored note editor.
+- Refactored `sum()` utility to use `.reduce()`.
+- Removed minimized routes.
+- Moved TODOs from README to a separate file.
+- Updated README.
+
 ## 1.0.0-beta.10
 
 - Added user profile page.

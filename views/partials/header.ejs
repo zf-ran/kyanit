@@ -59,12 +59,13 @@
 					</ul>
 			</li>
 			<hr>
-			<li class="sidebar-item"><a href="/user"><span class="material-symbols-outlined">account_box</span> <span class="label">Profile</span></a></li>
-			<li class="sidebar-item"><a href="/create"><span class="material-symbols-outlined">add_notes</span> <span class="label">Start Writing</span></a></li>
-			<hr>
+			<% if (isLoggedIn) { %>
+				<li class="sidebar-item"><a href="/user/<%- username %>"><span class="material-symbols-outlined">account_box</span> <span class="label">Profile</span></a></li>
+				<li class="sidebar-item"><a href="/create"><span class="material-symbols-outlined">add_notes</span> <span class="label">Start Writing</span></a></li>
+				<li class="sidebar-item"><a href="/settings"><span class="material-symbols-outlined">settings</span> <span class="label">Settings</span></a></li>
+				<hr>
+			<% } %>
 			<li class="sidebar-item"><a href="/docs"><span class="material-symbols-outlined">help</span> <span class="label">Help</span></a></li>
-			<li class="sidebar-item"><a href="/settings"><span class="material-symbols-outlined">settings</span> <span class="label">Settings</span></a></li>
-			<hr>
 			<li class="sidebar-item redirect"><a href="https://github.com/zf-ran/kyanit"><span class="material-symbols-outlined">network_node</span> <span class="label">Version Control</span> <span class="material-symbols-outlined open-in-new">open_in_new</span></a></li>
 			<li class="sidebar-item redirect"><a href="https://github.com/zf-ran/kyanit/issues"><span class="material-symbols-outlined">bug_report</span> <span class="label">Report Bug</span> <span class="material-symbols-outlined open-in-new">open_in_new</span></a></li>
 		</ul>

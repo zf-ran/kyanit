@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Create | Kyanit</title>
+	<title>✎ <%= note.title %> | Kyanit</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<script src="/js/create.mjs" type="module" defer></script>
+	<!-- METADATA -->
+	<script id="metadata--note-id" type="application/json"><%- JSON.stringify(note.id || '') %></script>
+
+	<script src="/js/editor/editor.bundle.js" type="module" defer></script>
+	<script src="/js/editor/publish.mjs" type="module" defer></script>
+	<script src="/js/editor/delete.mjs" type="module" defer></script>
 
 	<link rel="stylesheet" href="/main.css">
-	<link rel="stylesheet" href="/css/create.css">
+	<link rel="stylesheet" href="/css/editor.css">
 </head>
 <body>
 	<%- include('partials/header') %>
@@ -44,7 +49,7 @@
 			<button id="tool-display-math"><span class="material-symbols-outlined">functions</span></button>
 		</div>
 
-		<div id="editor"></div>
+		<div id="editor"><%= note.content %></div>
 	</main>
 
 	<button class="fab" id="toggle-meta-sidebar"><span class="material-symbols-outlined toggle-close">arrow_forward</span><span class="material-symbols-outlined toggle-open">cloud_upload</span></button>
@@ -57,7 +62,7 @@
 			<span class="material-symbols-outlined input-icon">title</span>
 			<label for="title">
 				<span class="input-label">Title</span>
-				<input type="text" placeholder="Untitled" id="title" required/>
+				<input type="text" placeholder="Title" id="title" value="<%- note.title %>" required/>
 			</label>
 		</div>
 		<p class="input-tip">Title will be displayed on the page and card.</p>
@@ -66,24 +71,42 @@
 			<span class="material-symbols-outlined input-icon">tag</span>
 			<label for="keywords">
 				<span class="input-label">Keywords</span>
-				<input type="text" placeholder="" id="keywords"/>
+				<input type="text" placeholder="Keywords" id="keywords" value="<%- note.keywords.join(' ') %>"/>
 			</label>
 		</div>
 		<p class="input-tip">Your note will be searchable by its keywords. Separate keywords by a space.</p>
+
+		<div class="input-wrapper">
+			<span class="material-symbols-outlined input-icon">image</span>
+			<label for="thumbnail-url">
+				<span class="input-label">Thumbnail URL</span>
+				<input type="text" placeholder="Thumbnail URL" id="thumbnail-url" value="<%- note.thumbnailURL %>"/>
+			</label>
+		</div>
+		<p class="input-tip">Use a URL that gives a <code>image/png</code>, <code>image/jpeg</code>, or <code>image/webp</code>.</p>
 
 		<div class="input-wrapper">
 			<span class="material-symbols-outlined input-icon">visibility</span>
 			<label for="visibility">
 				<span class="input-label">Visibility</span>
 				<select name="visibility" id="visibility" required>
-					<option value="public" selected>Public</option>
+					<option value="public">Public</option>
 					<option value="unlisted">Unlisted</option>
 				</select>
 			</label>
 		</div>
 		<p class="input-tip">Public means your note is searchable, unlisted means your note can only be accessed by a link.</p>
 
-		<button id="publish"><span class="material-symbols-outlined">cloud_upload</span>Publish</button>
+		<% if (mode === 'edit') { %>
+			<p>Go to <a href="/note/<%- note.id %>" target="_blank">the note page</a>.</p>
+		<% } %>
+
+		<div role="group" class="button-group">
+			<% if (mode === 'edit') { %>
+				<button class="destructive secondary" id="delete"><span class="material-symbols-outlined">delete</span> Delete</button>
+			<% } %>
+			<button id="publish"><span class="material-symbols-outlined">cloud_upload</span> Publish</button>
+		</div>
 	</div>
 </body>
 </html>

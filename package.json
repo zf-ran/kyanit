@@ -1,16 +1,29 @@
 {
   "name": "kyanit",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.11",
   "description": "Website for creating a markdown note",
   "author": "Zafran",
   "main": "index.js",
   "scripts": {
     "start": "node --env-file .env index",
-    "test": "node --env-file .test.env index"
+    "dev": "node --env-file .dev.env index",
+    "test": "node --test",
+    "build": "esbuild public/js/editor/editor.mjs --bundle --minify --outfile=public/js/editor/editor.bundle.js",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.0",
+    "@codemirror/highlight": "^0.19.8",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/language-data": "^6.5.2",
+    "@codemirror/search": "^6.7.1",
+    "@codemirror/state": "^6.7.1",
+    "@codemirror/view": "^6.43.9",
     "@neondatabase/serverless": "^1.0.1",
     "body-parser": "^2.2.0",
+    "codemirror": "^6.0.2",
     "cookie-parser": "^1.4.6",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
@@ -21,13 +34,22 @@
     "marked-alert": "^2.1.2",
     "marked-footnote": "^1.4.0",
     "marked-more-lists": "^1.0.0",
-    "mathjax-node-page": "^1.4.0",
     "path": "^0.12.7",
     "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "overrides": {
+    "jsdom": "25.0.1",
+    "html-encoding-sniffer": "4.0.0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zf-ran/kyanit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zf-ran/kyanit/issues"
   },
   "license": "MIT"
 }

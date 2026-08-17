@@ -1,7 +1,7 @@
-import { EditorView, basicSetup } from 'https://esm.sh/codemirror';
-import { tags } from 'https://esm.sh/@codemirror/highlight';
+import { EditorView, basicSetup } from 'codemirror';
+import { tags } from '@codemirror/highlight';
 
-import { EditorState, EditorSelection } from 'https://esm.sh/@codemirror/state';
+import { EditorState, EditorSelection } from '@codemirror/state';
 
 import {
 	keymap,
@@ -12,7 +12,7 @@ import {
 	rectangularSelection,
 	dropCursor,
 	lineNumbers
-} from 'https://esm.sh/@codemirror/view';
+} from '@codemirror/view';
 
 import {
 	HighlightStyle,
@@ -22,29 +22,29 @@ import {
 	bracketMatching,
 	foldGutter,
 	foldKeymap
-} from 'https://esm.sh/@codemirror/language';
+} from '@codemirror/language';
 
 import {
 	defaultKeymap,
 	history,
 	historyKeymap,
 	indentWithTab
-} from 'https://esm.sh/@codemirror/commands';
+} from '@codemirror/commands';
 
 import {
 	searchKeymap,
 	highlightSelectionMatches
-} from 'https://esm.sh/@codemirror/search';
+} from '@codemirror/search';
 
 import {
 	autocompletion,
 	completionKeymap,
 	closeBrackets,
 	closeBracketsKeymap
-} from 'https://esm.sh/@codemirror/autocomplete';
+} from '@codemirror/autocomplete';
 
-import { markdown, markdownLanguage } from 'https://esm.sh/@codemirror/lang-markdown';
-import { languages } from 'https://esm.sh/@codemirror/language-data';
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { languages } from '@codemirror/language-data';
 
 const customFoldGutter = foldGutter({
 	markerDOM(open) {
@@ -274,14 +274,6 @@ toggleMetaSidebar.addEventListener('click', () => {
 	else
 		metaSidebar.classList.add('open');
 });
-
-window.addEventListener('keydown', event => {
-	if (event.key == 's' && event.ctrlKey) {
-		event.preventDefault();
-
-		metaSidebar.classList.add('open');
-	}
-})
 
 function prefixLine(prefix) {
 	editorInstance.dispatch(

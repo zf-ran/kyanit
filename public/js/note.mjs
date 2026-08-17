@@ -33,12 +33,7 @@ if (authorName === username) {
 	const deleteNoteButton = document.getElementById('delete-note-button');
 
 	editNoteButton.addEventListener('click', () => {
-		dialog.alert({
-			title: 'Coming soon …',
-			message: 'Note editing and creation work in progress.',
-			dismissIcon: 'thumb_up',
-			dismissText: 'Alright'
-		});
+		location.assign(`/edit/${noteId}`);
 	});
 
 	deleteNoteButton.addEventListener('click', async () => {

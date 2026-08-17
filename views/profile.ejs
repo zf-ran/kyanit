@@ -75,7 +75,7 @@
 					<tr><td class="metadata-label">Display name</td><td class="metadata-content"><%= user.displayName %></td></tr>
 					<tr><td class="metadata-label">Registered at</td><td class="metadata-content"><%= absoluteDate.format(new Date(user.createdAt)) %></td></tr>
 					<tr><td class="metadata-label">Note(s)</td><td class="metadata-content"><%= notes.length %></td></tr>
-					<tr><td class="metadata-label">Total view(s)</td><td class="metadata-content"><%= numberFormatter.format(totalViews) %></td></tr>
+					<tr><td class="metadata-label">Total view(s)</td><td class="metadata-content"><%= totalViews %></td></tr>
 					<tr><td class="metadata-label">Comment(s)</td><td class="metadata-content"><%= commentCount %></td></tr>
 				</table>
 			</section>

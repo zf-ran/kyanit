@@ -11,6 +11,17 @@
 	font-size: 3.05em;
 }
 
+.meta-data .keyword-container {
+	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+	overflow-x: auto;
+}
+
+.meta-data .keyword-container label.keyword a {
+	all: unset;
+}
+
 .meta-data .details {
 	display: flex;
 	align-items: start;

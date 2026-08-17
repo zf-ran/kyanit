@@ -243,11 +243,8 @@ app.get('/note/:noteId', async (req, res) => {
 });
 
 app.get('/create', async (req, res) => {
-	res.render('coming-soon');
-	return;
-
-	// TODO
-	if(!res.locals.isLoggedIn) return res.redirect('back');
+	if (!res.locals.isLoggedIn)
+		return res.redirect('back');
 
 	const startingNote = {
 		title: 'Untitled',
@@ -259,19 +256,16 @@ app.get('/create', async (req, res) => {
 		thumbnail_url: '',
 	};
 
-	res.render('create', { note: startingNote, mode: 'create' });
+	res.render('editor', { note: startingNote, mode: 'create' });
 });
 
 app.get('/edit/:noteId', async (req, res) => {
-	res.render('coming-soon');
-	return;
-
-	// TODO
-	if(!res.locals.isLoggedIn) return res.redirect('back');
+	if (!res.locals.isLoggedIn)
+		return res.redirect('back');
 
 	const noteId = req.params.noteId;
 
-	if(!isUUID(noteId)) {
+	if (!isUUID(noteId)) {
 		res.redirect('/create');
 		return;
 	}
@@ -290,9 +284,10 @@ app.get('/edit/:noteId', async (req, res) => {
 
 	const note = notes[0];
 
-	if(!note) return res.redirect('/create');
+	if (!note)
+		return res.redirect('/create');
 
-	res.render('create', { note, mode: 'edit' });
+	res.render('editor', { note, mode: 'edit' });
 });
 
 app.get('/user/:username', async (req, res) => {
@@ -380,18 +375,6 @@ app.get('/settings', (req, res) => {
 	res.render('coming-soon');
 });
 
-//* Minified 
-const minifiedRoutes = require('./routes/minified');
-app.use(
-	'/min',
-	(req, _res, next) => {
-		// Inject database.
-		req.sql = sql;
-		next();
-	},
-	minifiedRoutes
-);
-
 //* Docs
 const yaml = require('yaml');
 const fs = require('fs');
@@ -418,29 +401,57 @@ app.get('/docs', async (req, res) => {
 
 app.get('/docs/:docname', async (req, res) => {
 	const docname = req.params.docname;
-	let doc;
 
 	try {
-		doc = fs.readFileSync(path.join(DOCS_DIR, `${docname}.md`), 'utf-8');
+		const doc = fs.readFileSync(path.join(DOCS_DIR, `${docname}.md`), 'utf-8');
+
+		const { metadata, raw } = extractMetadata(doc);
+
+		// Remove metadata
+		doc = doc.replace(raw, '');
+
+		const htmlContent = DOMPurify.sanitize(marked.parse(doc), purifyOptions);
+
+		res.render('doc', { metadata, htmlContent });
 	} catch(error) {
 		if(error.code === 'ENOENT') {
 			res.status(404).render('error', {
 				icon: 'search_off',
 				title: 'Docs not Found',
-				message: `Docs with docname <code class="code-span">${docname}</code> not found.`
+				message: `Docs with docname <code class="code-span">${docname}</code> not found.`,
+			});
+		}
+	}
+});
+
+app.get('/s/:owner/:slug', async (req, res) => {
+	const { owner, slug } = req.params;
+
+	try {
+		const [link] = await sql`
+			SELECT original_url AS "originalURL"
+			FROM short_links
+			WHERE owner_name = ${owner} AND slug = ${slug};
+		`;
+
+		if (!link) {
+			res.status(404).render('error', {
+				icon: 'close',
+				title: 'Shortened URL not Found',
+				message: `No shortened URL with slug <code>${slug}</code>.`,
 			});
 			return;
 		}
+
+		res.redirect(link.originalURL);
+	} catch (error) {
+		console.error(error);
+		res.status(500).render('error', {
+			icon: 'cloud_alert',
+			title: 'Internal Server Error',
+			message: error
+		});
 	}
-
-	const { metadata, raw } = extractMetadata(doc);
-
-	// Remove metadata
-	doc = doc.replace(raw, '');
-
-	const htmlContent = DOMPurify.sanitize(marked.parse(doc), purifyOptions);
-
-	res.render('doc', { metadata, htmlContent });
 });
 
 function extractMetadata(content) {

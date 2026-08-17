@@ -92,7 +92,7 @@ function validateBody(schema) {
 						return res.status(400).json({ error: `${key} must be an array` });
 					if(rule.minLength && value.length < rule.minLength)
 						return res.status(400).json({ error: `${key} must have at least ${rule.minLength} element(s)` });
-					if(rule.maxLength && value.length < rule.maxLength)
+				if(rule.maxLength && value.length > rule.maxLength)
 						return res.status(400).json({ error: `${key} must have at most ${rule.maxLength} element(s)` });
 					break;
 				case 'url':
