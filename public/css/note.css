@@ -1,5 +1,4 @@
 .meta-data {
-	margin-top: 1em;
 	display: flex;
 	flex-direction: column;
 	gap: 1em;
@@ -223,6 +222,31 @@ main:has(#tabs) hr.meta-content-separator {
 }
 
 @media print {
+	.meta-data {
+		gap: 0.5em;
+	}
+
+	.meta-data .keyword-container {
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+		overflow-x: auto;
+	}
+
+	.meta-data .keyword-container label {
+		border-radius: 0;
+		padding: 0 4px;
+	}
+
+	.meta-data .keyword-container label.keyword a {
+		all: unset;
+	}
+
+	.meta-data .thumbnail {
+		display: none;
+		visibility: hidden;
+	}
+
 	div.note-actions {
 		display: none;
 		visibility: hidden;

@@ -149,11 +149,6 @@
 	fill: currentColor;
 }
 
-/** LINK */
-.anchor:hover {
-	border-bottom: 1px solid var(--link);
-}
-
 /** FOOTNOTES */
 .markdown-document hr[data-footnotes] {
   max-width: 2in;

@@ -114,6 +114,7 @@ const dialog = {
 	 * @param {string} [options.cancelText] - Text for the cancel button. Defaults to “Cancel”.
 	 * @param {string | null} [options.confirmIcon] - Icon for the confirm button.
 	 * @param {string} [options.confirmText] - Text for the confirm button. Defaults to “Yes”.
+	 * @param {string} [options.destructive]
 	 * @param {FormField[]} options.inputs
 	 */
 	async form({
@@ -121,7 +122,7 @@ const dialog = {
 		message,
 		confirmIcon, confirmText,
 		cancelIcon, cancelText,
-		fields
+		fields, destructive
 	}) {
 		if (!title) {
 			console.error('Title is required in forms.');
@@ -134,6 +135,9 @@ const dialog = {
 			menu: menuElement,
 			form: formElement
 		} = createDialog({ title, message });
+
+		if (destructive)
+			dialogElement.classList.add('destructive');
 
 		cancelText ??= 'Cancel';
 		confirmText ??= 'Yes';

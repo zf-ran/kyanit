@@ -3,6 +3,7 @@ form {
 }
 
 .form-message {
+	margin-block: 0.5em;
 	color: var(--error);
 }
 

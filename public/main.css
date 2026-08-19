@@ -80,7 +80,7 @@ body {
 
 main {
 	margin: auto;
-	padding: 1em 1.5em;
+	padding: 2em 1.5em;
 	max-width: 700px;
 }
 
@@ -167,6 +167,10 @@ p, li {
 a {
 	color: var(--link);
 	text-decoration: none;
+}
+
+.anchor:hover {
+	border-bottom: 1px solid var(--link);
 }
 
 hr {

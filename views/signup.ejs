@@ -17,7 +17,7 @@
 			<form action="/auth/signup" method="post" id="signup-form" aria-labelledby="form-title">
 				<div class="form-heading">
 					<h2 class="form-title" id="form-title"><span class="material-symbols-outlined">person_add</span> Sign Up</h2>
-					<p class="form-subtitle">Register an account. Already have an account? <a href="/login">Log in</a> instead.</p>
+					<p class="form-subtitle">Register an account. Already have an account? <a class="anchor" href="/login">Log in</a> instead.</p>
 					<p class="form-subtitle">Choose your username wisely, since <strong><ins>usernames cannot be changed!</ins></strong> You can change your display name later.</p>
 				</div>
 				<div class="form-inputs">
@@ -36,7 +36,7 @@
 						</label>
 					</div>
 				</div>
-				<p class="form-message" aria-live="polite"><span class="material-symbols-outlined">error</span> <span id="message"></span></p>
+				<p class="form-message" id="message" aria-live="polite"></p>
 				<menu>
 					<button type="submit" id="signup-submit">
 						<span class="material-symbols-outlined">person_add</span>
@@ -48,7 +48,7 @@
 			<form action="/auth/login" method="post" id="signup-form" aria-labelledby="form-title">
 				<div class="form-heading">
 					<h2 class="form-title" id="form-title"><span class="material-symbols-outlined">login</span> Log In</h2>
-					<p class="form-subtitle">Welcome back! Don’t have an account yet? <a href="/signup">Sign up</a> instead.</p>
+					<p class="form-subtitle">Welcome back! Don’t have an account yet? <a class="anchor" href="/signup">Sign up</a> instead.</p>
 				</div>
 				<div class="form-inputs">
 					<div class="input-wrapper">
@@ -66,7 +66,7 @@
 						</label>
 					</div>
 				</div>
-				<p class="form-message" aria-live="polite"><span class="material-symbols-outlined">error</span> <span id="message"></span></p>
+				<p class="form-message" id="message" aria-live="polite"></p>
 				<menu>
 					<button type="submit" id="signup-submit">
 						<span class="material-symbols-outlined">login</span>

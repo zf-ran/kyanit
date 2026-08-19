@@ -1,6 +1,7 @@
 import dialog from '/js/modules/dialog.mjs';
 import toast from '/js/modules/toast.mjs';
 
+//* PUBLIS BUTTON
 const publishButton = document.getElementById('publish');
 
 const metaSidebar = document.getElementById('meta-sidebar');
@@ -187,9 +188,20 @@ async function publish(title, content, keywords, unlisted, thumbnailURL) {
 
 	toast({
 		title: 'Published',
-		message: `Note published successfully with ID: <code>${json.data.id}</code>`
+		message: `Note published successfully`
 	});
 
 	if (mode === 'create')
 		location.replace(`/edit/${json.data.id}`);
+}
+
+//* PREVIEW BUTTON
+const previewButton = document.getElementById('preview');
+
+if (previewButton) {
+	const noteId = JSON.parse(document.getElementById('metadata--note-id').textContent);
+
+	previewButton.addEventListener('click', () => {
+		window.open(`/note/${noteId}`, '_blank');
+	});
 }

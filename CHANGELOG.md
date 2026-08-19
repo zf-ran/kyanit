@@ -1,5 +1,17 @@
 # Version Changelogs
 
+## 1.0.0-beta.11.1
+
+- Added delete confirmation by text inputting ‘DELETE’.
+- Added destructive form dialog.
+- Added icons to user profile headings.
+- Added preview button in note editor.
+- Added printing support for note keywords.
+- Fixed documentation wont open.
+- Fixed form error spacing in login and signup page.
+- Removed ‘by’ in note author, from ‘by Author Name’ to just ‘Author Name’.
+- Updated `main` margin and padding to be consistent.
+
 ## 1.0.0-beta.11
 
 - Added dependencies:

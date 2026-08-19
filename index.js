@@ -23,6 +23,8 @@ marked.use(
 	{ renderer: markedRenderer, extensions: [ markedMath ] }
 );
 
+const matter = require('gray-matter');
+
 const Kyanit = require('./modules/Kyanit');
 const { isUUID } = Kyanit;
 
@@ -403,14 +405,10 @@ app.get('/docs/:docname', async (req, res) => {
 	const docname = req.params.docname;
 
 	try {
-		const doc = fs.readFileSync(path.join(DOCS_DIR, `${docname}.md`), 'utf-8');
+		const file = fs.readFileSync(path.join(DOCS_DIR, `${docname}.md`), 'utf-8');
+		const { data: metadata, content } = matter(file);
 
-		const { metadata, raw } = extractMetadata(doc);
-
-		// Remove metadata
-		doc = doc.replace(raw, '');
-
-		const htmlContent = DOMPurify.sanitize(marked.parse(doc), purifyOptions);
+		const htmlContent = DOMPurify.sanitize(marked.parse(content), purifyOptions);
 
 		res.render('doc', { metadata, htmlContent });
 	} catch(error) {
@@ -420,6 +418,8 @@ app.get('/docs/:docname', async (req, res) => {
 				title: 'Docs not Found',
 				message: `Docs with docname <code class="code-span">${docname}</code> not found.`,
 			});
+
+			return;
 		}
 	}
 });
@@ -453,16 +453,6 @@ app.get('/s/:owner/:slug', async (req, res) => {
 		});
 	}
 });
-
-function extractMetadata(content) {
-	const metadataRegExp = /^---([\S\s]*?)---/;
-	const metadataString = content.match(metadataRegExp)[1];
-
-	return {
-		metadata: yaml.parse(metadataString),
-		raw: content.match(metadataRegExp)[0]
-	};
-}
 
 //* APIs 
 const userRoutes = require('./routes/users');

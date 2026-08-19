@@ -35,6 +35,10 @@
 	margin-inline: 4px;
 }
 
+#tabs {
+	margin-bottom: 2em;
+}
+
 /** PANELS */
 #home-panel {
 	flex-direction: column;

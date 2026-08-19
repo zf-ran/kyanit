@@ -60,14 +60,14 @@
 			</section>
 
 			<section class="top-viewed">
-				<h2 class="heading tab-heading">Top Viewed Notes</h2>
+				<h2 class="heading tab-heading"><span class="material-symbols-outlined">cards_star</span> Top Viewed Notes</h2>
 
 				<% const topViewedNotes = notes.toSorted((a, b) => b.views - a.views).slice(0, 5); %>
 				<div class="top-viewed-notes note-card-small-container"><% for(const note of topViewedNotes) { %><%- include('partials/note-card-small', { note }) %><% } %></div>
 			</section>
 
 			<section class="metadata">
-				<h2>Statistics</h2>
+				<h2 class="heading tab-heading"><span class="material-symbols-outlined">leaderboard</span> Statistics</h2>
 
 				<% absoluteDate = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric', weekday: 'long', hourCycle: 'h23', hour: 'numeric', minute: 'numeric', second: 'numeric' }); %>
 				<table class="metadata-table">

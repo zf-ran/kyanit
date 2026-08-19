@@ -15,7 +15,7 @@
 	- [x] Toasts.
 	- [ ] Snackbar.
 - [x] Log in page.
-- [ ] Account page.
+- [x] Account page.
 - [ ] Note page.
 	| Feature            | Display | Input  |
 	| ------------------ | ------- | ------ |

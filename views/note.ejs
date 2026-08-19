@@ -53,7 +53,7 @@
 			<% } %>
 			<div class="details">
 				<div class="author-date">
-					<span class="author-display">by <%= note.authorDisplayName %></span>
+					<span class="author-display"><%= note.authorDisplayName %></span>
 					<span class="author-username"><a class="anchor" href="/user/<%- note.authorName %>">@<%= note.authorName %></a></span>
 					<span class="date">
 						<span class="date-full">
@@ -82,7 +82,7 @@
 			</div>
 			<div class="note-actions button-group" role="group">
 				<button id="rate-button"><span class="material-symbols-outlined">star</span> <span class="button-label">Rate</span></button>
-				<button class="secondary" id="copy-url-button"><span class="material-symbols-outlined">link</span> <span class="button-label">Copy URL</span></button>
+				<button class="secondary" id="copy-url-button"><span class="material-symbols-outlined">link</span> <span class="button-label">Copy Link</span></button>
 				<% if(username === note.authorName) { %>
 					<button class="secondary" id="edit-note-button"><span class="material-symbols-outlined">edit</span> <span class="button-label">Edit</span></button>
 					<button class="secondary destructive" id="delete-note-button"><span class="material-symbols-outlined">delete</span> <span class="button-label">Delete</span></button>

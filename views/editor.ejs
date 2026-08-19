@@ -97,13 +97,10 @@
 		</div>
 		<p class="input-tip">Public means your note is searchable, unlisted means your note can only be accessed by a link.</p>
 
-		<% if (mode === 'edit') { %>
-			<p>Go to <a href="/note/<%- note.id %>" target="_blank">the note page</a>.</p>
-		<% } %>
-
 		<div role="group" class="button-group">
 			<% if (mode === 'edit') { %>
-				<button class="destructive secondary" id="delete"><span class="material-symbols-outlined">delete</span> Delete</button>
+				<button class="destructive secondary icon" id="delete"><span class="material-symbols-outlined">delete</span></button>
+				<button class="secondary" id="preview" role="link"><span class="material-symbols-outlined">text_snippet</span> Preview</button>
 			<% } %>
 			<button id="publish"><span class="material-symbols-outlined">cloud_upload</span> Publish</button>
 		</div>
