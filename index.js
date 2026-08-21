@@ -384,15 +384,17 @@ const fs = require('fs');
 const DOCS_DIR = path.join(__dirname, 'docs');
 
 app.get('/docs', async (req, res) => {
-	const files = fs.readdirSync(DOCS_DIR)
+	const fileNames = fs.readdirSync(DOCS_DIR)
 		.filter(file =>
 			file.endsWith('.md') && !file.startsWith('.')
 		);
 
-	const docs = files
-		.map(file => {
-			const content = fs.readFileSync(path.join(DOCS_DIR, file), 'utf-8');
-			return { ...extractMetadata(content).metadata, docname: file.slice(0, -3) };
+	const docs = fileNames
+		.map(fileName => {
+			const file = fs.readFileSync(path.join(DOCS_DIR, fileName), 'utf-8');
+			const { data: metadata, content } = matter(file);
+			console.log(metadata);
+			return { ...metadata, docname: fileName.slice(0, -3) };
 		})
 		.sort((a, b) =>
 			new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()

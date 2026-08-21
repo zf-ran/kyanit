@@ -7,7 +7,7 @@ updatedAt: '2026-05-14T15:26:00.000+07:00'
 # 1—Writing a Note {#creating}
 
 To write a note, you must be logged in. Open the side menu
-<span class="material-symbols-outlined">menu</span> > **Start Writing**.
+<span class="material-symbols-outlined">menu</span> > **Write**.
 
 ## 1.1—Title {#1-1-title}
 
