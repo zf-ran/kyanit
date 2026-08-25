@@ -4,9 +4,10 @@ const router = express.Router();
 const rateLimit = require('express-rate-limit');
 
 const Kyanit = require('../modules/Kyanit');
-const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
+const { JSONErrorResponse, JSONResponse } = Kyanit;
 const { validateBody, Rule } = require('../modules/body-validator');
 const { dataConstraints } = require('../config');
+const { isUUID } = require('../modules/utils');
 
 const URL_OR_EMPTY = /(^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*$)|^$)/i;
 
@@ -73,18 +74,6 @@ router.post('/notes',
 	}
 );
 
-router.post('/test',
-	validateBody({
-		requiredString: new Rule('string')
-			.required(),
-		requiredArray: new Rule('array')
-	}),
-	(req, res) => {
-		console.log(req.body.thumbnailURL);
-		res.json(req.body);
-	}
-);
-
 router.patch('/notes/:noteId',
 	validateBody({
 		title: new Rule('string')
@@ -99,13 +88,15 @@ router.patch('/notes/:noteId',
 		unlisted: new Rule('boolean')
 	}),
 	async (req, res) => {
-		if(!res.locals.isLoggedIn) {
+		const { username, isLoggedIn } = res.locals;
+
+		if (!isLoggedIn) {
 			return res.status(401).json(new JSONErrorResponse('No login credentials'));
 		}
 
-		const { noteId } = req.params;
+		const noteId = req.params.noteId;
 
-		if(!isUUID(noteId)) {
+		if (!isUUID(noteId)) {
 			return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
 		}
 
@@ -117,26 +108,35 @@ router.patch('/notes/:noteId',
 				thumbnail_url AS "thumbnailURL",
 				unlisted
 			FROM notes
-			WHERE id = ${noteId} AND author_name = ${res.locals.username}
+			WHERE id = ${noteId};
 		`;
 
 		const note = notes[0];
 
-		if(!note) {
+		if (!note) {
 			return res.status(404).json(new JSONErrorResponse('Note not found'));
+		}
+
+		const permission = await Kyanit.NoteCollaborator
+			.getNoteCollaborators.permission(noteId, username);
+
+		if (!permission || !permission.canPublish) {
+			return res.status(403).json(new JSONErrorResponse('No permission to edit'));
 		}
 
 		const { title, content, keywords, thumbnailURL, unlisted } = req.body;
 
-		if(title) note.title = title;
-		if(content) note.content = content;
-		if(keywords) note.keywords = keywords;
+		if (title && permission.canChangeTitle) note.title = title;
+		if (content) note.content = content;
+		if (keywords && permission.canChangeKeywords) note.keywords = keywords;
 
 		// Undefined or null means not changed, empty string means literal empty string.
-		if(typeof thumbnailURL === 'string') note.thumbnailURL = thumbnailURL;
+		if (typeof thumbnailURL === 'string' && permission.canChangeThumbnail)
+			note.thumbnailURL = thumbnailURL;
 
-		// Undefined and null are falsy, so is false, can't check with just if(unlisted)...
-		if(typeof unlisted === 'boolean') note.unlisted = unlisted;
+		// Undefined and null are falsy, so is false, can't check with just `if (unlisted)`.
+		if (typeof unlisted === 'boolean' && permission.canChangeVisibility)
+			note.unlisted = unlisted;
 
 		await req.sql`
 			UPDATE notes
@@ -147,7 +147,7 @@ router.patch('/notes/:noteId',
 				thumbnail_url = ${note.thumbnailURL},
 				unlisted = ${note.unlisted},
 				updated_at = NOW()
-			WHERE id = ${noteId} AND author_name = ${res.locals.username}
+			WHERE id = ${noteId};
 		`;
 
 		res.json(new JSONResponse({ id: noteId }));
@@ -155,27 +155,30 @@ router.patch('/notes/:noteId',
 );
 
 router.delete('/notes/:noteId', async (req, res) => {
-	if(!res.locals.isLoggedIn) {
+	const { username, isLoggedIn } = res.locals;
+	if (!isLoggedIn) {
 		return res.status(401).json(new JSONErrorResponse('No login credentials'));
 	}
 
 	const { noteId } = req.params;
 
-	if(!isUUID(noteId)) {
+	if (!isUUID(noteId)) {
 		return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
+	}
+
+	const permission = await Kyanit.NoteCollaborator
+		.getNoteCollaborators.permission(noteId, username);
+
+	if (!permission.canDelete) {
+		return res.status(403).json(new JSONErrorResponse('No permission to delete'));
 	}
 
 	await req.sql`
 		DELETE FROM notes
-		WHERE id = ${noteId} AND author_name = ${res.locals.username}
+		WHERE id = ${noteId};
 	`;
 
 	res.sendStatus(204);
-});
-
-router.get('/test', (req, res) => {
-	res.send(req.headers['user-agent']);
-	console.log(req.headers['user-agent']);
 });
 
 const viewLimiter = rateLimit({
@@ -189,27 +192,27 @@ const viewLimiter = rateLimit({
 router.post('/notes/:noteId/views', async (req, res) => {
 	const { noteId } = req.params;
 
-	if(!isUUID(noteId)) {
+	if (!isUUID(noteId))
 		return res.status(400).json(new JSONErrorResponse('Invalid note UUID'));
-	}
 
-	if(req.headers['x-note-id'] !== noteId) {
+	if (req.headers['x-note-id'] !== noteId)
 		return res.status(400).json(new JSONErrorResponse('X-Note-ID header not found'));
-	}
 
-	const notes = await req.sql`
+	const [note] = await req.sql`
 		SELECT author_name AS "authorName"
 		FROM notes
 		WHERE id = ${noteId};
 	`;
 
-	if(notes.length === 0) {
+	if (!note)
 		return res.status(404).json(new JSONErrorResponse('Note not found'));
-	}
 
-	const note = notes[0];
-	if(note.authorName === res.locals.username) {
-		return res.sendStatus(204);
+	if (res.locals.isLoggedIn) {
+		const permission = await Kyanit.NoteCollaborator
+			.getNoteCollaborators.permission(noteId, res.locals.username);
+
+		if (permission)
+			return res.sendStatus(204);
 	}
 
 	await req.sql`

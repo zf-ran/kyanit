@@ -208,17 +208,17 @@ createEditor(editor, editor.textContent);
 
 const tools = document.querySelectorAll('.toolbar button');
 
-const textStylePairs = {
-	bold: [ '**', '**' ],
-	italic: [ '*', '*' ],
-	strikethrough: [ '~~', '~~' ],
-	codespan: [ '`', '`' ],
-	link: [ '[](', ')' ],
-	'inline-math': [ '$', '$' ],
-	codeblock: [ '```\n', '\n```' ],
-	'display-math': [ '$$ ', ' $$' ],
-	image: [ '![](', ')' ]
-}
+const textStylePairs = new Map([
+	['bold',          [ '**', '**' ]],
+	['italic',        [ '*', '*' ]],
+	['strikethrough', [ '~~', '~~' ]],
+	['codespan',      [ '`', '`' ]],
+	['link',          [ '[](', ')' ]],
+	['inline-math',   [ '$', '$' ]],
+	['codeblock',     [ '```\n', '\n```' ]],
+	['display-math',  [ '$$ ', ' $$' ]],
+	['image',         [ '![](', ')' ]]
+]);
 
 for (const tool of tools) {
 	const type = tool.id.replace('tool-', '');
@@ -244,7 +244,7 @@ for (const tool of tools) {
 	case 'display-math':
 	case 'image':
 		tool.addEventListener('click', () => {
-			wrapSelection(textStylePairs[type][0], textStylePairs[type][1]);
+			wrapSelection(textStylePairs.get(type)[0], textStylePairs.get(type)[1]);
 		});
 		break;
 	case 'unordered-list':
@@ -276,18 +276,18 @@ toggleMetaSidebar.addEventListener('click', () => {
 });
 
 function prefixLine(prefix) {
-	editorInstance.dispatch(
-		editorInstance.state.changeByRange(range => {
+	window.editorInstance.dispatch(
+		window.editorInstance.state.changeByRange(range => {
 			const changes = [];
 
-			const lineStart = editorInstance.state.doc.lineAt(range.from).number;
-			const lineEnd = editorInstance.state.doc.lineAt(range.to).number;
+			const lineStart = window.editorInstance.state.doc.lineAt(range.from).number;
+			const lineEnd = window.editorInstance.state.doc.lineAt(range.to).number;
 
 			let firstLineChange = 0;
 			let totalChange = 0;
 
 			for (let i = lineStart; i <= lineEnd; i++) {
-				const line = editorInstance.state.doc.line(i);
+				const line = window.editorInstance.state.doc.line(i);
 
 				if (line.text.startsWith(prefix)) {
 					changes.push({ from: line.from, to: line.from + prefix.length, insert: '' });
@@ -301,20 +301,20 @@ function prefixLine(prefix) {
 			}
 
 			const newRange = EditorSelection.range(
-				Math.max(range.from + firstLineChange, editorInstance.state.doc.line(lineStart).from),
-				Math.max(range.to + totalChange, editorInstance.state.doc.line(lineStart).from)
+				Math.max(range.from + firstLineChange, window.editorInstance.state.doc.line(lineStart).from),
+				Math.max(range.to + totalChange, window.editorInstance.state.doc.line(lineStart).from)
 			);
 
 			return { changes, range: newRange };
 		})
 	);
 
-	editorInstance.focus();
+	window.editorInstance.focus();
 }
 
 function wrapSelection(begin, end) {
-	editorInstance.dispatch(
-		editorInstance.state.changeByRange(range => {
+	window.editorInstance.dispatch(
+		window.editorInstance.state.changeByRange(range => {
 			const changes = [
 				{ from: range.from, insert: begin },
 				{ from: range.to, insert: end }
@@ -329,5 +329,5 @@ function wrapSelection(begin, end) {
 		})
 	);
 
-	editorInstance.focus();
+	window.editorInstance.focus();
 }

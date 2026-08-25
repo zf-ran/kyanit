@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit');
-const { JSONErrorResponse } = Kyanit;
+const { JSONResponse, JSONErrorResponse } = Kyanit;
 const { validateBody, Rule } = require('../modules/body-validator');
 const { dataConstraints } = require('../config');
 
@@ -58,5 +58,21 @@ router.patch('/users',
 		res.sendStatus(204);
 	}
 );
+
+router.get('/users/:username/display-name', async (req, res) => {
+	const username = req.params.username;
+
+	const [user] = await req.sql`
+		SELECT display_name AS "displayName"
+		FROM users
+		WHERE name = ${username};
+	`;
+
+	if (!user) {
+		return res.status(404).json(new JSONErrorResponse('User not found'));
+	}
+
+	res.json(new JSONResponse(user));
+});
 
 module.exports = router;

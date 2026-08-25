@@ -1,19 +1,15 @@
-const { Note } = require('./classes/Note');
-const { Comment, CommentVote } = require('./classes/Comment');
-const { User } = require('./classes/User');
+const Note = require('./models/note');
+const NoteCollaborator = require('./models/note-collaborator');
+const ShortLink = require('./models/short-link');
+const User = require('./models/user');
 
 const { JSONResponse, JSONErrorResponse } = require('./classes/JSONResponse');
 
-function isUUID(string) {
-	return typeof string === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(string);
-}
-
 module.exports = {
 	Note,
-	Comment,
-	CommentVote,
+	NoteCollaborator,
+	ShortLink,
 	User,
 	JSONResponse,
 	JSONErrorResponse,
-	isUUID,
 };

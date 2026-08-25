@@ -40,6 +40,7 @@ form .form-inputs {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	margin-top: 1em;
 }
 
 dialog menu,

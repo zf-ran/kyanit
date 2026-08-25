@@ -1,5 +1,14 @@
 # Version Changelogs
 
+## 1.0.0-beta.12
+
+- Added accordion component.
+- Added note collaboration.
+- Added keyboard support for dialogs.
+- Moved `isUUID` from `Kyanit.js` to `utis.js`.
+- Renamed `relativeTime` to `relativeTimeFormatter`.
+- Separated SQL query from `index.js` to `/modules/models/`.
+
 ## 1.0.0-beta.11.2
 
 - Fixed documentation won't open.

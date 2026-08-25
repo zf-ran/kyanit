@@ -2,6 +2,8 @@ import dialog from '/js/modules/dialog.mjs';
 import toast from '/js/modules/toast.mjs';
 
 //* PUBLIS BUTTON
+const permission = JSON.parse(document.getElementById('metadata--permission').textContent);
+
 const publishButton = document.getElementById('publish');
 
 const metaSidebar = document.getElementById('meta-sidebar');
@@ -27,13 +29,24 @@ document.addEventListener('keydown', event => {
 			break;
 		}
 	}
-})
-
-publishButton.addEventListener('click', async () => {
-	parseAndPublish();
 });
 
+if (publishButton) {
+	publishButton.addEventListener('click', async () => {
+		parseAndPublish();
+	});
+}
+
 async function parseAndPublish() {
+	if (!permission.canPublish) {
+		toast({
+			title: 'No permission',
+			message: "You don't have permission to (re)publish this note",
+		});
+
+		return;
+	}
+
 	const title = titleInput.value.trim();
 	const keywords = keywordsInput.value.trim().match(/\S+/g) ?? [];
 	const thumbnailURL = thumbnailURLInput.value.trim();
@@ -184,6 +197,8 @@ async function publish(title, content, keywords, unlisted, thumbnailURL) {
 			dismissIcon: 'close',
 			dismissText: 'Close',
 		});
+
+		return;
 	}
 
 	toast({
@@ -195,13 +210,13 @@ async function publish(title, content, keywords, unlisted, thumbnailURL) {
 		location.replace(`/edit/${json.data.id}`);
 }
 
-//* PREVIEW BUTTON
-const previewButton = document.getElementById('preview');
+//* VIEW BUTTON
+const viewButton = document.getElementById('view');
 
-if (previewButton) {
+if (viewButton) {
 	const noteId = JSON.parse(document.getElementById('metadata--note-id').textContent);
 
-	previewButton.addEventListener('click', () => {
+	viewButton.addEventListener('click', () => {
 		window.open(`/note/${noteId}`, '_blank');
 	});
 }

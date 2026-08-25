@@ -28,7 +28,7 @@
 						<div class="title"><%= note.title %></div>
 						<div class="author">Kyanit</div>
 						<div class="details">
-							<span class="date"><%= $relativeTime(new Date(note.createdAt)) %></span>
+							<span class="date"><%= $relativeTimeFormatter(note.createdAt) %></span>
 						</div>
 					</div>
 				</div>

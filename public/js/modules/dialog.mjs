@@ -41,9 +41,22 @@ const dialog = {
 
 		// Closing
 		return new Promise(resolve => {
-			dismissButton.addEventListener('click', () => {
+			function dismiss() {
 				resolve();
 				dialogElement.classList.add('closing');
+			}
+
+			dismissButton.addEventListener('click', () => {
+				dismiss();
+			});
+
+			dialogElement.addEventListener('keydown', event => {
+				switch (event.key) {
+				case 'Escape':
+				case 'Enter':
+					dismiss();
+					break;
+				}
 			});
 		});
 	},
@@ -94,14 +107,29 @@ const dialog = {
 
 		// Closing
 		return new Promise(resolve => {
-			cancelButton.addEventListener('click', () => {
+			function cancel() {
 				resolve(false);
 				dialogElement.classList.add('closing');
+			}
+
+			cancelButton.addEventListener('click', () => {
+				cancel();
 			});
 
 			confirmButton.addEventListener('click', () => {
 				resolve(true);
 				dialogElement.classList.add('closing');
+			});
+
+			dialogElement.addEventListener('keydown', event => {
+				switch (event.key) {
+				case 'Escape':
+					cancel();
+					break;
+				case 'Enter':
+					event.preventDefault();
+					break;
+				}
 			});
 		});
 	},
@@ -203,12 +231,12 @@ const dialog = {
 
 		// Closing
 		return new Promise(resolve => {
-			cancelButton.addEventListener('click', () => {
+			function cancel() {
 				resolve(null);
 				dialogElement.classList.add('closing');
-			});
+			}
 
-			confirmButton.addEventListener('click', () => {
+			function submit() {
 				const formData = new FormData(formElement);
 
 				const data = {};
@@ -244,6 +272,25 @@ const dialog = {
 				resolve(data);
 
 				dialogElement.classList.add('closing');
+			}
+
+			cancelButton.addEventListener('click', () => {
+				cancel();
+			});
+
+			confirmButton.addEventListener('click', () => {
+				submit();
+			});
+
+			dialogElement.addEventListener('keydown', event => {
+				switch (event.key) {
+				case 'Escape':
+					cancel();
+					break;
+				case 'Enter':
+					submit();
+					break;
+				}
 			});
 		});
 	}
@@ -300,11 +347,6 @@ function createDialog({
 	// Buttons
 	const menuElement = new ElementBuilder('menu')
 		.appendTo(formElement);
-
-	dialogElement.addEventListener('keydown', event => {
-		if (event.key === 'Escape')
-			event.preventDefault();
-	});
 
 	// Open and close event
 	dialogElement.addEventListener('animationend', () => {

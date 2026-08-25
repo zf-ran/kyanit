@@ -4,6 +4,8 @@ const username = JSON.parse(document.getElementById('metadata--username').textCo
 const authorName = JSON.parse(document.getElementById('metadata--author-name').textContent);
 const noteId = JSON.parse(document.getElementById('metadata--note-id').textContent);
 
+const permission = JSON.parse(document.getElementById('metadata--permission').textContent);
+
 //* ACTION BUTTONS
 import dialog from '/js/modules/dialog.mjs';
 import toast from '/js/modules/toast.mjs';
@@ -28,13 +30,16 @@ copyURLButton.addEventListener('click', () => {
 	});
 });
 
-if (authorName === username) {
+if (permission.canEdit) {
 	const editNoteButton = document.getElementById('edit-note-button');
-	const deleteNoteButton = document.getElementById('delete-note-button');
 
 	editNoteButton.addEventListener('click', () => {
 		location.assign(`/edit/${noteId}`);
 	});
+}
+
+if (permission.canDelete) {
+	const deleteNoteButton = document.getElementById('delete-note-button');
 
 	deleteNoteButton.addEventListener('click', async () => {
 		const data = await dialog.form({

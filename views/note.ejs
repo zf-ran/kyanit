@@ -30,6 +30,7 @@
 	<script id="metadata--username" type="application/json"><%- JSON.stringify(username) %></script>
 	<script id="metadata--author-name" type="application/json"><%- JSON.stringify(note.authorName) %></script>
 	<script id="metadata--note-id" type="application/json"><%- JSON.stringify(note.id) %></script>
+	<script id="metadata--permission" type="application/json"><%- JSON.stringify(permission) %></script>
 
 	<script type="module" src="/js/note.mjs" defer></script>
 
@@ -52,9 +53,19 @@
 				</div>
 			<% } %>
 			<div class="details">
-				<div class="author-date">
-					<span class="author-display"><%= note.authorDisplayName %></span>
-					<span class="author-username"><a class="anchor" href="/user/<%- note.authorName %>">@<%= note.authorName %></a></span>
+				<div class="authors">
+					<div class="author">
+						<span class="author-display"><%= note.authorDisplayName %></span>
+						<span class="author-username"><a class="anchor" href="/user/<%- note.authorName %>">@<%= note.authorName %></a></span>
+					</div>
+					<% for (const collaborator of collaborators) { %>
+						<div class="author">
+							<span class="author-display"><%= collaborator.displayName %></span>
+							<span class="author-username"><a class="anchor" href="/user/<%- collaborator.name %>">@<%= collaborator.name %></a></span>
+						</div>
+					<% } %>
+				</div>
+				<div class="statistic">
 					<span class="date">
 						<span class="date-full">
 							<% if(note.createdAt.getTime() === note.updatedAt.getTime()) { %>
@@ -71,11 +82,9 @@
 							<% } %>
 						</span>
 					</span>
-				</div>
-				<div class="statistic">
 					<span class="view-count"><%= note.views %> <span class="material-symbols-outlined">visibility</span></span>
 					<span class="comment-count"><%= commentCount %> <span class="material-symbols-outlined">comment</span></span>
-					<% if(ratings.length >= MIN_RATING_COUNT_TO_SHOW) { %>
+					<% if (ratings.length >= MIN_RATING_COUNT_TO_SHOW) { %>
 						<span class="rating"><%= rating %> <span class="material-symbols-outlined">star</span></span>
 					<% } %>
 				</div>
@@ -83,12 +92,14 @@
 			<div class="note-actions button-group" role="group">
 				<button id="rate-button"><span class="material-symbols-outlined">star</span> <span class="button-label">Rate</span></button>
 				<button class="secondary" id="copy-url-button"><span class="material-symbols-outlined">link</span> <span class="button-label">Copy Link</span></button>
-				<% if(username === note.authorName) { %>
+				<% if (permission.canEdit) { %>
 					<button class="secondary" id="edit-note-button"><span class="material-symbols-outlined">edit</span> <span class="button-label">Edit</span></button>
+				<% } %>
+				<% if (permission.canDelete) { %>
 					<button class="secondary destructive" id="delete-note-button"><span class="material-symbols-outlined">delete</span> <span class="button-label">Delete</span></button>
 				<% } %>
 			</div>
-			<% if(note.thumbnailURL) { %>
+			<% if (note.thumbnailURL) { %>
 				<div class="thumbnail">
 					<img src="<%- note.thumbnailURL %>"/>
 				</div>
@@ -105,7 +116,7 @@
 		</section>
 	</main>
 </body>
-<% if (username !== note.authorName) { %>
+<% if (!permission.canEdit) { %>
 	<script>
 		setTimeout(async () => {
 			try {

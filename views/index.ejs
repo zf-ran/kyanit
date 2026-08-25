@@ -30,8 +30,8 @@
 		<h1><span class="material-symbols-outlined">schedule</span> Newly Published</h1>
 
 		<div class="note-card-small-container">
-			<% for(let i = 0; i < newNotes.length; i++) { %>
-				<% const note = newNotes[i]; %>
+			<% for(let i = 0; i < recentNotes.length; i++) { %>
+				<% const note = recentNotes[i]; %>
 				<%- include('partials/note-card-small', { note }) %>
 			<% } %>
 		</div>

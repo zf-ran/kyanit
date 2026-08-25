@@ -4,8 +4,9 @@ import toast from '/js/modules/toast.mjs';
 const deleteButton = document.getElementById('delete');
 
 if (deleteButton) {
+	const noteId = JSON.parse(document.getElementById('metadata--note-id').textContent);
+
 	deleteButton.addEventListener('click', async () => {
-		const noteId = JSON.parse(document.getElementById('metadata--note-id').textContent);
 
 		const data = await dialog.form({
 			title: 'Delete note',

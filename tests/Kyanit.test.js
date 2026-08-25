@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { isUUID } = require('../modules/Kyanit');
+const { isUUID } = require('../modules/utils');
 
 test('uuid validation', () => {
 	assert.equal(

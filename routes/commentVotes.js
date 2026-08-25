@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const Kyanit = require('../modules/Kyanit');
-const { JSONErrorResponse, JSONResponse, isUUID } = Kyanit;
+const { JSONErrorResponse, JSONResponse } = Kyanit;
 const { validateBody, Rule } = require('../modules/body-validator');
-const { sum } = require('../modules/utils');
+const { sum, isUUID } = require('../modules/utils');
 
 //* [ROUTE] /api
 

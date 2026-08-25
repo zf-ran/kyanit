@@ -9,7 +9,7 @@
 		<div class="title"><%= note.title %></div>
 		<div class="author"><%= note.authorDisplayName %><% if(note.isAuthorVerified) { %><span class="material-symbols-outlined">check</span><% } %></div>
 		<div class="details">
-			<span class="date"><%= $relativeTime(note.createdAt) %></span>
+			<span class="date"><%= $relativeTimeFormatter(note.createdAt) %></span>
 			<span class="views"><%= note.views %> views</span>
 			<% if(note.rateCount >= MIN_RATING_COUNT_TO_SHOW) { %>
 				<span class="rating"><%= note.rating %> <span class="material-symbols-outlined">star</span></span>

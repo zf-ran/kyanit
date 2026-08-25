@@ -6,11 +6,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<!-- METADATA -->
+	<script id="metadata--username" type="application/json"><%- JSON.stringify(username) %></script>
+	<script id="metadata--note-author-name" type="application/json"><%- JSON.stringify(note.authorName || username) %></script>
 	<script id="metadata--note-id" type="application/json"><%- JSON.stringify(note.id || '') %></script>
+	<script id="metadata--permission" type="application/json"><%- JSON.stringify(permission) %></script>
+	<script id="metadata--collaborators" type="application/json"><%- JSON.stringify(collaborators) %></script>
 
 	<script src="/js/editor/editor.bundle.js" type="module" defer></script>
 	<script src="/js/editor/publish.mjs" type="module" defer></script>
 	<script src="/js/editor/delete.mjs" type="module" defer></script>
+	<script src="/js/editor/collaborator.mjs" type="module" defer></script>
+
+	<script src="/js/modules/tabs.js" type="module" defer></script>
 
 	<link rel="stylesheet" href="/main.css">
 	<link rel="stylesheet" href="/css/editor.css">
@@ -52,58 +59,200 @@
 		<div id="editor"><%= note.content %></div>
 	</main>
 
-	<button class="fab" id="toggle-meta-sidebar"><span class="material-symbols-outlined toggle-close">arrow_forward</span><span class="material-symbols-outlined toggle-open">cloud_upload</span></button>
+	<button class="fab" id="toggle-meta-sidebar"><span class="material-symbols-outlined toggle-close">close</span><span class="material-symbols-outlined toggle-open">cloud_upload</span></button>
 
 	<div class="meta-sidebar" id="meta-sidebar">
-		<h3>Note Information</h3>
-		<p class="input-tip">Before publishing, enter some information first!</p>
-
-		<div class="input-wrapper">
-			<span class="material-symbols-outlined input-icon">title</span>
-			<label for="title">
-				<span class="input-label">Title</span>
-				<input type="text" placeholder="Title" id="title" value="<%- note.title %>" required/>
-			</label>
+		<div class="tabs" role="tablist">
+			<button class="tab tab-active" id="info-tab" aria-selected="true" aria-controls="info-panel" role="tab" tabindex="0">Info</button>
+			<button class="tab" id="collaborator-tab" aria-selected="false" aria-controls="collaborator-panel" role="tab" tabindex="1">Collab</button>
 		</div>
-		<p class="input-tip">Title will be displayed on the page and card.</p>
 
-		<div class="input-wrapper">
-			<span class="material-symbols-outlined input-icon">tag</span>
-			<label for="keywords">
-				<span class="input-label">Keywords</span>
-				<input type="text" placeholder="Keywords" id="keywords" value="<%- note.keywords.join(' ') %>"/>
-			</label>
-		</div>
-		<p class="input-tip">Your note will be searchable by its keywords. Separate keywords by a space.</p>
+		<section class="panel" id="info-panel" role="tabpanel" aria-labelledby="info-tab">
+			<h3>Note Information</h3>
+			<p class="input-tip">Before publishing, enter some information first!</p>
 
-		<div class="input-wrapper">
-			<span class="material-symbols-outlined input-icon">image</span>
-			<label for="thumbnail-url">
-				<span class="input-label">Thumbnail URL</span>
-				<input type="text" placeholder="Thumbnail URL" id="thumbnail-url" value="<%- note.thumbnailURL %>"/>
-			</label>
-		</div>
-		<p class="input-tip">Use a URL that gives a <code>image/png</code>, <code>image/jpeg</code>, or <code>image/webp</code>.</p>
+			<div class="input-wrapper">
+				<span class="material-symbols-outlined input-icon">title</span>
+				<label for="title">
+					<span class="input-label">Title</span>
+					<input
+						type="text"
+						placeholder="Title"
+						id="title"
+						value="<%- note.title %>"
+						<% if (!permission.canChangeTitle) { %>disabled<% } %>
+						required/>
+				</label>
+			</div>
+			<p class="input-tip">Title will be displayed on the page and card.</p>
 
-		<div class="input-wrapper">
-			<span class="material-symbols-outlined input-icon">visibility</span>
-			<label for="visibility">
-				<span class="input-label">Visibility</span>
-				<select name="visibility" id="visibility" required>
-					<option value="public">Public</option>
-					<option value="unlisted">Unlisted</option>
-				</select>
-			</label>
-		</div>
-		<p class="input-tip">Public means your note is searchable, unlisted means your note can only be accessed by a link.</p>
+			<div class="input-wrapper">
+				<span class="material-symbols-outlined input-icon">tag</span>
+				<label for="keywords">
+					<span class="input-label">Keywords</span>
+					<input
+						type="text"
+						placeholder="Keywords"
+						id="keywords"
+						value="<%- note.keywords.join(' ') %>"
+						<% if (!permission.canChangeKeywords) { %>disabled<% } %>/>
+				</label>
+			</div>
+			<p class="input-tip">Your note will be searchable by its keywords. Separate keywords by a space.</p>
 
-		<div role="group" class="button-group">
-			<% if (mode === 'edit') { %>
-				<button class="destructive secondary icon" id="delete"><span class="material-symbols-outlined">delete</span></button>
-				<button class="secondary" id="preview" role="link"><span class="material-symbols-outlined">text_snippet</span> Preview</button>
+			<div class="input-wrapper">
+				<span class="material-symbols-outlined input-icon">image</span>
+				<label for="thumbnail-url">
+					<span class="input-label">Thumbnail URL</span>
+					<input
+						type="text"
+						placeholder="Thumbnail URL"
+						id="thumbnail-url"
+						value="<%- note.thumbnailURL %>"
+						<% if (!permission.canChangeThumbnail) { %>disabled<% } %>/>
+				</label>
+			</div>
+			<p class="input-tip">Use a URL that gives a <code>image/png</code>, <code>image/jpeg</code>, or <code>image/webp</code>.</p>
+
+			<div class="input-wrapper">
+				<span class="material-symbols-outlined input-icon">visibility</span>
+				<label for="visibility">
+					<span class="input-label">Visibility</span>
+					<select
+						name="visibility"
+						id="visibility"
+						required
+						<% if (!permission.canChangeVisibility) { %>disabled<% } %>
+					>
+						<option value="public" <% if (!note.unlisted) { %>selected="selected"<% } %>>Public</option>
+						<option value="unlisted" <% if (note.unlisted) { %>selected="selected"<% } %>>Unlisted</option>
+					</select>
+				</label>
+			</div>
+			<p class="input-tip">Public means your note is searchable, unlisted means your note can only be accessed by a link.</p>
+
+			<div role="group" class="button-group">
+				<% if (mode === 'edit') { %>
+					<% if (permission.canDelete) { %>
+						<button class="destructive secondary icon" id="delete"><span class="material-symbols-outlined">delete</span></button>
+					<% } %>
+					<button class="secondary" id="view" role="link"><span class="material-symbols-outlined">text_snippet</span> View</button>
+				<% } %>
+				<% if (permission.canPublish) { %>
+					<button id="publish"><span class="material-symbols-outlined">cloud_upload</span> Publish</button>
+				<% } %>
+			</div>
+		</section>
+		<section class="panel" id="collaborator-panel" role="tabpanel" aria-labelledby="collaborator-tab" hidden>
+			<h3>Collaborator Permissions</h3>
+			<p class="input-tip">
+				<% if (isAuthor) { %>
+					Manage your note collaborators' permissions.
+				<% } else { %>
+					View other collaborators' permissions. You can't manage permissions, only the author can.
+				<% } %>
+			</p>
+
+			<% if (mode === 'create') { %>
+				<p class="input-tip">
+					<strong>Publish your note</strong> first to add a collaborator!
+				</p>
 			<% } %>
-			<button id="publish"><span class="material-symbols-outlined">cloud_upload</span> Publish</button>
-		</div>
+
+			<% if (mode === 'edit') { %>
+				<div class="accordion collaborator-container">
+					<% const PERMISSION_SCHEMES = [
+							{
+								icon: 'cloud_upload',
+								label: 'Republish',
+								name: 'can-publish',
+								key: 'canPublish',
+							},
+							{
+								icon: 'delete',
+								label: 'Delete',
+								name: 'can-delete',
+								key: 'canDelete',
+							},
+							{
+								icon: 'title',
+								label: 'Change title',
+								name: 'can-change-title',
+								key: 'canChangeTitle',
+							},
+							{
+								icon: 'tag',
+								label: 'Change keywords',
+								name: 'can-change-keywords',
+								key: 'canChangeKeywords',
+							},
+							{
+								icon: 'image',
+								label: 'Change thumbnail',
+								name: 'can-change-thumbnail',
+								key: 'canChangeThumbnail',
+							},
+							{
+								icon: 'visibility',
+								label: 'Change visibility',
+								name: 'can-change-visibility',
+								key: 'canChangeVisibility',
+							},
+						]; %>
+
+					<% for (const collaborator of collaborators) { %>
+						<% const uuid = crypto.randomUUID(); %>
+						<details
+							class="collaborator"
+							name="collaborator-<%- uuid %>"
+							id="collaborator-<%- uuid %>"
+							data-username="<%- collaborator.name %>"
+							data-uuid="<%- uuid %>"
+						>
+							<summary>
+								<span class="material-symbols-outlined chevron">chevron_right</span>
+								<span class="collaborator--info">
+									<span class="collaborator--info--display-name"><%= collaborator.displayName %></span>
+									<span class="collaborator--info--username">@<%= collaborator.name %></span>
+								</span>
+								<% if (isAuthor) { %>
+									<button
+										class="small tertiary icon destructive delete-collaborator"
+										data-username="<%- collaborator.name %>"
+										data-uuid="<%- uuid %>"
+									>
+										<span class="material-symbols-outlined">delete</span>
+									</button>
+								<% } %>
+							</summary>
+							<div class="accordion-details permissions">
+								<% for (const scheme of PERMISSION_SCHEMES) { %>
+									<div class="checkbox-wrapper">
+										<span class="material-symbols-outlined checkbox-icon"><%= scheme.icon %></span>
+										<label for="permission--<%- uuid %>--<%- scheme.name %>">
+											<span class="checkbox-label"><%= scheme.label %></span>
+											<input
+												id="permission--<%- uuid %>--<%- scheme.name %>"
+												type="checkbox"
+												<% if (collaborator[scheme.key]) { %>checked<% } %>/>
+										</label>
+									</div>
+								<% } %>
+							</div>
+						</details>
+					<% } %>
+					<% if (isAuthor) { %>
+						<div id="add-collaborator" role="button"><span class="material-symbols-outlined">person_add</span> Add Collaborator</div>
+					<% } %>
+				</div>
+			<% } %>
+
+			<% if (isAuthor && mode === 'edit') { %>
+				<div role="group" class="button-group">
+					<button id="save-collaborators"><span class="material-symbols-outlined">save</span> Save Collaborators</button>
+				</div>
+			<% } %>
+		</section>
 	</div>
 </body>
 </html>

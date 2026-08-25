@@ -5,7 +5,7 @@ const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = process.env;
 const accessTokenAge = parseInt(process.env.ACCESS_TOKEN_AGE);
 const refreshTokenAge = parseInt(process.env.REFRESH_TOKEN_AGE);
 
-// Middleware to validate access token.
+/** Middleware to validate access token. */
 function validateToken(req, res, next) {
 	const accessToken = req.cookies.accessToken;
 

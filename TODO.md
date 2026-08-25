@@ -13,7 +13,6 @@
 		- [ ] Switch.
 	- [x] Confirmation.
 	- [x] Toasts.
-	- [ ] Snackbar.
 - [x] Log in page.
 - [x] Account page.
 - [ ] Note page.
@@ -48,7 +47,9 @@
 - [ ] Log out.
 - [ ] Delete account.
 - [ ] Command palette.
-- [ ] Collaboration.
+- [x] Collaboration.
+	- [x] Permission manager.
+	- [x] Accessing and publishing.
 - [x] Share button.
 - [ ] Keyword search.
 - [ ] Settings page.

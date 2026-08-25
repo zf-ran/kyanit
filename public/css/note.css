@@ -23,14 +23,19 @@
 
 .meta-data .details {
 	display: flex;
-	align-items: start;
 	justify-content: space-between;
 	align-items: baseline;
 	flex-wrap: wrap;
-	gap: 1em;
+	gap: 0.5em;
 }
 
-.meta-data .author-date {
+.meta-data .authors {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.meta-data .author {
 	display: flex;
 	gap: 4px;
 	align-items: center;
@@ -40,16 +45,7 @@
 	font-weight: 600;
 }
 
-.meta-data .date {
-	color: var(--text-mute);
-}
-
-.meta-data .date .date-full { display: none; }
-
-.meta-data .date:hover .date-full { display: inline; }
-.meta-data .date:hover .date-short { display: none; }
-
-.meta-data .author-date > :not(:first-child)::before {
+.meta-data .author > :not(:first-child)::before {
 	content: '· ';
 }
 
@@ -69,6 +65,15 @@
 	align-items: center;
 	gap: 4px;
 }
+
+.meta-data .statistic .date {
+	color: var(--text-mute);
+}
+
+.meta-data .statistic .date .date-full { display: none; }
+
+.meta-data .statistic .date:hover .date-full { display: inline; }
+.meta-data .statistic .date:hover .date-short { display: none; }
 
 .meta-data .thumbnail img {
 	aspect-ratio: 5/4;
@@ -197,13 +202,8 @@ main:has(#tabs) hr.meta-content-separator {
 }
 
 @media only screen and (max-width: 750px) {
-	.meta-data .author-date {
+	.meta-data .details {
 		flex-direction: column;
-		align-items: start;
-	}
-
-	.meta-data .author-date > :not(:first-child)::before {
-		content: "";
 	}
 
 	.note-actions button {

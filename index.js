@@ -5,32 +5,14 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
-const { marked } = require('marked');
-const DOMPurify = require('isomorphic-dompurify');
-
-const { markedRenderer, markedMath, purifyOptions, MIN_RATING_COUNT_TO_SHOW } = require('./config');
-
-const markedAlert = require('./modules/markdown-alert/index');
-const markedFootnote = require('marked-footnote');
-const markedMoreLists = require('marked-more-lists');
-marked.use(
-	markedAlert(),
-	markedFootnote({
-		refMarkers: true,
-		footnoteDivider: true
-	}),
-	markedMoreLists(),
-	{ renderer: markedRenderer, extensions: [ markedMath ] }
-);
-
 const matter = require('gray-matter');
 
+const { MIN_RATING_COUNT_TO_SHOW } = require('./config');
+
 const Kyanit = require('./modules/Kyanit');
-const { isUUID } = Kyanit;
-
+const { parseAndPurify } = require('./modules/marked');
 const { validateToken } = require('./modules/token');
-
-const { average } = require('./modules/utils');
+const { average, relativeTimeFormatter, isUUID } = require('./modules/utils');
 
 const { version } = require('./package.json');
 
@@ -52,27 +34,7 @@ const maintenanceUsers = process.env.MAINTENANCE_USERS.split('\n');
 
 app.use(validateToken);
 app.use(async (_req, res, next) => {
-	res.locals.$relativeTime = date => {
-		const now = new Date().getTime();
-		const options = { style: 'short', numeric: 'always' };
-		let args = [];
-		let timeDifference = date - now;
-
-		if(Math.abs(timeDifference) > 3.154e+10)
-			args = [Math.round(timeDifference / 3.154e+10), 'year'];
-		else if(Math.abs(timeDifference) > 2.628e+9)
-			args = [Math.round(timeDifference / 2.628e+9), 'month'];
-		else if(Math.abs(timeDifference) > 8.64e+7)
-			args = [Math.round(timeDifference / 8.64e+7), 'day'];
-		else if(Math.abs(timeDifference) > 3.6e+6)
-			args = [Math.round(timeDifference / 3.6e+6), 'hour'];
-		else if(Math.abs(timeDifference) > 6e+4)
-			args = [Math.round(timeDifference / 6e+4), 'minute'];
-		else
-			args = [Math.round(timeDifference / 1000), 'second'];
-
-		return new Intl.RelativeTimeFormat('en-us', options).format(...args);
-	}
+	res.locals.$relativeTimeFormatter = relativeTimeFormatter;
 
 	res.locals.version = version;
 	res.locals.MIN_RATING_COUNT_TO_SHOW = MIN_RATING_COUNT_TO_SHOW;
@@ -84,7 +46,7 @@ app.use(async (_req, res, next) => {
 
 		if (!hasMaintenanceAccess) {
 			if (res.locals.isLoggedIn)
-			res.status(403);
+				res.status(403);
 			else
 				res.status(401);
 
@@ -93,6 +55,7 @@ app.use(async (_req, res, next) => {
 				title: 'Maintenance',
 				message: 'Kyanit is currently on maintenance. I’m sorry for the inconvenience.'
 			});
+
 			return;
 		}
 	}
@@ -100,81 +63,18 @@ app.use(async (_req, res, next) => {
 	next();
 });
 
-app.get('/', validateToken, async (req, res) => {
-	const trendingNotes = await sql`
-		SELECT
-			n.id,
-			u.display_name AS "authorDisplayName",
-			u.is_verified AS "isAuthorVerified",
-			n.title,
-			n.keywords,
-			n.thumbnail_url AS "thumbnailURL",
-			n.views,
-			ROUND(AVG(r.value), 1) AS rating,
-			COUNT(r.value) AS "rateCount",
-			n.created_at AS "createdAt"
-		FROM notes n
-		JOIN users u
-			ON n.author_name = u.name
-		LEFT JOIN note_ratings r
-			ON n.id = r.note_id
-		WHERE n.unlisted = false
-		GROUP BY n.id, u.display_name, u.is_verified
-		ORDER BY n.views / ((EXTRACT(epoch FROM now() - n.created_at) + 2) / 86400)^2 DESC
-		LIMIT 3;
-	`;
+app.get('/', async (req, res) => {
+	const { isLoggedIn, username } = res.locals;
 
-	const newNotes = await sql`
-		SELECT
-			n.id,
-			u.display_name AS "authorDisplayName",
-			u.is_verified AS "isAuthorVerified",
-			n.title,
-			n.keywords,
-			n.thumbnail_url AS "thumbnailURL",
-			n.views,
-			ROUND(AVG(r.value), 1) AS rating,
-			COUNT(r.value) AS "rateCount",
-			n.created_at AS "createdAt"
-		FROM notes n
-		JOIN users u
-			ON n.author_name = u.name
-		LEFT JOIN note_ratings r
-			ON n.id = r.note_id
-		WHERE n.unlisted = false
-		GROUP BY n.id, u.display_name, u.is_verified
-		ORDER BY n.created_at DESC
-		LIMIT 3;
-	`;
+	const [trendingNotes, recentNotes, userNotes] = await Promise.all([
+		Kyanit.Note.getCards.trending(3),
+		Kyanit.Note.getCards.recent(3),
+		isLoggedIn
+			? Kyanit.Note.getCards.author(username, 3)
+			: Promise.resolve([]),
+	]);
 
-	let userNotes = [];
-
-	if(res.locals.isLoggedIn) {
-		userNotes = await sql`
-			SELECT
-				n.id,
-				u.display_name AS "authorDisplayName",
-				u.is_verified AS "isAuthorVerified",
-				n.title,
-				n.keywords,
-				n.thumbnail_url AS "thumbnailURL",
-				n.views,
-				ROUND(AVG(r.value), 1) AS rating,
-				COUNT(r.value) AS "rateCount",
-				n.created_at AS "createdAt"
-			FROM notes n
-			JOIN users u
-				ON n.author_name = u.name
-			LEFT JOIN note_ratings r
-				ON n.id = r.note_id
-			WHERE n.author_name = ${res.locals.username}
-			GROUP BY n.id, u.display_name, u.is_verified
-			ORDER BY n.created_at DESC
-			LIMIT 3;
-		`;
-	}
-
-	res.render('index', { trendingNotes, newNotes, userNotes });
+	res.render('index', { trendingNotes, recentNotes, userNotes });
 });
 
 app.get('/explore', async (req, res) => {
@@ -190,63 +90,66 @@ app.get('/note/:noteId', async (req, res) => {
 			title: 'Invalid UUID',
 			message: `<code class="code-span">${noteId}</code> is not a valid UUID.`
 		});
+
 		return;
 	}
 
-	const notes = await sql`
-		SELECT
-			n.id,
-			n.title,
-			n.content,
-			n.keywords,
-			n.thumbnail_url AS "thumbnailURL",
-			n.views,
-			n.created_at AS "createdAt",
-			n.updated_at AS "updatedAt",
-			n.unlisted,
-			n.author_name AS "authorName",
-			u.display_name AS "authorDisplayName",
-			u.is_verified AS "isAuthorVerified"
-		FROM notes n
-		JOIN users u
-			ON n.author_name = u.name
-		WHERE id = ${noteId};
-	`;
+	const [note, ratings, commentCount] = await Promise.all([
+		Kyanit.Note.getNote(noteId),
+		Kyanit.Note.getNote.ratings(noteId),
+		Kyanit.Note.getNote.commentCount(noteId),
+	]);
 
-	const ratings = await sql`
-		SELECT
-			rater_name AS "raterName",
-			value
-		FROM note_ratings
-		WHERE note_id = ${noteId}
-		ORDER BY value DESC;
-	`;
-
-	const rating = average(ratings.map(rating => rating.value));
-
-	if(notes.length === 0) {
+	if (!note) {
 		res.status(404).render('error', {
 			icon: 'search_off',
 			title: 'Note not Found',
-			message: `Note with id <code class="code-span">${noteId}</code> not found. The note might be deleted by the author. Check for typos.`
+			message: `Note with id <code class="code-span">${noteId}</code> not found. The note might be deleted by the author. Check for typos.`,
 		});
+
 		return;
 	}
 
-	const commentCount = (await sql`SELECT COUNT(*) FROM comments WHERE note_id = ${noteId}`)[0].count;
+	const username = res.locals.username;
 
-	const note = notes[0];
+	const collaborators = await Kyanit.NoteCollaborator.getNoteCollaborators(noteId);
 
-	const htmlContent = DOMPurify.sanitize(marked.parse(note.content), purifyOptions);
+	const permission = await Kyanit.NoteCollaborator
+		.getNoteCollaborators.permission(noteId, username);
+
+	if (permission)
+		permission.canEdit = true;
+
+	const defaultPermission = {
+		canEdit: false,
+		canPublish: false,
+		canDelete: false,
+		canChangeTitle: false,
+		canChangeKeywords: false,
+		canChangeThumbnail: false,
+		canChangeVisibility: false,
+		...permission,
+	};
+
+	const rating = average(ratings.map(rating => rating.value));
+	const htmlContent = parseAndPurify(note.content);
 
 	delete note.content;
 
-	res.render('note', { note, rating, ratings, commentCount, htmlContent });
+	res.render('note', {
+		note,
+		rating,
+		ratings,
+		commentCount,
+		htmlContent,
+		permission: defaultPermission,
+		collaborators,
+	});
 });
 
 app.get('/create', async (req, res) => {
 	if (!res.locals.isLoggedIn)
-		return res.redirect('back');
+		return res.redirect(req.get('Referrer') || '/');
 
 	const startingNote = {
 		title: 'Untitled',
@@ -258,53 +161,76 @@ app.get('/create', async (req, res) => {
 		thumbnail_url: '',
 	};
 
-	res.render('editor', { note: startingNote, mode: 'create' });
+	const permission = {
+		collaboratorName: res.locals.username,
+		canPublish: true,
+		canDelete: true,
+		canChangeTitle: true,
+		canChangeKeywords: true,
+		canChangeThumbnail: true,
+		canChangeVisibility: true,
+	};
+
+	res.render('editor', {
+		note: startingNote,
+		isAuthor: true,
+		collaborators: [],
+		permission,
+		mode: 'create',
+	});
 });
 
 app.get('/edit/:noteId', async (req, res) => {
-	if (!res.locals.isLoggedIn)
+	const { isLoggedIn, username } = res.locals;
+
+	if (!isLoggedIn)
 		return res.redirect('back');
 
 	const noteId = req.params.noteId;
 
 	if (!isUUID(noteId)) {
-		res.redirect('/create');
+		res.status(401).redirect('/create');
 		return;
 	}
 
-	const notes = await sql`
-		SELECT
-			id,
-			title,
-			content,
-			keywords,
-			unlisted,
-			thumbnail_url AS "thumbnailURL"
-		FROM notes
-		WHERE id = ${noteId} AND author_name = ${res.locals.username};
-	`;
+	const note = await Kyanit.Note.getEdit(noteId);
 
-	const note = notes[0];
+	if (!note) {
+		res.status(404).render('error', {
+			icon: 'search_off',
+			title: 'Note not Found',
+			message: `Note with id <code class="code-span">${noteId}</code> not found.`,
+		});
 
-	if (!note)
-		return res.redirect('/create');
+		return;
+	}
 
-	res.render('editor', { note, mode: 'edit' });
+	const collaborators = await Kyanit.NoteCollaborator.getNoteCollaborators(noteId);
+
+	const permission = await Kyanit.NoteCollaborator
+		.getNoteCollaborators.permission(noteId, username);
+
+	if (!permission) {
+		res.status(403).render('error', {
+			icon: 'block',
+			title: 'Not your Note',
+			message: `You are trying to edit someone else's note.`
+		});
+
+		return;
+	}
+
+	res.render('editor', {
+		note,
+		isAuthor: permission.collaboratorName === note.authorName,
+		permission,
+		collaborators,
+		mode: 'edit',
+	});
 });
 
 app.get('/user/:username', async (req, res) => {
-	const users = await sql`
-		SELECT
-			name,
-			display_name as "displayName",
-			about,
-			created_at as "createdAt",
-			is_verified as "isVerified"
-		FROM users
-		WHERE name = ${req.params.username};
-	`;
-
-	const user = users[0];
+	const user = await Kyanit.User.getUser(req.params.username);
 
 	if(!user) {
 		res.status(404).render('error', {
@@ -312,51 +238,16 @@ app.get('/user/:username', async (req, res) => {
 			title: 'User not Found',
 			message: `User with username <code class="code-span">${req.params.username}</code> not found.`
 		});
+
 		return;
 	}
 
-	let notes;
+	const includeUnlisted = res.locals.username === user.name;
+	const notes = await Kyanit.Note.getProfile(user.name, includeUnlisted);
 
-	if(res.locals.username === user.name) {
-		// If the user is viewing their own profile, show unlisted notes.
-		notes = await sql`
-			SELECT
-				id,
-				title,
-				keywords,
-				thumbnail_url AS "thumbnailURL",
-				views,
-				created_at AS "createdAt",
-				updated_at AS "updatedAt",
-				unlisted
-			FROM notes
-			WHERE author_name = ${user.name}
-			ORDER BY created_at;
-		`;
-	} else {
-		// Otherwise, only show listed notes.
-		notes = await sql`
-			SELECT
-				id,
-				title,
-				keywords,
-				thumbnail_url AS "thumbnailURL",
-				views,
-				created_at AS "createdAt",
-				updated_at AS "updatedAt"
-			FROM notes
-			WHERE author_name = ${user.name} AND unlisted = false
-			ORDER BY created_at;
-		`;
-	}
+	const aboutHTMLContent = parseAndPurify(user.about);
 
-	const aboutHTMLContent = DOMPurify.sanitize(marked.parse(user.about), purifyOptions);
-
-	const commentCount = (await sql`
-		SELECT COUNT(*)
-		FROM comments
-		WHERE commenter_name = ${user.name};
-	`)[0].count;
+	const commentCount = await Kyanit.User.getUser.commentCount(user.name);
 
 	res.render('profile', {
 		user, notes, about: aboutHTMLContent,
@@ -393,7 +284,6 @@ app.get('/docs', async (req, res) => {
 		.map(fileName => {
 			const file = fs.readFileSync(path.join(DOCS_DIR, fileName), 'utf-8');
 			const { data: metadata, content } = matter(file);
-			console.log(metadata);
 			return { ...metadata, docname: fileName.slice(0, -3) };
 		})
 		.sort((a, b) =>
@@ -410,7 +300,7 @@ app.get('/docs/:docname', async (req, res) => {
 		const file = fs.readFileSync(path.join(DOCS_DIR, `${docname}.md`), 'utf-8');
 		const { data: metadata, content } = matter(file);
 
-		const htmlContent = DOMPurify.sanitize(marked.parse(content), purifyOptions);
+		const htmlContent = parseAndPurify(content);
 
 		res.render('doc', { metadata, htmlContent });
 	} catch(error) {
@@ -429,36 +319,25 @@ app.get('/docs/:docname', async (req, res) => {
 app.get('/s/:owner/:slug', async (req, res) => {
 	const { owner, slug } = req.params;
 
-	try {
-		const [link] = await sql`
-			SELECT original_url AS "originalURL"
-			FROM short_links
-			WHERE owner_name = ${owner} AND slug = ${slug};
-		`;
+	const link = await Kyanit.ShortLink.getShortLink(owner, slug);
 
-		if (!link) {
-			res.status(404).render('error', {
-				icon: 'close',
-				title: 'Shortened URL not Found',
-				message: `No shortened URL with slug <code>${slug}</code>.`,
-			});
-			return;
-		}
-
-		res.redirect(link.originalURL);
-	} catch (error) {
-		console.error(error);
-		res.status(500).render('error', {
-			icon: 'cloud_alert',
-			title: 'Internal Server Error',
-			message: error
+	if (!link) {
+		res.status(404).render('error', {
+			icon: 'close',
+			title: 'Shortened URL not Found',
+			message: `No shortened URL with slug <code>${slug}</code>.`,
 		});
+
+		return;
 	}
+
+	res.redirect(link.originalURL);
 });
 
 //* APIs 
 const userRoutes = require('./routes/users');
 const noteRoutes = require('./routes/notes');
+const noteCollaboratorRoutes = require('./routes/noteCollaborators');
 const commentRoutes = require('./routes/comments');
 const commentVoteRoutes = require('./routes/commentVotes');
 
@@ -471,6 +350,7 @@ app.use(
 	},
 	userRoutes,
 	noteRoutes,
+	noteCollaboratorRoutes,
 	commentRoutes,
 	commentVoteRoutes
 );
