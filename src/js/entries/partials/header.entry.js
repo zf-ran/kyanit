@@ -31,6 +31,20 @@ searchInput.addEventListener('keydown', ({ key }) => {
 	}
 });
 
+//- LOGIN REDIRECT BUTTON
+const loginButton = document.getElementById('login-button');
+const signupButton = document.getElementById('signup-button');
+
+if (loginButton)
+	addRedirectComponent(loginButton);
+if (signupButton)
+	addRedirectComponent(signupButton);
+
+/** @param {HTMLAnchorElement} anchor */
+function addRedirectComponent(anchor) {
+	anchor.href += `?redirect=${encodeURIComponent(window.location.pathname)}`;
+}
+
 //* SIDE NAVIGATION
 const sidebar = document.getElementById('sidebar');
 const openSidebarButton = document.getElementById('open-sidebar');
@@ -38,8 +52,14 @@ const closeSidebarButton = document.getElementById('close-sidebar');
 
 openSidebarButton.addEventListener('click', () => {
 	sidebar.classList.add('open');
+	sidebar.ariaHidden = false;
+	openSidebarButton.ariaExpanded = true;
+	closeSidebarButton.focus();
 });
 
 closeSidebarButton.addEventListener('click', () => {
 	sidebar.classList.remove('open');
+	sidebar.ariaHidden = true;
+	openSidebarButton.ariaExpanded = false;
+	openSidebarButton.focus();
 });

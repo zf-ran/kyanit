@@ -7,6 +7,7 @@
 
 	<!-- METADATA -->
 	<script type="application/json" id="metadata--mode"><%- JSON.stringify(mode) %></script>
+	<script type="application/json" id="metadata--redirect"><%- JSON.stringify(redirect || '') %></script>
 
 	<script type="module" src="/dist/js/entries/auth.entry.js" defer></script>
 
@@ -21,7 +22,7 @@
 			<form action="/auth/signup" method="post" id="signup-form" aria-labelledby="form-title">
 				<div class="form-heading">
 					<h2 class="form-title" id="form-title"><span class="material-symbols-outlined">person_add</span> Sign Up</h2>
-					<p class="form-subtitle">Register an account. Already have an account? <a class="anchor" href="/login">Log in</a> instead.</p>
+					<p class="form-subtitle">Register an account. Already have an account? <a class="anchor" href="/auth/login<% if (redirect) { %>?redirect=<%- redirect %><% } %>">Log in</a> instead.</p>
 					<p class="form-subtitle">Choose your username wisely, since <strong><ins>usernames cannot be changed!</ins></strong> You can change your display name later.</p>
 				</div>
 				<div class="form-inputs">
@@ -52,7 +53,7 @@
 			<form action="/auth/login" method="post" id="signup-form" aria-labelledby="form-title">
 				<div class="form-heading">
 					<h2 class="form-title" id="form-title"><span class="material-symbols-outlined">login</span> Log In</h2>
-					<p class="form-subtitle">Welcome back! Don’t have an account yet? <a class="anchor" href="/signup">Sign up</a> instead.</p>
+					<p class="form-subtitle">Welcome back! Don’t have an account yet? <a class="anchor" href="/auth/signup<% if (redirect) { %>?redirect=<%- redirect %><% } %>">Sign up</a> instead.</p>
 				</div>
 				<div class="form-inputs">
 					<div class="input-wrapper">

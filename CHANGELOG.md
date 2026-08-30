@@ -1,5 +1,11 @@
 # Version Changelogs
 
+## 1.0.0-beta.13.1
+
+- Added `redirect` query to auth.
+- Changed `BACK` to `CLOSE` in sidebar.
+- Used `@zf.ran/zmd-alert` for reusable GFM alert.
+
 ## 1.0.0-beta.13
 
 - Added unlisted indicator when viewing a note.

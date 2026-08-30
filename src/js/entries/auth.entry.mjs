@@ -1,4 +1,5 @@
 const mode = JSON.parse(document.getElementById('metadata--mode').textContent);
+const redirect = decodeURIComponent(JSON.parse(document.getElementById('metadata--redirect').textContent));
 
 const form = document.getElementById('signup-form');
 const messageSpan = document.getElementById('message');
@@ -41,7 +42,10 @@ async function submit(event) {
 		else if (mode === 'login')
 			document.getElementById('form-title').innerHTML = '<span class="material-symbols-outlined">check</span> Logged in!';
 
-		location.assign(`/user/${inputs.username}`);
+		if (redirect)
+			location.assign(redirect);
+		else
+			location.assign(`/user/${inputs.username}`);
 	}
 }
 

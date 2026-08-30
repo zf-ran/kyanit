@@ -255,12 +255,11 @@ app.get('/user/:username', async (req, res) => {
 	});
 });
 
-app.get('/signup', (_req, res) => {
-	res.render('auth', { mode: 'signup' });
-});
+app.get('/auth/:mode', (req, res) => {
+	const { mode } = req.params;
+	const { redirect } = req.query;
 
-app.get('/login', (_req, res) => {
-	res.render('auth', { mode: 'login' });
+	res.render('auth', { mode, redirect: encodeURIComponent(redirect) });
 });
 
 app.get('/settings', (req, res) => {
