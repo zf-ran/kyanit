@@ -184,7 +184,7 @@ app.get('/edit/:noteId', async (req, res) => {
 	const { isLoggedIn, username } = res.locals;
 
 	if (!isLoggedIn)
-		return res.redirect('back');
+		return res.location(req.get('Referrer') || '/');
 
 	const noteId = req.params.noteId;
 
@@ -256,11 +256,11 @@ app.get('/user/:username', async (req, res) => {
 });
 
 app.get('/signup', (_req, res) => {
-	res.render('signup', { mode: 'signup' });
+	res.render('auth', { mode: 'signup' });
 });
 
 app.get('/login', (_req, res) => {
-	res.render('signup', { mode: 'login' });
+	res.render('auth', { mode: 'login' });
 });
 
 app.get('/settings', (req, res) => {

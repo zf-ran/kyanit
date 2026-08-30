@@ -1,7 +1,4 @@
 node_modules
-nondist_assets
-.data
-*.env
+public/dist/*
 .vscode
-*.bak
-*.bundle.js
+*.env

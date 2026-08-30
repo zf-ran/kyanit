@@ -153,14 +153,14 @@ function validateValue(value, rule, fieldName) {
 
 	// Value whitelist.
 	if (options.allowedValues && !options.allowedValues.includes(value))
-			`${fieldName} must be one of [${options.allowedValues.join(', ')}]`;
+		return `${fieldName} must be one of [${options.allowedValues.join(', ')}]`;
 
 	switch (options.type) {
 	case 'string':
 		if (options.minLength && value.length < options.minLength)
-			return `${fieldName} must be at least ${options.minLength} characters(s) long`;
+			return `${fieldName} must be at least ${options.minLength} character(s) long`;
 		if (options.maxLength && value.length > options.maxLength)
-			return `${fieldName} must be at most ${options.maxLength} characters(s) long`;
+			return `${fieldName} must be at most ${options.maxLength} character(s) long`;
 		if (options.pattern && !options.pattern.test(value))
 			return `${fieldName} does not match the required pattern`;
 	case 'number':

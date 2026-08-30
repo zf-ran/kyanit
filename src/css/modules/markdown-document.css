@@ -1,0 +1,191 @@
+.markdown-document {
+	line-height: 150%;
+}
+
+.markdown-document .heading-content {
+	font-family: var(--font-family--heading);
+	line-height: 100%;
+}
+.markdown-document :is(p, ul, ol, table) {
+	font-family: var(--font-family--body);
+}
+
+/** LIST */
+.markdown-document :is(ul, ol) {
+	padding-left: 2em;
+}
+
+/*- CHECKBOX LIST */
+.markdown-document li:has(> input[type="checkbox"]) {
+	list-style: none;
+}
+
+.markdown-document li > input[type="checkbox"] {
+	position: absolute;
+}
+
+
+.markdown-document li > input[type="checkbox"]::after {
+	margin-left: calc(-1.5 * var(--checkbox-size));
+	margin-top: 6px;
+}
+
+/** IMAGE */
+.markdown-document img {
+	max-width: 100%;
+}
+
+/** TABLE */
+.markdown-document table {
+	border-collapse: collapse;
+	display: block;
+	overflow-x: auto;
+	margin-block: 1em;
+}
+
+.markdown-document td,
+.markdown-document th {
+	border: 1px solid var(--border-mute);
+	padding: .25em .75em;
+	vertical-align: text-top;
+}
+
+.markdown-document th {
+	text-align: left;
+	background: hsl(from var(--border-mute) h s l / 20%);
+}
+
+/** BLOCKQUOTE */
+.markdown-document blockquote {
+	border-left-width: 4px;
+	border-left-style: solid;
+	border-left-color:  var(--primary);
+	background-color: hsl(from var(--primary) h s l / 10%);
+	margin-inline: 0;
+	border-radius: 0 .5em .5em 0;
+	padding: .5em 1em;
+}
+
+.markdown-document blockquote :first-child {
+	margin-top: 0;
+}
+.markdown-document blockquote :last-child {
+	margin-bottom: 0;
+}
+
+/** ALERTS */
+.markdown-document blockquote.markdown-alert {
+	border-left-color: var(--color);
+	background-color: hsl(from var(--color) h s l / 10%);
+}
+
+.markdown-alert :last-child {
+	margin-bottom: 0;
+}
+
+.markdown-alert-note,
+.markdown-alert-info {
+	--color: var(--info);
+}
+.markdown-alert-tip,
+.markdown-alert-success {
+	--color: var(--success);
+}
+.markdown-alert-abstract,
+.markdown-alert-todo {
+	--color: hsl(from var(--info) h calc(s + 20) calc(l + 20));
+}
+.markdown-alert-important,
+.markdown-alert-example {
+	--color: var(--important);
+}
+.markdown-alert-warning,
+.markdown-alert-question {
+	--color: var(--warning);
+}
+.markdown-alert-failure,
+.markdown-alert-danger,
+.markdown-alert-bug,
+.markdown-alert-caution {
+	--color: var(--error);
+}
+.markdown-alert-quote {
+	--color: var(--text);
+}
+
+.markdown-alert-title {
+	color: var(--color);
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	font-weight: bold;
+	margin-bottom: .5em;
+}
+
+.markdown-alert-title svg {
+	fill: currentColor;
+}
+
+/** FOOTNOTES */
+.markdown-document hr[data-footnotes] {
+  max-width: 2in;
+}
+
+.markdown-document #footnote-label {
+	display: none;
+	visibility: hidden;
+}
+
+section.footnotes > ol {
+	font-size: 0.83em;
+	list-style-type: none;
+	counter-reset: footnote;
+}
+
+section.footnotes > ol > li {
+	position: relative;
+}
+
+section.footnotes > ol > li::before {
+	content: counter(footnote);
+	counter-increment: footnote;
+	font-size: 0.75em;
+	vertical-align: super;
+	position: absolute;
+	transform: translateX(-100%);
+	margin-left: -.5em;
+	top: -4px;
+}
+
+/** MATH EQUATIONS */
+mjx-container {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+/** ICONS */
+.markdown-document span.material-symbols-outlined {
+	vertical-align: text-bottom;
+}
+
+@media print {
+	body {
+		print-color-adjust: exact;
+	}
+
+	header {
+		display: none;
+	}
+
+	aside {
+		display: none;
+	}
+
+	main {
+		max-width: unset;
+	}
+
+	hr {
+		border-color: var(--text);
+	}
+}

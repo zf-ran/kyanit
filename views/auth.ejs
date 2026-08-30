@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title><% if (mode === 'signup') { %>Signup<% } else { %> Login <% } %> | Kyanit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- METADATA -->
+	<script type="application/json" id="metadata--mode"><%- JSON.stringify(mode) %></script>
+
+	<script type="module" src="/dist/js/entries/auth.entry.js" defer></script>
+
+	<link rel="stylesheet" href="/dist/css/main.entry.css">
+	<link rel="stylesheet" href="/dist/css/entries/auth.entry.css">
+</head>
+<body>
+	<%- include('partials/header') %>
+
+	<main>
+		<% if (mode === 'signup') { %>
+			<form action="/auth/signup" method="post" id="signup-form" aria-labelledby="form-title">
+				<div class="form-heading">
+					<h2 class="form-title" id="form-title"><span class="material-symbols-outlined">person_add</span> Sign Up</h2>
+					<p class="form-subtitle">Register an account. Already have an account? <a class="anchor" href="/login">Log in</a> instead.</p>
+					<p class="form-subtitle">Choose your username wisely, since <strong><ins>usernames cannot be changed!</ins></strong> You can change your display name later.</p>
+				</div>
+				<div class="form-inputs">
+					<div class="input-wrapper">
+						<span class="material-symbols-outlined input-icon">alternate_email</span>
+						<label for="username">
+							<span class="input-label">Username</span>
+							<input type="text" placeholder="" id="username" required/>
+						</label>
+					</div>
+					<div class="input-wrapper">
+						<span class="material-symbols-outlined input-icon">password</span>
+						<label for="password">
+							<span class="input-label">Password</span>
+							<input type="password" id="password" placeholder="" required/>
+						</label>
+					</div>
+				</div>
+				<p class="form-message" id="message" aria-live="polite"></p>
+				<menu>
+					<button type="submit" id="signup-submit">
+						<span class="material-symbols-outlined">person_add</span>
+						Sign up
+					</button>
+				</menu>
+			</form>
+		<% } else { %>
+			<form action="/auth/login" method="post" id="signup-form" aria-labelledby="form-title">
+				<div class="form-heading">
+					<h2 class="form-title" id="form-title"><span class="material-symbols-outlined">login</span> Log In</h2>
+					<p class="form-subtitle">Welcome back! Don’t have an account yet? <a class="anchor" href="/signup">Sign up</a> instead.</p>
+				</div>
+				<div class="form-inputs">
+					<div class="input-wrapper">
+						<span class="material-symbols-outlined input-icon">alternate_email</span>
+						<label for="username">
+							<span class="input-label">Username</span>
+							<input type="text" placeholder="" id="username" required/>
+						</label>
+					</div>
+					<div class="input-wrapper">
+						<span class="material-symbols-outlined input-icon">password</span>
+						<label for="password">
+							<span class="input-label">Password</span>
+							<input type="password" id="password" placeholder="" required autocomplete="current-password"/>
+						</label>
+					</div>
+				</div>
+				<p class="form-message" id="message" aria-live="polite"></p>
+				<menu>
+					<button type="submit" id="signup-submit">
+						<span class="material-symbols-outlined">login</span>
+						Log in
+					</button>
+				</menu>
+			</form>
+		<% } %>
+	</main>
+</body>
+</html>

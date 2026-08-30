@@ -14,7 +14,8 @@
 	- [x] Confirmation.
 	- [x] Toasts.
 - [x] Log in page.
-- [x] Account page.
+- [x] Profile page.
+- [ ] Dashboard page.
 - [ ] Note page.
 	| Feature            | Display | Input  |
 	| ------------------ | ------- | ------ |

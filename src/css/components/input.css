@@ -1,0 +1,174 @@
+@layer components;
+
+/** SELECT INPUT */
+label.select-input {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+label.select-input .label {
+	font-size: small;
+	color: var(--text-mute);
+}
+label.select-input select {
+	padding: 0 12px;
+	height: 32px;
+	border-radius: 8px;
+	background-color: transparent;
+	border: 1px solid var(--border-mute);
+	font: var(--font--chip);
+} label.select-input select:hover {
+	border: 1px solid var(--border);
+}
+
+/** INPUT AND CHECKBOX */
+div.input-wrapper,
+div.checkbox-wrapper {
+	display: flex;
+	gap: .5em;
+	align-items: center;
+	padding: .5em 1em;
+	position: relative;
+
+	--error-message: "";
+}
+
+div.input-wrapper {
+	border: 1px solid var(--border-mute);
+	border-radius: 6px;
+}
+
+div.input-wrapper:has(.input-icon),
+div.checkbox-wrapper:has(.checkbox-icon) {
+	padding-left: 10px;
+}
+
+div.input-wrapper:has(input:focus),
+div.input-wrapper:has(input:not(:placeholder-shown)),
+div.input-wrapper:has(select) {
+	background-color: var(--background-accent);
+	border: 1px solid transparent;
+	border-left: 1px solid var(--primary);
+	border-radius: 0 6px 6px 0;
+}
+
+div.input-wrapper .input-icon,
+div.input-wrapper .input-label,
+div.checkbox-wrapper .checkbox-icon,
+div.checkbox-wrapper .checkbox-label {
+	color: var(--text-mute);
+}
+div.input-wrapper .input-label {
+	cursor: text;
+}
+div.checkbox-wrapper .checkbox-label {
+	cursor: pointer;
+}
+
+div.input-wrapper label,
+div.checkbox-wrapper label {
+	display: flex;
+	align-items: center;
+	flex: 1 1 auto;
+	user-select: none;
+}
+
+div.input-wrapper .input-label {
+	position: absolute;
+	transition-property: transform;
+	transition-duration: 100ms;
+	transform-origin: 0 50%;
+}
+
+div.input-wrapper label:has(:required) .input-label::after {
+	content: '*';
+	color: var(--error);
+}
+
+div.input-wrapper label:has(input:focus) .input-label,
+div.input-wrapper label:has(input:not(:placeholder-shown)) .input-label,
+div.input-wrapper label:has(select) .input-label {
+	transform: translateY(-18px) scale(80%);
+}
+
+div.input-wrapper input {
+	width: 100%;
+}
+
+div.input-wrapper::after {
+	content: attr(data-error-message);
+	color: var(--error);
+	font-size: 0.8em;
+	position: absolute;
+	left: 0;
+	bottom: -50%;
+}
+
+div.input-wrapper[data-error-message]:not([data-error-message=""]) {
+	margin-bottom: 1.5em;
+}
+
+/** CHECKBOX */
+div.checkbox-wrapper .checkbox-label {
+	flex: 1 1 auto;
+}
+
+input {
+	background-color: transparent;
+	outline: none !important;
+	border: none;
+	padding: 0;
+}
+
+input::placeholder {
+	color: transparent;
+	opacity: 0;
+}
+
+input[type="checkbox"] {
+	--checkbox-size: 16px;
+	height: var(--checkbox-size);
+	width: var(--checkbox-size);
+	cursor: pointer;
+	appearance: none;
+}
+
+input[type="checkbox"]::after {
+	content: "check";
+	font-family: "Material Symbols Outlined";
+	font-weight: bold;
+	color: transparent;
+	font-size: 0.9em;
+
+	position: absolute;
+	display: grid;
+	place-items: center;
+	width: var(--checkbox-size);
+	height: var(--checkbox-size);
+	border: 1px solid var(--border-mute);
+	border-radius: 4px;
+	box-sizing: border-box;
+	aspect-ratio: 1;
+
+	transition-duration: var(--transition-duration);
+	transition-property: color, background-color, border-color;
+}
+
+input[type="checkbox"]:checked::after {
+	background-color: var(--primary);
+	border-color: var(--primary);
+	color: var(--background);
+}
+
+select {
+	background-color: transparent;
+	border: none;
+	width: 100%;
+	padding: 0;
+	outline: none !important;
+}
+
+:disabled {
+	cursor: not-allowed;
+	color: var(--text-mute);
+}

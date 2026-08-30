@@ -1,0 +1,21 @@
+@layer components;
+
+/** BUTTON GROUP */
+div.button-group {
+	display: flex;
+	justify-content: flex-end;
+	gap: 2px;
+}
+
+div.button-group button {
+	border-radius: 4px;
+}
+
+div.button-group button:first-child {
+	border-top-left-radius: 8px;
+	border-bottom-left-radius: 8px;
+}
+div.button-group button:last-child {
+	border-top-right-radius: 8px;
+	border-bottom-right-radius: 8px;
+}

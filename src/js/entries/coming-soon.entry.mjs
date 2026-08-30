@@ -1,0 +1,110 @@
+import dialog from '../components/dialog.mjs';
+import toast from '../components/toast.mjs';
+
+const alertTestButton = document.getElementById('test-alert');
+const confirmTestButton = document.getElementById('test-confirm');
+const destructiveConfirmTestButton = document.getElementById('test-destructive-confirm');
+const formTestButton = document.getElementById('test-form');
+const toastTestButton = document.getElementById('test-toast');
+
+alertTestButton.addEventListener('click', testAlert);
+confirmTestButton.addEventListener('click', testConfirm);
+destructiveConfirmTestButton.addEventListener('click', testDestructiveConfirm);
+formTestButton.addEventListener('click', testForm);
+toastTestButton.addEventListener('click', testToast);
+
+function testAlert() {
+	dialog.alert({
+		title: 'Hello!',
+		message: 'Just testing the new alert system…',
+		dismissText: 'Alright',
+		dismissIcon: 'thumb_up'
+	});
+}
+
+async function testConfirm() {
+	const value = await dialog.confirm({
+		title: 'This is a confirmation dialog',
+		message: 'You can cancel or confirm',
+		cancelIcon: 'close',
+		cancelText: 'Cancel',
+		confirmIcon: 'check',
+		confirmText: 'Continue'
+	});
+
+	console.log(value);
+}
+
+async function testDestructiveConfirm() {
+	const value = await dialog.confirm({
+		title: 'This is a destructive dialog',
+		message: 'Usually for deleting content. Colored red because it represents <em>danger</em>',
+		cancelIcon: 'close',
+		cancelText: 'Cancel',
+		confirmIcon: 'delete',
+		confirmText: 'Close forever',
+		destructive: true
+	});
+
+	console.log(value);
+}
+
+async function testForm() {
+	const data = await dialog.form({
+		title: 'This is a form dialog',
+		message: 'Used for prompting small informations. Below is an example for account register',
+		cancelIcon: 'close',
+		cancelText: 'Cancel',
+		confirmIcon: 'person_add',
+		confirmText: 'Register',
+		fields: [
+			{
+				name: 'firstName',
+				label: 'First Name',
+				type: 'text'
+			},
+			{
+				name: 'lastName',
+				label: 'Last Name',
+				required: true,
+				type: 'text'
+			},
+			{
+				name: 'email',
+				label: 'Email',
+				required: true,
+				type: 'text',
+				defaultValue: 'example@example.com'
+			},
+			{
+				name: 'age',
+				label: 'Age',
+				type: 'number',
+				icon: 'calendar_today'
+			},
+			{
+				name: 'password',
+				label: 'Password',
+				type: 'password',
+				required: true,
+				icon: 'password'
+			},
+			{
+				name: 'confirmPassword',
+				label: 'Confirm Password',
+				type: 'password',
+				required: true,
+				icon: 'password'
+			}
+		]
+	});
+
+	console.log(data);
+}
+
+function testToast() {
+	toast({
+		title: 'Toast test',
+		message: 'This is informational'
+	});
+}

@@ -1,5 +1,12 @@
 # Version Changelogs
 
+## 1.0.0-beta.13
+
+- Added unlisted indicator when viewing a note.
+- Removed unused file/modules.
+- Removed unused typescripts file in bundled MathJax.
+- Used ESBuild to bundle all JS and CSS.
+
 ## 1.0.0-beta.12
 
 - Added accordion component.

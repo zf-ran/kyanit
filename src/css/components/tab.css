@@ -1,0 +1,46 @@
+@layer components;
+
+/** TAB */
+div.tabs {
+	display: flex;
+	width: 100%;
+	gap: 16px;
+	border-bottom: 1px solid var(--border);
+	margin-bottom: 1em;
+}
+
+div.tabs button.tab {
+	background-color: transparent;
+	color: var(--text);
+	border: none;
+	border-radius: 0;
+	padding: 0;
+	position: relative;
+	transition-property: color;
+	transition-duration: 100ms;
+}
+div.tabs button.tab:hover { scale: 1; }
+div.tabs button.tab:active { scale: 1; }
+div.tabs button.tab::after {
+	content: "";
+	position: absolute;
+	--height: 4px;
+	height: var(--height);
+	width: 100%;
+	bottom: 0;
+	background-color: var(--primary);
+	border-top-left-radius: var(--height);
+	border-top-right-radius: var(--height);
+	opacity: 0;
+	transform-origin: 50% 100%;
+	transform: scaleX(0);
+	transition: transform 250ms, opacity 100ms;
+}
+
+div.tabs button.tab.tab-active {
+	color: var(--primary);
+}
+div.tabs button.tab.tab-active::after {
+	opacity: 1;
+	transform: scaleX(1);
+}

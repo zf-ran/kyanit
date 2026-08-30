@@ -12,15 +12,12 @@
 	<script id="metadata--permission" type="application/json"><%- JSON.stringify(permission) %></script>
 	<script id="metadata--collaborators" type="application/json"><%- JSON.stringify(collaborators) %></script>
 
-	<script src="/js/editor/editor.bundle.js" type="module" defer></script>
-	<script src="/js/editor/publish.mjs" type="module" defer></script>
-	<script src="/js/editor/delete.mjs" type="module" defer></script>
-	<script src="/js/editor/collaborator.mjs" type="module" defer></script>
+	<script src="/dist/js/entries/editor/editor.entry.js" type="module" defer></script>
 
-	<script src="/js/modules/tabs.js" type="module" defer></script>
+	<!-- TABS --><script src="/vendor/js/tabs.js" defer></script>
 
-	<link rel="stylesheet" href="/main.css">
-	<link rel="stylesheet" href="/css/editor.css">
+	<link rel="stylesheet" href="/dist/css/main.entry.css">
+	<link rel="stylesheet" href="/dist/css/entries/editor.entry.css">
 </head>
 <body>
 	<%- include('partials/header') %>

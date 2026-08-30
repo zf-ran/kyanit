@@ -7,23 +7,10 @@
 	<meta name="author" content="<%- note.authorDisplayName %> @<%- note.authorName %>">
 	<meta name="keywords" content="<%- note.keywords.join(', ') %>">
 
-	<!-- MATHJAX -->
-	<script src="/js/modules/mathjax-options.js"></script>
-	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+	<%- include('modules/mathjax') %>
+	<%- include('modules/prismjs') %>
 
-	<!-- PRISM.JS -->
-	<style>
-		@import url("/css/modules/prism.min.css") (prefers-color-scheme: light);
-		@import url("/css/modules/prism-okaidia.min.css") (prefers-color-scheme: dark);
-	</style>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js" integrity="sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js" integrity="sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
-
-	<!-- REDIRECT CONFIRMATION -->
-	<script type="module" src="/js/modules/redirect-confirmation.mjs" defer></script>
-
-	<!-- TABS -->
-	<script src="/js/modules/tabs.js" defer></script>
+	<!-- TABS --><script src="/vendor/js/tabs.js" defer></script>
 
 	<!-- METADATA -->
 	<script id="metadata--is-logged-in" type="application/json"><%- JSON.stringify(isLoggedIn) %></script>
@@ -32,11 +19,10 @@
 	<script id="metadata--note-id" type="application/json"><%- JSON.stringify(note.id) %></script>
 	<script id="metadata--permission" type="application/json"><%- JSON.stringify(permission) %></script>
 
-	<script type="module" src="/js/note.mjs" defer></script>
+	<script type="module" src="/dist/js/entries/note.entry.js" defer></script>
 
-	<link rel="stylesheet" href="/main.css">
-	<link rel="stylesheet" href="/css/note.css">
-	<link rel="stylesheet" href="/css/partials/markdown-document.css">
+	<link rel="stylesheet" href="/dist/css/main.entry.css">
+	<link rel="stylesheet" href="/dist/css/entries/note.entry.css">
 </head>
 <body>
 	<%- include('partials/header') %>
@@ -82,7 +68,7 @@
 							<% } %>
 						</span>
 					</span>
-					<span class="view-count"><%= note.views %> <span class="material-symbols-outlined">visibility</span></span>
+					<span class="view-count"><%= note.views %> <span class="material-symbols-outlined"><% if (note.unlisted) { %>visibility_off<% } else { %>visibility<% } %></span></span>
 					<span class="comment-count"><%= commentCount %> <span class="material-symbols-outlined">comment</span></span>
 					<% if (ratings.length >= MIN_RATING_COUNT_TO_SHOW) { %>
 						<span class="rating"><%= rating %> <span class="material-symbols-outlined">star</span></span>

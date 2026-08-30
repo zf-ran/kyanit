@@ -1,0 +1,54 @@
+@layer components;
+
+/** ACCORDION */
+div.accordion {
+	display: flex;
+	flex-direction: column;
+
+	--border-radius: 8px;
+}
+
+div.accordion > details {
+	border: 1px solid var(--border-mute);
+	border-bottom-width: 0;
+}
+
+div.accordion > details:first-child {
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+}
+div.accordion > details:last-child {
+	border-bottom-left-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
+	border-bottom-width: 1px;
+}
+
+div.accordion > details > summary {
+	display: flex;
+	align-items: center;
+	list-style: none;
+	height: 40px;
+	cursor: pointer;
+	font-weight: bold;
+	padding-inline: var(--border-radius);
+	gap: 4px;
+}
+div.accordion > details[open] > summary {
+	background-color: var(--background-accent);
+}
+
+div.accordion > details[open]:first-child > summary {
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+}
+
+div.accordion > details > summary > .chevron {
+	transition: transform var(--transition-duration);
+}
+div.accordion > details[open] > summary > .chevron {
+	transform: rotate(90deg);
+}
+
+div.accordion > details > div.accordion-details {
+	padding: var(--border-radius);
+}

@@ -1,6 +1,6 @@
 {
   "name": "kyanit",
-  "version": "1.0.0-beta.12",
+  "version": "1.0.0-beta.13",
   "description": "Website for creating a markdown note",
   "author": "Zafran",
   "main": "index.js",
@@ -8,8 +8,7 @@
     "start": "node --env-file .env index",
     "dev": "node --env-file .dev.env index",
     "test": "node --test",
-    "build": "esbuild public/js/editor/editor.mjs --bundle --minify --outfile=public/js/editor/editor.bundle.js",
-    "build:watch": "esbuild public/js/editor/editor.mjs --bundle --minify --outfile=public/js/editor/editor.bundle.js --watch",
+    "build": "node build.mjs",
     "vercel-build": "npm run build"
   },
   "dependencies": {
@@ -22,6 +21,11 @@
     "@codemirror/search": "^6.7.1",
     "@codemirror/state": "^6.7.1",
     "@codemirror/view": "^6.43.9",
+    "@fontsource/material-symbols-outlined": "^5.3.3",
+    "@fontsource/noto-sans": "^5.3.0",
+    "@fontsource/noto-sans-mono": "^5.3.0",
+    "@mathjax/mathjax-fira-font": "^4.1.3",
+    "@mathjax/mathjax-mhchem-font-extension": "^4.1.3",
     "@neondatabase/serverless": "^1.0.1",
     "body-parser": "^2.2.0",
     "codemirror": "^6.0.2",
@@ -29,6 +33,7 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-rate-limit": "^7.5.1",
+    "glob": "^13.0.6",
     "gray-matter": "^2.0.1",
     "isomorphic-dompurify": "^2.26.0",
     "jsonwebtoken": "^9.0.2",
@@ -36,7 +41,9 @@
     "marked-alert": "^2.1.2",
     "marked-footnote": "^1.4.0",
     "marked-more-lists": "^1.0.0",
+    "mathjax": "^4.1.3",
     "path": "^0.12.7",
+    "prismjs": "^1.30.0",
     "yaml": "^2.8.0"
   },
   "devDependencies": {
@@ -53,5 +60,8 @@
   "bugs": {
     "url": "https://github.com/zf-ran/kyanit/issues"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
 }
