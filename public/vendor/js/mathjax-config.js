@@ -11,6 +11,7 @@ MathJax = {
 		packages: {
 			'[+]': ['ams', 'mathtools'],
 		},
+		tags: 'ams',
 	},
 	options: {
 		ignoreHtmlClass: 'code-text',

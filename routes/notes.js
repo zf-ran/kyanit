@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-const rateLimit = require('express-rate-limit');
-
 const Kyanit = require('../modules/Kyanit');
 const { JSONErrorResponse, JSONResponse } = Kyanit;
 const { validateBody, Rule } = require('../modules/body-validator');
@@ -179,13 +177,6 @@ router.delete('/notes/:noteId', async (req, res) => {
 	`;
 
 	res.sendStatus(204);
-});
-
-const viewLimiter = rateLimit({
-	windowMs: 10 * (60*1000), // 10 minute
-	max: 1,
-	keyGenerator: (req) => `${req.params.noteId}:${req.ip}`,
-	statusCode: 304
 });
 
 // This route is rate-limited using Vercel Firewall (1 request per 10 minutes).

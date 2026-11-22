@@ -274,7 +274,7 @@ Rewriting some of the code.
 	| ------ | ------- | ----- |
 	| [id]   | [id]    | 1     |
 	| [id]   | [id]    | -1    |
-	
+
 	A `1` represents an upvote, and a `-1` represents a downvote.
 -   UI at comments is now better
 
@@ -303,7 +303,7 @@ Rewriting some of the code.
 
 -  Removed
   > Made header disappear when scroll direction is to the bottom, and appear when scroll direction is to the top.
-  > 
+  >
   > *240623_1730*
 -  Added title bar, contains:
 	1. Author.
@@ -343,7 +343,7 @@ Rewriting some of the code.
 	1.  Made header sticky, made its `backdrop-filter` to `blur(20px)`
 	2.  Made header disappear when scroll direction is to the bottom, and appear when scroll direction is to the top.
 	3.  Made header have `border-bottom` when not and only not at the top of the page.
-	
+
 ## 240622
 
 -   Added ripple animation to buttons, include:

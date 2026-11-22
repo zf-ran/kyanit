@@ -35,6 +35,7 @@
 		- [ ] Remove unnecessary try-catch blocks.
 - [ ] Document APIs.
 - [ ] Explore page.
+- [ ] Optimize database queries.
 
 ## New stuff
 

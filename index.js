@@ -22,6 +22,7 @@ const { neon } = require('@neondatabase/serverless');
 const { PG_HOST, PG_DATABASE, PG_USER, PG_PASSWORD } = process.env;
 const sql = neon(`postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}/${PG_DATABASE}?sslmode=require`);
 
+//* App
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,7 +40,7 @@ app.use(async (_req, res, next) => {
 	res.locals.version = version;
 	res.locals.MIN_RATING_COUNT_TO_SHOW = MIN_RATING_COUNT_TO_SHOW;
 
-	if(MAINTENANCE) {
+	if (MAINTENANCE) {
 		const hasMaintenanceAccess = res.locals.isLoggedIn
 			? maintenanceUsers.includes(res.locals.username)
 			: false;
@@ -333,7 +334,7 @@ app.get('/s/:owner/:slug', async (req, res) => {
 	res.redirect(link.originalURL);
 });
 
-//* APIs 
+//* APIs
 const userRoutes = require('./routes/users');
 const noteRoutes = require('./routes/notes');
 const noteCollaboratorRoutes = require('./routes/noteCollaborators');
