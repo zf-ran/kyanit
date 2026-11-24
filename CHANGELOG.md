@@ -1,5 +1,11 @@
 # Version Changelogs
 
+## 1.0.0-beta.13.2
+
+- Added traditional PostgreSQL server support alongside Neon serverless.
+- Added `express-rate-limiter` back.
+- Deleted Vercel configuration.
+
 ## 1.0.0-beta.13.1
 
 - Added `redirect` query to auth.

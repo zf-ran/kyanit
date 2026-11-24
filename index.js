@@ -17,10 +17,7 @@ const { average, relativeTimeFormatter, isUUID } = require('./modules/utils');
 const { version } = require('./package.json');
 
 //* Database
-const { neon } = require('@neondatabase/serverless');
-
-const { PG_HOST, PG_DATABASE, PG_USER, PG_PASSWORD } = process.env;
-const sql = neon(`postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}/${PG_DATABASE}?sslmode=require`);
+const { sql } = require('./db');
 
 //* App
 app.set('view engine', 'ejs');

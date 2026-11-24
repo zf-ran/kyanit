@@ -71,3 +71,20 @@ CREATE TABLE short_links (
 
 CREATE INDEX idx_links_slug ON short_links (slug);
 CREATE INDEX idx_links_owner_name ON short_links (owner_name);
+
+CREATE INDEX idx_comment_votes_note_id_comment_id ON comment_votes USING btree (note_id, comment_id);
+CREATE INDEX idx_comment_votes_voter_name ON comment_votes USING btree (voter_name);
+CREATE INDEX idx_comments_commenter_name ON comments USING btree (commenter_name);
+CREATE INDEX idx_comments_note_id ON comments USING btree (note_id);
+CREATE INDEX idx_comments_parent_comment_id ON comments USING btree (parent_comment_id);
+
+CREATE INDEX idx_note_collaborators_note_id_collaborator ON note_collaborators USING btree (note_id, collaborator_name);
+CREATE INDEX idx_note_ratings_note_id ON note_ratings USING btree (note_id);
+CREATE INDEX idx_note_ratings_rater_name ON note_ratings USING btree (rater_name);
+
+CREATE INDEX idx_notes_author_created_at ON notes USING btree (author_name, created_at DESC);
+CREATE INDEX idx_notes_author_name ON notes USING btree (author_name);
+CREATE INDEX idx_notes_public_created_at ON notes USING btree (created_at DESC) WHERE (unlisted = false);
+
+CREATE UNIQUE INDEX idx_owner_name_slug ON short_links USING btree (owner_name, slug);
+CREATE INDEX idx_short_links_owner_slug ON short_links USING btree (owner_name, slug);
