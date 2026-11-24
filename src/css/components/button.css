@@ -60,6 +60,7 @@ button:enabled:active { scale: 98%; }
 button.icon {
 	justify-content: center;
 	width: 40px;
+	padding: 0;
 }
 button.icon.small { width: 32px; }
 button.icon.large { width: 48px; }

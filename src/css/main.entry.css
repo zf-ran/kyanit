@@ -3,10 +3,8 @@
 @import "./reset.css";
 
 @import "./fonts/hd-colton.css";
-
 @import "./fonts/isep-misbah.css";
-
-@import "@fontsource/material-symbols-outlined/400.css";
+@import "./fonts/material-symbols-outlined.css";
 
 @import "@fontsource/noto-sans/400.css";
 @import "@fontsource/noto-sans/400-italic.css";
@@ -111,11 +109,6 @@ main {
 	max-width: 700px;
 }
 
-span.material-symbols-outlined {
-	font-size: 1.375em;
-	user-select: none;
-}
-
 h1, h2, h3, h4, h5, h6 {
 	position: relative;
 	display: flex;
@@ -214,22 +207,31 @@ hr {
 	font-family: 'Material Symbols Outlined';
 	font-weight: normal;
 	font-style: normal;
-	font-size: 24px;
+	font-size: 1.375em;
+	font-feature-settings: "liga";
 	line-height: 1;
 	letter-spacing: normal;
 	text-transform: none;
+	direction: ltr;
 	display: inline-block;
+	width: 1em;
+	height: 1em;
 	white-space: nowrap;
+	overflow: hidden;
 	overflow-wrap: normal;
 	word-wrap: normal;
-	direction: ltr;
-	font-feature-settings: "liga";
+	user-select: none;
+	visibility: hidden;
 
 	-moz-font-feature-settings: 'liga';
 	-webkit-font-smoothing: antialiased;
 
 	-moz-osx-font-smoothing: grayscale;
 	font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+body.icons-loaded .material-symbols-outlined {
+	visibility: inherit;
 }
 
 @media print {

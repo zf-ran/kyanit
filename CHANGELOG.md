@@ -1,5 +1,9 @@
 # Version Changelogs
 
+## 1.0.0-beta.13.3
+
+- Fixed icons showing icon name when loading.
+
 ## 1.0.0-beta.13.2
 
 - Added traditional PostgreSQL server support alongside Neon serverless.

@@ -63,3 +63,9 @@ closeSidebarButton.addEventListener('click', () => {
 	openSidebarButton.ariaExpanded = false;
 	openSidebarButton.focus();
 });
+
+//* MATERIAL SYMBOLS LOAD
+document.fonts.load('24px "Material Symbols Outlined"').then((loadedFonts) => {
+	document.body.classList.add('icons-loaded');
+	console.log(loadedFonts.length, 'Loaded!');
+});
