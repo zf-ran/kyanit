@@ -118,9 +118,11 @@ h1, h2, h3, h4, h5, h6 {
 	font-family: var(--font-family--heading);
 	font-weight: 500;
 	font-stretch: extra-condensed;
-} :is(h1, h2, h3, h4, h5, h6):not(:first-child) {
+}
+:is(h1, h2, h3, h4, h5, h6):not(:first-child) {
 	margin-top: 1em;
-} :is(h1, h2, h3, h4, h5, h6):not(:last-child) {
+}
+:is(h1, h2, h3, h4, h5, h6):not(:last-child) {
 	margin-bottom: 0.5em;
 }
 
@@ -141,13 +143,16 @@ h1, h2, h3, h4, h5, h6 {
 	transition-duration: var(--transition-duration);
 	transition-timing-function: ease;
 	translate: -90% 0;
-} :is(h1, h2, h3, h4, h5, h6):hover .link {
+}
+:is(h1, h2, h3, h4, h5, h6):hover .link {
 	opacity: 1;
 	translate: -100% 0;
-} :is(h1, h2, h3, h4, h5, h6) .link:hover {
+}
+:is(h1, h2, h3, h4, h5, h6) .link:hover {
 	rotate: -10deg;
 	color: var(--primary);
-} :is(h1, h2, h3, h4, h5, h6) .link:active {
+}
+:is(h1, h2, h3, h4, h5, h6) .link:active {
 	scale: 90%;
 }
 

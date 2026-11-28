@@ -1,5 +1,11 @@
 # Version Changelogs
 
+## 1.0.0-beta.13.4
+
+- Changed start script for memory efficiency.
+- Fixed icons cut-off.
+- Fixed toast title bottom margin.
+
 ## 1.0.0-beta.13.3
 
 - Fixed icons showing icon name when loading.

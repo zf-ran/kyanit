@@ -79,11 +79,11 @@
 	}
 }
 
-h4.toast-title {
+.toast h4.toast-title {
 	margin: 0;
 }
 
-.toast-message {
+.toast .toast-message {
 	font-size: 0.8em;
 	margin: 0;
 }

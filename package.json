@@ -1,6 +1,6 @@
 {
   "name": "kyanit",
-  "version": "1.0.0-beta.13.2",
+  "version": "1.0.0-beta.13.4",
   "description": "Website for creating a markdown note",
   "author": "Zafran Prayata Wiza",
   "main": "index.js",
@@ -13,8 +13,8 @@
     "url": "https://github.com/zf-ran/kyanit/issues"
   },
   "scripts": {
-    "start": "node --env-file .env index",
-    "dev": "node --env-file .dev.env index",
+    "start": "node --env-file=.env --max-old-space-size=256 --optimize-for-size index",
+    "dev": "node --env-file=.dev.env index",
     "test": "node --test",
     "build": "node build.mjs"
   },
@@ -41,7 +41,7 @@
     "ejs": "^6.0.1",
     "express": "^4.19.2",
     "express-rate-limit": "^8.7.5",
-    "glob": "^13.0.6",
+    "glob": "^14.0.6",
     "gray-matter": "^4.0.3",
     "isomorphic-dompurify": "^2.26.0",
     "jsonwebtoken": "^9.0.2",

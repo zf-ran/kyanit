@@ -209,8 +209,10 @@ main:has(#tabs) hr.meta-content-separator {
 	}
 
 	.note-actions button {
+		/* This follows `button.icon` style. */
 		justify-content: center;
 		width: 40px;
+		padding: 0;
 	}
 
 	.note-actions .button-label {
